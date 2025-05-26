@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  conduit:
+    image: ghcr.io/joschisan/conduit:main
+    container_name: conduit-daemon
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+      - "9735:9735"
+    volumes:
+      - conduit_data:/home/conduit/data/conduit
+      - ldk_data:/home/conduit/data/ldk
+    environment:
+      - ADMIN_AUTH=your-super-secret-admin-token-here
+      - JWT_SECRET=your-very-long-jwt-secret-at-least-32-characters-long
+      - CONDUIT_DATA_DIR=/home/conduit/data/conduit
+      - LDK_DATA_DIR=/home/conduit/data/ldk
+      - BITCOIN_NETWORK=bitcoin
+      - ESPLORA_RPC_URL=https://blockstream.info/api
+
+volumes:
+  conduit_data:
+  ldk_data: 

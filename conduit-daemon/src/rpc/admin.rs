@@ -1,0 +1,91 @@
+use axum::{extract::State, response::Json};
+use conduit_core::admin::{
+    BalancesResponse, CreditUserRequest, NewAddressResponse, NodeIdResponse, OpenChannelRequest,
+    OpenChannelResponse,
+};
+
+use crate::AppState;
+use crate::db;
+use crate::error::ApiError;
+
+#[axum::debug_handler]
+pub async fn node_id(State(state): State<AppState>) -> Json<NodeIdResponse> {
+    Json(NodeIdResponse {
+        node_id: state.node.node_id(),
+    })
+}
+
+#[axum::debug_handler]
+pub async fn new_address(
+    State(state): State<AppState>,
+) -> Result<Json<NewAddressResponse>, ApiError> {
+    state
+        .node
+        .onchain_payment()
+        .new_address()
+        .map(|address| {
+            Json(NewAddressResponse {
+                address: address.into_unchecked(),
+            })
+        })
+        .map_err(ApiError::internal_server_error)
+}
+
+#[axum::debug_handler]
+pub async fn balances(State(state): State<AppState>) -> Result<Json<BalancesResponse>, ApiError> {
+    let total_onchain_balance_sats = state.node.list_balances().total_onchain_balance_sats;
+
+    let total_inbound_capacity_msats = state
+        .node
+        .list_channels()
+        .into_iter()
+        .filter(|c| c.is_usable)
+        .map(|c| c.inbound_capacity_msat)
+        .sum::<u64>();
+
+    let total_outbound_capacity_msats = state
+        .node
+        .list_channels()
+        .into_iter()
+        .filter(|c| c.is_usable)
+        .map(|c| c.outbound_capacity_msat)
+        .sum::<u64>();
+
+    Ok(Json(BalancesResponse {
+        total_onchain_balance_sats,
+        total_inbound_capacity_msats,
+        total_outbound_capacity_msats,
+    }))
+}
+
+#[axum::debug_handler]
+pub async fn open_channel(
+    State(state): State<AppState>,
+    Json(request): Json<OpenChannelRequest>,
+) -> Result<Json<OpenChannelResponse>, ApiError> {
+    state
+        .node
+        .open_announced_channel(
+            request.node_id,
+            request.address.into(),
+            request.channel_amount_sats,
+            request.push_to_counterparty_msat,
+            None,
+        )
+        .map(|channel_id| {
+            Json(OpenChannelResponse {
+                channel_id: channel_id.0.to_string(),
+            })
+        })
+        .map_err(ApiError::internal_server_error)
+}
+
+#[axum::debug_handler]
+pub async fn credit_user(
+    State(state): State<AppState>,
+    Json(request): Json<CreditUserRequest>,
+) -> Result<Json<()>, ApiError> {
+    db::credit_user(&state.db, request.username, request.amount_msat).await;
+
+    Ok(Json(()))
+}

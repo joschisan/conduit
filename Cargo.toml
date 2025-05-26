@@ -1,0 +1,39 @@
+[workspace]
+members = [
+    "conduit-daemon",
+    "conduit-cli",
+    "conduit-testing",
+    "conduit-core"
+]
+resolver = "3"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+
+[workspace.dependencies]
+conduit-daemon = { path = "conduit-daemon" }
+conduit-cli = { path = "conduit-cli" }
+conduit-core = { path = "conduit-core" }
+clap = { version = "4.5", features = ["derive", "env"] }
+bitcoincore-rpc = "0.19.0"
+bitcoin = { version = "0.32.5", features = ["serde"] }
+ldk-node = "0.5.0" 
+tokio = { version = "1", features = ["full"] }
+tokio-stream = { version = "0.1", features = ["sync"] }
+axum = { version = "0.7.2", features = ["macros"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0" 
+anyhow = "1.0"
+reqwest = { version = "0.11", features = ["json", "blocking"] }
+url = "2.5.0"
+duct = "0.13.6"
+portpicker = "0.1.1"
+postgres = "0.19"
+rand = "0.8"
+hex = "0.4"
+lightning-invoice = { version = "0.33.1", features = ["serde"] }
+jsonwebtoken = "9.2.0"
+chrono = { version = "0.4", features = ["serde"] }
+tracing = "0.1"
+tracing-subscriber = "0.3"

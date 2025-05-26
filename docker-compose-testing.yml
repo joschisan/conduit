@@ -1,0 +1,14 @@
+services:
+  bitcoind:
+    image: ruimarinho/bitcoin-core:latest
+    container_name: conduit-bitcoind
+    command:
+      - -regtest=1
+      - -server=1
+      - -rpcuser=bitcoin
+      - -rpcpassword=bitcoin
+      - -rpcallowip=0.0.0.0/0
+      - -rpcbind=0.0.0.0
+    ports:
+      - "18443:18443" # RPC port
+      - "18444:18444" # P2P port

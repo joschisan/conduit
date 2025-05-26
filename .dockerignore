@@ -1,0 +1,8 @@
+target/
+.git/
+.github/
+*.md
+docker-compose*.yml
+test.sh
+flake.nix
+.gitignore 

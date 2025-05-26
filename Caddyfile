@@ -1,0 +1,9 @@
+# Replace yourdomain.com with your actual domain
+yourdomain.com {
+    reverse_proxy conduit:8080
+}
+
+# Optional: Redirect www to non-www
+www.yourdomain.com {
+    redir https://yourdomain.com{uri}
+} 

@@ -1,0 +1,15 @@
+[package]
+name = "conduit-cli"
+version = { workspace = true }
+edition = { workspace = true }
+
+[dependencies]
+clap = { workspace = true }
+url = { workspace = true }
+reqwest = { workspace = true }
+anyhow = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+conduit-core = { workspace = true }
+bitcoin = { workspace = true, features = ["serde"] }
+lightning-invoice = { workspace = true }
