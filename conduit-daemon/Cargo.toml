@@ -1,0 +1,29 @@
+[package]
+name = "conduit-daemon"
+version = { workspace = true }
+edition = { workspace = true }
+
+[dependencies]
+clap = { workspace = true }
+bitcoin = { workspace = true }
+ldk-node = { workspace = true }
+tokio = { workspace = true }
+axum = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+rand = { workspace = true }
+anyhow = { workspace = true }
+url = { workspace = true }
+conduit-core = { workspace = true }
+lightning-invoice = { workspace = true }
+diesel = { version = "2.1", features = ["sqlite", "chrono", "uuid", "r2d2"] }
+diesel_migrations = "2.1"
+uuid = { version = "1.4", features = ["v4", "serde"] }
+jsonwebtoken = { workspace = true }
+chrono = { workspace = true }
+tokio-stream = { workspace = true }
+futures = "0.3"
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+tower_governor = { workspace = true }
+governor = { workspace = true }

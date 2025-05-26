@@ -1,0 +1,20 @@
+[package]
+name = "conduit-testing"
+version = { workspace = true }
+edition = { workspace = true }
+
+[dependencies]
+bitcoincore-rpc = { workspace = true }
+bitcoin = { workspace = true }
+clap = { workspace = true }
+conduit-core = { workspace = true }
+lightning-invoice = { workspace = true }
+anyhow = { workspace = true }
+serde_json = { workspace = true }
+serde = { workspace = true }
+duct = { workspace = true }
+portpicker = { workspace = true }
+postgres = { workspace = true }
+rand = { workspace = true }
+url = { workspace = true }
+base64 = "0.21.0"
