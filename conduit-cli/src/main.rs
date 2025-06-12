@@ -86,6 +86,8 @@ enum AdminChannelCommands {
     Open(OpenChannelRequest),
     /// Close a Lightning channel
     Close(CloseChannelRequest),
+    /// List all Lightning channels
+    List,
 }
 
 #[derive(Subcommand, Debug)]
@@ -150,6 +152,9 @@ fn main() -> Result<()> {
                     }
                     AdminChannelCommands::Close(req) => {
                         request(cli.api_url, Some(auth), "admin/ldk/channel/close", req)
+                    }
+                    AdminChannelCommands::List => {
+                        request(cli.api_url, Some(auth), "admin/ldk/channel/list", ())
                     }
                 },
             },

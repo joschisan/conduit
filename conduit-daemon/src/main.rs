@@ -19,7 +19,6 @@ use std::net::SocketAddr;
 use std::path::PathBuf;
 use std::sync::Arc;
 use tracing::info;
-use tracing_subscriber;
 use url::Url;
 
 use auth::{admin_auth_middleware, user_auth_middleware};
@@ -177,6 +176,7 @@ fn main() -> Result<()> {
         .route("/ldk/onchain/send", post(rpc::admin::ldk_onchain_send))
         .route("/ldk/channel/open", post(rpc::admin::ldk_channel_open))
         .route("/ldk/channel/close", post(rpc::admin::ldk_channel_close))
+        .route("/ldk/channel/list", post(rpc::admin::ldk_channel_list))
         .layer(middleware::from_fn_with_state(
             app_state.clone(),
             admin_auth_middleware,

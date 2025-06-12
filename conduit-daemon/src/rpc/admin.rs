@@ -1,7 +1,10 @@
-use axum::{extract::State, response::Json};
+use axum::{Json, extract::State};
+use serde_json::Value;
+
 use conduit_core::admin::{
-    BalancesResponse, CloseChannelRequest, CreditUserRequest, NewAddressResponse, NodeIdResponse,
-    OnchainSendRequest, OpenChannelRequest, OpenChannelResponse,
+    BalancesResponse, ChannelInfo, CloseChannelRequest, CreditUserRequest, ListChannelsResponse,
+    NewAddressResponse, NodeIdResponse, OnchainSendRequest, OpenChannelRequest,
+    OpenChannelResponse,
 };
 use ldk_node::UserChannelId;
 
@@ -141,4 +144,29 @@ pub async fn credit_user(
     db::credit_user(&state.db, request.username, request.amount_msat).await;
 
     Ok(Json(()))
+}
+
+pub async fn ldk_channel_list(
+    State(state): State<AppState>,
+    Json(_request): Json<Value>,
+) -> Result<Json<ListChannelsResponse>, ApiError> {
+    let channels = state
+        .node
+        .list_channels()
+        .into_iter()
+        .map(|channel| ChannelInfo {
+            user_channel_id: channel.user_channel_id.0,
+            counterparty_node_id: channel.counterparty_node_id,
+            channel_value_sats: channel.channel_value_sats,
+            outbound_capacity_msat: channel.outbound_capacity_msat,
+            inbound_capacity_msat: channel.inbound_capacity_msat,
+            is_channel_ready: channel.is_channel_ready,
+            is_usable: channel.is_usable,
+            is_outbound: channel.is_outbound,
+            confirmations: channel.confirmations,
+            confirmations_required: channel.confirmations_required,
+        })
+        .collect();
+
+    Ok(Json(ListChannelsResponse { channels }))
 }

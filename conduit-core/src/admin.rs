@@ -80,3 +80,22 @@ pub struct CloseChannelRequest {
     #[arg(long)]
     pub force: bool,
 }
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ChannelInfo {
+    pub user_channel_id: u128,
+    pub counterparty_node_id: PublicKey,
+    pub channel_value_sats: u64,
+    pub outbound_capacity_msat: u64,
+    pub inbound_capacity_msat: u64,
+    pub is_channel_ready: bool,
+    pub is_usable: bool,
+    pub is_outbound: bool,
+    pub confirmations: Option<u32>,
+    pub confirmations_required: Option<u32>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ListChannelsResponse {
+    pub channels: Vec<ChannelInfo>,
+}
