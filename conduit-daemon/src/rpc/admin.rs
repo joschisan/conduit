@@ -2,9 +2,9 @@ use axum::{Json, extract::State};
 use serde_json::Value;
 
 use conduit_core::admin::{
-    BalancesResponse, ChannelInfo, CloseChannelRequest, CreditUserRequest, ListChannelsResponse,
-    NewAddressResponse, NodeIdResponse, OnchainSendRequest, OpenChannelRequest,
-    OpenChannelResponse,
+    BalancesResponse, ChannelInfo, CloseChannelRequest, ConnectPeerRequest, CreditUserRequest,
+    DisconnectPeerRequest, ListChannelsResponse, ListPeersResponse, NewAddressResponse,
+    NodeIdResponse, OnchainSendRequest, OpenChannelRequest, OpenChannelResponse, PeerInfo,
 };
 use ldk_node::UserChannelId;
 
@@ -169,4 +169,50 @@ pub async fn ldk_channel_list(
         .collect();
 
     Ok(Json(ListChannelsResponse { channels }))
+}
+
+#[axum::debug_handler]
+pub async fn ldk_peer_connect(
+    State(state): State<AppState>,
+    Json(request): Json<ConnectPeerRequest>,
+) -> Result<Json<()>, ApiError> {
+    state
+        .node
+        .connect(request.node_id, request.address.into(), request.persist)
+        .map_err(ApiError::internal_server_error)?;
+
+    Ok(Json(()))
+}
+
+#[axum::debug_handler]
+pub async fn ldk_peer_disconnect(
+    State(state): State<AppState>,
+    Json(request): Json<DisconnectPeerRequest>,
+) -> Result<Json<()>, ApiError> {
+    state
+        .node
+        .disconnect(request.counterparty_node_id)
+        .map_err(ApiError::internal_server_error)?;
+
+    Ok(Json(()))
+}
+
+#[axum::debug_handler]
+pub async fn ldk_peer_list(
+    State(state): State<AppState>,
+    Json(_request): Json<Value>,
+) -> Result<Json<ListPeersResponse>, ApiError> {
+    let peers = state
+        .node
+        .list_peers()
+        .into_iter()
+        .map(|peer| PeerInfo {
+            node_id: peer.node_id,
+            address: peer.address.to_string(),
+            is_inbound_connection: false,
+            is_connected: peer.is_connected,
+        })
+        .collect();
+
+    Ok(Json(ListPeersResponse { peers }))
 }

@@ -177,6 +177,12 @@ fn main() -> Result<()> {
         .route("/ldk/channel/open", post(rpc::admin::ldk_channel_open))
         .route("/ldk/channel/close", post(rpc::admin::ldk_channel_close))
         .route("/ldk/channel/list", post(rpc::admin::ldk_channel_list))
+        .route("/ldk/peer/connect", post(rpc::admin::ldk_peer_connect))
+        .route(
+            "/ldk/peer/disconnect",
+            post(rpc::admin::ldk_peer_disconnect),
+        )
+        .route("/ldk/peer/list", post(rpc::admin::ldk_peer_list))
         .layer(middleware::from_fn_with_state(
             app_state.clone(),
             admin_auth_middleware,

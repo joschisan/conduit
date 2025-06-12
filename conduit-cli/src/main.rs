@@ -3,7 +3,8 @@ use anyhow::{Context, Result};
 use clap::{Parser, Subcommand};
 use conduit_core::account::{LoginRequest, RegisterRequest};
 use conduit_core::admin::{
-    CloseChannelRequest, CreditUserRequest, OnchainSendRequest, OpenChannelRequest,
+    CloseChannelRequest, ConnectPeerRequest, CreditUserRequest, DisconnectPeerRequest,
+    OnchainSendRequest, OpenChannelRequest,
 };
 use conduit_core::user::{UserBolt11QuoteRequest, UserBolt11ReceiveRequest, UserBolt11SendRequest};
 use serde::Serialize;
@@ -56,19 +57,24 @@ enum AdminCommands {
 
 #[derive(Subcommand, Debug)]
 enum AdminLdkCommands {
-    /// Get the node's public key
+    /// Get the node ID
     NodeId,
-    /// List the node's balances
+    /// Get node balances
     Balances,
-    /// On-chain Bitcoin operations
+    /// On-chain operations
     Onchain {
         #[command(subcommand)]
         command: AdminOnchainCommands,
     },
-    /// Lightning channel operations
+    /// Channel operations
     Channel {
         #[command(subcommand)]
         command: AdminChannelCommands,
+    },
+    /// Peer management operations
+    Peer {
+        #[command(subcommand)]
+        command: AdminPeerCommands,
     },
 }
 
@@ -87,6 +93,16 @@ enum AdminChannelCommands {
     /// Close a Lightning channel
     Close(CloseChannelRequest),
     /// List all Lightning channels
+    List,
+}
+
+#[derive(Subcommand, Debug)]
+enum AdminPeerCommands {
+    /// Connect to a Lightning peer
+    Connect(ConnectPeerRequest),
+    /// Disconnect from a Lightning peer
+    Disconnect(DisconnectPeerRequest),
+    /// List all connected peers
     List,
 }
 
@@ -155,6 +171,17 @@ fn main() -> Result<()> {
                     }
                     AdminChannelCommands::List => {
                         request(cli.api_url, Some(auth), "admin/ldk/channel/list", ())
+                    }
+                },
+                AdminLdkCommands::Peer { command } => match command {
+                    AdminPeerCommands::Connect(req) => {
+                        request(cli.api_url, Some(auth), "admin/ldk/peer/connect", req)
+                    }
+                    AdminPeerCommands::Disconnect(req) => {
+                        request(cli.api_url, Some(auth), "admin/ldk/peer/disconnect", req)
+                    }
+                    AdminPeerCommands::List => {
+                        request(cli.api_url, Some(auth), "admin/ldk/peer/list", ())
                     }
                 },
             },

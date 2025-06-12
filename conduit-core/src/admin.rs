@@ -99,3 +99,39 @@ pub struct ChannelInfo {
 pub struct ListChannelsResponse {
     pub channels: Vec<ChannelInfo>,
 }
+
+// Peer management structs
+#[derive(Debug, Clone, Args, Serialize, Deserialize)]
+pub struct ConnectPeerRequest {
+    /// The public key of the peer to connect to
+    pub node_id: PublicKey,
+    /// The network address of the peer (IP:PORT format)
+    #[arg(long)]
+    pub address: std::net::SocketAddr,
+    /// Whether to persist the connection (reconnect on restart)
+    #[arg(long, default_value = "false")]
+    pub persist: bool,
+}
+
+#[derive(Debug, Clone, Args, Serialize, Deserialize)]
+pub struct DisconnectPeerRequest {
+    /// The public key of the peer to disconnect from
+    pub counterparty_node_id: PublicKey,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct PeerInfo {
+    /// The peer's public key
+    pub node_id: PublicKey,
+    /// The peer's network address (if known)
+    pub address: String,
+    /// Whether this is an inbound or outbound connection
+    pub is_inbound_connection: bool,
+    /// Whether the peer is currently connected
+    pub is_connected: bool,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ListPeersResponse {
+    pub peers: Vec<PeerInfo>,
+}
