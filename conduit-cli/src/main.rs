@@ -8,6 +8,7 @@ use conduit_core::admin::{
 };
 use conduit_core::user::{UserBolt11QuoteRequest, UserBolt11ReceiveRequest, UserBolt11SendRequest};
 use serde::Serialize;
+use serde_json::Value;
 use url::Url;
 
 #[derive(Parser, Debug)]
@@ -238,7 +239,7 @@ fn request<R: Serialize>(
         response.text()?
     );
 
-    println!("{}", response.text()?);
+    println!("{}", serde_json::to_string_pretty(&response.json::<Value>()?)?);
 
     Ok(())
 }
