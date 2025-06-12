@@ -48,6 +48,8 @@ enum Commands {
 enum AdminCommands {
     /// Credit amount to a user
     CreditUser(CreditUserRequest),
+    /// List all users
+    ListUsers,
     /// LDK node management commands
     Ldk {
         #[command(subcommand)]
@@ -147,6 +149,7 @@ fn main() -> Result<()> {
             AdminCommands::CreditUser(req) => {
                 request(cli.api_url, Some(auth), "admin/credit-user", req)
             }
+            AdminCommands::ListUsers => request(cli.api_url, Some(auth), "admin/list-users", ()),
             AdminCommands::Ldk { command } => match command {
                 AdminLdkCommands::NodeId => {
                     request(cli.api_url, Some(auth), "admin/ldk/node-id", ())

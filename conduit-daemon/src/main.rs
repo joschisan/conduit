@@ -188,6 +188,7 @@ fn main() -> Result<()> {
 
     let admin_router = Router::new()
         .route("/credit-user", post(rpc::admin::credit_user))
+        .route("/list-users", post(rpc::admin::list_users))
         .nest("/ldk", ldk_router)
         .layer(middleware::from_fn_with_state(
             app_state.clone(),

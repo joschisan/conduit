@@ -1,6 +1,7 @@
 use anyhow::{Context, Result};
 use bitcoin::hashes::Hash;
 use bitcoin::hex::DisplayHex;
+use conduit_core::admin::UserInfo;
 use diesel::prelude::*;
 use diesel::r2d2::{ConnectionManager, Pool};
 use diesel::sqlite::SqliteConnection;
@@ -345,4 +346,28 @@ pub async fn get_user_invoices(
     })
     .await
     .expect("Failed to join task")
+}
+
+pub async fn list_users(db: &DbConnection) -> Vec<UserInfo> {
+    let mut conn = db.get().expect("Failed to get connection from pool");
+
+    let user_records = tokio::task::spawn_blocking(move || {
+        users::table
+            .load::<User>(&mut *conn)
+            .expect("Failed to load users")
+    })
+    .await
+    .expect("Failed to join task");
+
+    let mut user_infos = Vec::new();
+
+    for user_record in user_records {
+        user_infos.push(UserInfo {
+            username: user_record.username.clone(),
+            password_hash: user_record.password_hash.clone(),
+            balance: get_user_balance(db, user_record.username).await,
+        });
+    }
+
+    user_infos
 }

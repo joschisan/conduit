@@ -3,8 +3,9 @@ use serde_json::Value;
 
 use conduit_core::admin::{
     BalancesResponse, ChannelInfo, CloseChannelRequest, ConnectPeerRequest, CreditUserRequest,
-    DisconnectPeerRequest, ListChannelsResponse, ListPeersResponse, NewAddressResponse,
-    NodeIdResponse, OnchainSendRequest, OpenChannelRequest, OpenChannelResponse, PeerInfo,
+    DisconnectPeerRequest, ListChannelsResponse, ListPeersResponse, ListUsersResponse,
+    NewAddressResponse, NodeIdResponse, OnchainSendRequest, OpenChannelRequest,
+    OpenChannelResponse, PeerInfo,
 };
 use ldk_node::UserChannelId;
 
@@ -169,6 +170,14 @@ pub async fn ldk_channel_list(
         .collect();
 
     Ok(Json(ListChannelsResponse { channels }))
+}
+
+pub async fn list_users(
+    State(state): State<AppState>,
+) -> Result<Json<ListUsersResponse>, ApiError> {
+    Ok(Json(ListUsersResponse {
+        users: db::list_users(&state.db).await,
+    }))
 }
 
 #[axum::debug_handler]

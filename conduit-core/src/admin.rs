@@ -6,6 +6,8 @@ use clap::Args;
 use serde::{Deserialize, Serialize};
 use std::net::SocketAddr;
 
+use crate::Balance;
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct BalancesResponse {
     /// The total balance in the on-chain wallet, in satoshis
@@ -134,4 +136,16 @@ pub struct PeerInfo {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ListPeersResponse {
     pub peers: Vec<PeerInfo>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct UserInfo {
+    pub username: String,
+    pub password_hash: String,
+    pub balance: Balance,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ListUsersResponse {
+    pub users: Vec<UserInfo>,
 }
