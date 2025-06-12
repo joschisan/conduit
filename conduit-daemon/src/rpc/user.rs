@@ -4,6 +4,7 @@ use axum::{
     extract::{Extension, State},
     response::Json,
 };
+use bitcoin::hashes::Hash;
 use conduit_core::user::AppEvent;
 use conduit_core::user::InvoicesResponse;
 use conduit_core::user::{
@@ -89,36 +90,33 @@ pub async fn bolt11_send(
     Extension(username): Extension<String>,
     Json(request): Json<UserBolt11SendRequest>,
 ) -> Result<Json<()>, ApiError> {
-    let payment_hash = *request.invoice.payment_hash().as_ref();
+
+
+    let amount_msat = request
+        .invoice
+        .amount_milli_satoshis()
+        .ok_or(ApiError::bad_request("Invoice is missing amount"))?
+        .try_into()
+        .map_err(|_| ApiError::bad_request("Invalid invoice amount"))?;
+
+    let fee_msat = state.get_fee_msat(amount_msat);
+
+    let send_lock = state.send_lock.lock().await;
+
+    let balance_msat = db::get_user_balance(&state.db, username.clone()).await.msat as i64;
+
+    if balance_msat < amount_msat + fee_msat {
+        return Err(ApiError::bad_request("Insufficient balance"));
+    }
+
+    let payment_hash = request.invoice.payment_hash().to_byte_array();
 
     let invoice_opt = db::get_bolt11_invoice(&state.db, payment_hash).await;
 
-    if let Some(invoice) = invoice_opt {
+    let send_status = if let Some(invoice) = invoice_opt {
         if invoice.username == username {
-            return Err(ApiError::bad_request(
-                "Invoice was created by the same user",
-            ));
+            return Err(ApiError::bad_request("This is your own invoice"));
         }
-
-        let send_record = db::create_bolt11_send_payment(
-            &state.db,
-            username.clone(),
-            request.invoice.clone(),
-            request.lightning_address.clone(),
-            "successful".to_string(),
-        )
-        .await
-        .map_err(ApiError::bad_request)?;
-
-        let balance = db::get_user_balance(&state.db, username.clone()).await;
-
-        state
-            .event_bus
-            .send_balance_event(username.clone(), balance);
-
-        state
-            .event_bus
-            .send_payment_event(username.clone(), send_record.into());
 
         db::create_bolt11_receive_payment(&state.db, invoice.clone().into()).await;
 
@@ -132,49 +130,59 @@ pub async fn bolt11_send(
             invoice.username.clone(),
             Into::<Bolt11Receive>::into(invoice).into(),
         );
-    } else {
-        let send_record = db::create_bolt11_send_payment(
-            &state.db,
-            username.clone(),
-            request.invoice.clone(),
-            request.lightning_address.clone(),
-            "pending".to_string(),
-        )
-        .await
-        .map_err(ApiError::bad_request)?;
 
+        "successful".to_string()
+    } else {
         state
             .node
             .bolt11_payment()
             .send(&request.invoice, None)
             .map_err(ApiError::internal_server_error)?;
 
-        let balance = db::get_user_balance(&state.db, username.clone()).await;
+        "pending".to_string()
+    };
 
-        state
-            .event_bus
-            .send_balance_event(username.clone(), balance);
+    let send_record = db::create_bolt11_send_payment(
+        &state.db,
+        username.clone(),
+        request.invoice.clone(),
+        amount_msat,
+        fee_msat,
+        request.lightning_address.clone(),
+        send_status,
+    )
+    .await;
 
-        state
-            .event_bus
-            .send_payment_event(username, send_record.into());
-    }
+    drop(send_lock);
+
+    let balance = db::get_user_balance(&state.db, username.clone()).await;
+
+    state
+        .event_bus
+        .send_balance_event(username.clone(), balance);
+
+    state
+        .event_bus
+        .send_payment_event(username.clone(), send_record.into());
 
     Ok(Json(()))
 }
 
 #[axum::debug_handler]
 pub async fn bolt11_quote(
+    State(state): State<AppState>,
     Json(request): Json<UserBolt11QuoteRequest>,
 ) -> Result<Json<Bolt11QuoteResponse>, ApiError> {
-    let amount_msat = request
+    let amount_msat: i64 = request
         .invoice
         .amount_milli_satoshis()
-        .ok_or(ApiError::bad_request("Invoice is missing amount"))?;
+        .ok_or(ApiError::bad_request("Invoice is missing amount"))?
+        .try_into()
+        .map_err(|_| ApiError::bad_request("Invalid invoice amount"))?;
 
     let response = Bolt11QuoteResponse {
-        amount_msat: amount_msat,
-        fee_msat: (amount_msat / 100) + 5_000,
+        amount_msat: amount_msat as u64,
+        fee_msat: state.get_fee_msat(amount_msat) as u64,
         description: request.invoice.description().to_string(),
         expiry_secs: request.invoice.expiry_time().as_secs(),
     };

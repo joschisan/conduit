@@ -57,6 +57,12 @@ struct Args {
     #[arg(long, env = "ESPLORA_RPC_URL")]
     esplora_rpc_url: Option<Url>,
 
+    #[arg(long, env = "FEE_PPM", default_value = "10000")]
+    fee_ppm: u32,
+
+    #[arg(long, env = "BASE_FEE_MSAT", default_value = "50000")]
+    base_fee_msat: u32,
+
     #[arg(long, env = "API_BIND", default_value = "0.0.0.0:8080")]
     api_bind: SocketAddr,
 
@@ -71,7 +77,16 @@ struct AppState {
     db: DbConnection,
     node: Arc<Node>,
     event_bus: EventBus,
+    fee_ppm: u32,
+    base_fee_msat: u32,
     api_bind: SocketAddr,
+    send_lock: Arc<tokio::sync::Mutex<()>>,
+}
+
+impl AppState {
+    fn get_fee_msat(&self, amount_msat: i64) -> i64 {
+        (amount_msat / self.fee_ppm as i64) + self.base_fee_msat as i64
+    }
 }
 
 async fn shutdown_signal() {
@@ -145,7 +160,10 @@ fn main() -> Result<()> {
         db: db.clone(),
         node: node.clone(),
         event_bus,
+        fee_ppm: args.fee_ppm,
+        base_fee_msat: args.base_fee_msat,
         api_bind: args.api_bind,
+        send_lock: Arc::new(tokio::sync::Mutex::new(())),
     };
 
     let admin_router = Router::new()

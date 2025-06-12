@@ -43,9 +43,4 @@ diesel::table! {
     }
 }
 
-diesel::allow_tables_to_appear_in_same_query!(
-    bolt11_invoice,
-    bolt11_receive,
-    bolt11_send,
-    users,
-);
+diesel::allow_tables_to_appear_in_same_query!(bolt11_invoice, bolt11_receive, bolt11_send, users,);

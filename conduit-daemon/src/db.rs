@@ -1,6 +1,5 @@
 use anyhow::{Context, Result};
 use bitcoin::hashes::Hash;
-use std::path::PathBuf;
 use bitcoin::hex::DisplayHex;
 use diesel::prelude::*;
 use diesel::r2d2::{ConnectionManager, Pool};
@@ -8,6 +7,7 @@ use diesel::sqlite::SqliteConnection;
 use diesel_migrations::{EmbeddedMigrations, MigrationHarness, embed_migrations};
 use lightning_invoice::Bolt11Invoice;
 use rand::Rng;
+use std::path::PathBuf;
 
 use crate::models::*;
 use crate::schema::*;
@@ -135,24 +135,12 @@ pub async fn create_bolt11_send_payment(
     db: &DbConnection,
     username: String,
     invoice: Bolt11Invoice,
+    amount_msat: i64,
+    fee_msat: i64,
     lightning_address: Option<String>,
     status: String,
-) -> Result<Bolt11Send> {
+) -> Bolt11Send {
     let mut conn = db.get().expect("Failed to get connection from pool");
-
-    let balance_msat = get_user_balance(db, username.clone()).await.msat as i64;
-
-    let amount_msat = invoice
-        .amount_milli_satoshis()
-        .context("Invoice is missing amount")?
-        .try_into()?;
-
-    let fee_msat = (amount_msat / 100) + 5_000;
-
-    anyhow::ensure!(
-        balance_msat >= amount_msat + fee_msat,
-        "Insufficient balance"
-    );
 
     let new_send = Bolt11Send {
         payment_hash: get_payment_hash_hex(&invoice),
@@ -172,7 +160,7 @@ pub async fn create_bolt11_send_payment(
             .execute(&mut *conn)
             .expect("Failed to insert send payment");
 
-        Ok(new_send)
+        new_send
     })
     .await
     .expect("Failed to join task")

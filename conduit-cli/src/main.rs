@@ -3,9 +3,7 @@ use anyhow::{Context, Result};
 use clap::{Parser, Subcommand};
 use conduit_core::account::{LoginRequest, RegisterRequest};
 use conduit_core::admin::{CreditUserRequest, OpenChannelRequest};
-use conduit_core::user::{
-    UserBolt11QuoteRequest, UserBolt11ReceiveRequest, UserBolt11SendRequest,
-};
+use conduit_core::user::{UserBolt11QuoteRequest, UserBolt11ReceiveRequest, UserBolt11SendRequest};
 use serde::Serialize;
 use url::Url;
 

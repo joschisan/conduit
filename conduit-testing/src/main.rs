@@ -78,7 +78,7 @@ fn main() -> Result<()> {
 
     sleep(Duration::from_secs(1));
 
-    assert_eq!(cli::user::balance(api_port_a, &jwt_a.token)?, 742500);
+    assert_eq!(cli::user::balance(api_port_a, &jwt_a.token)?, 699975);
     assert_eq!(cli::user::balance(api_port_a, &jwt_b.token)?, 250000);
 
     println!("Successfully sent payment from user A to user B");
@@ -95,13 +95,13 @@ fn main() -> Result<()> {
 
     sleep(Duration::from_secs(1));
 
-    assert_eq!(cli::user::balance(api_port_a, &jwt_a.token)?, 485000);
+    assert_eq!(cli::user::balance(api_port_a, &jwt_a.token)?, 399950);
     assert_eq!(cli::user::balance(api_port_b, &jwt_c.token)?, 250000);
 
     println!("Successfully sent payment from user A to user C");
 
     let invoice = cli::user::bolt11_receive(api_port_a, &jwt_a.token, 250000)?;
-    
+
     cli::user::bolt11_quote(api_port_a, &jwt_a.token, &invoice)?;
 
     println!("Successfully quoted invoice");
