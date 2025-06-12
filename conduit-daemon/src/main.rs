@@ -165,24 +165,30 @@ fn main() -> Result<()> {
         send_lock: Arc::new(tokio::sync::Mutex::new(())),
     };
 
+    let onchain_router = Router::new()
+        .route("/receive", post(rpc::admin::ldk_onchain_receive))
+        .route("/send", post(rpc::admin::ldk_onchain_send));
+
+    let channel_router = Router::new()
+        .route("/open", post(rpc::admin::ldk_channel_open))
+        .route("/close", post(rpc::admin::ldk_channel_close))
+        .route("/list", post(rpc::admin::ldk_channel_list));
+
+    let peer_router = Router::new()
+        .route("/connect", post(rpc::admin::ldk_peer_connect))
+        .route("/disconnect", post(rpc::admin::ldk_peer_disconnect))
+        .route("/list", post(rpc::admin::ldk_peer_list));
+
+    let ldk_router = Router::new()
+        .route("/node-id", post(rpc::admin::ldk_node_id))
+        .route("/balances", post(rpc::admin::ldk_balances))
+        .nest("/onchain", onchain_router)
+        .nest("/channel", channel_router)
+        .nest("/peer", peer_router);
+
     let admin_router = Router::new()
         .route("/credit-user", post(rpc::admin::credit_user))
-        .route("/ldk/node-id", post(rpc::admin::ldk_node_id))
-        .route("/ldk/balances", post(rpc::admin::ldk_balances))
-        .route(
-            "/ldk/onchain/receive",
-            post(rpc::admin::ldk_onchain_receive),
-        )
-        .route("/ldk/onchain/send", post(rpc::admin::ldk_onchain_send))
-        .route("/ldk/channel/open", post(rpc::admin::ldk_channel_open))
-        .route("/ldk/channel/close", post(rpc::admin::ldk_channel_close))
-        .route("/ldk/channel/list", post(rpc::admin::ldk_channel_list))
-        .route("/ldk/peer/connect", post(rpc::admin::ldk_peer_connect))
-        .route(
-            "/ldk/peer/disconnect",
-            post(rpc::admin::ldk_peer_disconnect),
-        )
-        .route("/ldk/peer/list", post(rpc::admin::ldk_peer_list))
+        .nest("/ldk", ldk_router)
         .layer(middleware::from_fn_with_state(
             app_state.clone(),
             admin_auth_middleware,
