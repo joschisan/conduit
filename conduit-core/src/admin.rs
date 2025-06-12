@@ -125,8 +125,8 @@ pub struct PeerInfo {
     pub node_id: PublicKey,
     /// The peer's network address (if known)
     pub address: String,
-    /// Whether this is an inbound or outbound connection
-    pub is_inbound_connection: bool,
+    /// Whether the peer is persisted between restarts
+    pub is_persisted: bool,
     /// Whether the peer is currently connected
     pub is_connected: bool,
 }

@@ -209,7 +209,7 @@ pub async fn ldk_peer_list(
         .map(|peer| PeerInfo {
             node_id: peer.node_id,
             address: peer.address.to_string(),
-            is_inbound_connection: false,
+            is_persisted: peer.is_persisted,
             is_connected: peer.is_connected,
         })
         .collect();
