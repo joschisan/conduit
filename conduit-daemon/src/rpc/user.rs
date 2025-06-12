@@ -13,6 +13,7 @@ use conduit_core::user::{
 };
 use futures::TryStreamExt;
 use futures::stream;
+use ldk_node::payment::SendingParameters;
 use lightning_invoice::{Bolt11InvoiceDescription, Description};
 use std::future;
 use std::pin::Pin;
@@ -134,7 +135,7 @@ pub async fn bolt11_send(
         state
             .node
             .bolt11_payment()
-            .send(&request.invoice, None)
+            .send(&request.invoice, Some(sending_parameters(amount_msat)))
             .map_err(ApiError::internal_server_error)?;
 
         "pending".to_string()
@@ -164,6 +165,15 @@ pub async fn bolt11_send(
         .send_payment_event(username.clone(), send_record.into());
 
     Ok(Json(()))
+}
+
+fn sending_parameters(amount_msat: i64) -> SendingParameters {
+    SendingParameters {
+        max_total_routing_fee_msat: Some(Some(amount_msat as u64)),
+        max_total_cltv_expiry_delta: None,
+        max_path_count: None,
+        max_channel_saturation_power_of_half: None,
+    }
 }
 
 #[axum::debug_handler]
