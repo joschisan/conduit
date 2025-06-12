@@ -239,7 +239,10 @@ fn request<R: Serialize>(
         response.text()?
     );
 
-    println!("{}", serde_json::to_string_pretty(&response.json::<Value>()?)?);
+    println!(
+        "{}",
+        serde_json::to_string_pretty(&response.json::<Value>()?)?
+    );
 
     Ok(())
 }

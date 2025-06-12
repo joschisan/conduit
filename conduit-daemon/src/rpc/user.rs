@@ -164,6 +164,10 @@ pub async fn bolt11_send(
         .event_bus
         .send_payment_event(username.clone(), send_record.into());
 
+    state
+        .event_bus
+        .send_notification_event(username.clone(), "Initiated payment...".to_string());
+
     Ok(Json(()))
 }
 

@@ -273,8 +273,15 @@ async fn process_events(node: Arc<Node>, db: DbConnection, event_bus: EventBus) 
 
                 event_bus.send_balance_event(receive_record.username.clone(), balance);
 
-                event_bus
-                    .send_payment_event(receive_record.username.clone(), receive_record.into());
+                event_bus.send_payment_event(
+                    receive_record.username.clone(),
+                    receive_record.clone().into(),
+                );
+
+                event_bus.send_notification_event(
+                    receive_record.username.clone(),
+                    "Payment received".to_string(),
+                );
             }
             Event::PaymentSuccessful { payment_hash, .. } => {
                 let payment_record = db::update_bolt11_send_payment_status(
@@ -288,8 +295,15 @@ async fn process_events(node: Arc<Node>, db: DbConnection, event_bus: EventBus) 
 
                 event_bus.send_balance_event(payment_record.username.clone(), balance);
 
-                event_bus
-                    .send_payment_event(payment_record.username.clone(), payment_record.into());
+                event_bus.send_payment_event(
+                    payment_record.username.clone(),
+                    payment_record.clone().into(),
+                );
+
+                event_bus.send_notification_event(
+                    payment_record.username.clone(),
+                    "Payment successful".to_string(),
+                );
             }
             Event::PaymentFailed { payment_hash, .. } => {
                 let payment_record = db::update_bolt11_send_payment_status(
@@ -299,8 +313,15 @@ async fn process_events(node: Arc<Node>, db: DbConnection, event_bus: EventBus) 
                 )
                 .await;
 
-                event_bus
-                    .send_payment_event(payment_record.username.clone(), payment_record.into());
+                event_bus.send_payment_event(
+                    payment_record.username.clone(),
+                    payment_record.clone().into(),
+                );
+
+                event_bus.send_notification_event(
+                    payment_record.username.clone(),
+                    "Payment failed".to_string(),
+                );
             }
             _ => {}
         }
