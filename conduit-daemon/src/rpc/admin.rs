@@ -1,22 +1,23 @@
 use axum::{extract::State, response::Json};
 use conduit_core::admin::{
-    BalancesResponse, CreditUserRequest, NewAddressResponse, NodeIdResponse, OpenChannelRequest,
-    OpenChannelResponse,
+    BalancesResponse, CloseChannelRequest, CreditUserRequest, NewAddressResponse, NodeIdResponse,
+    OnchainSendRequest, OpenChannelRequest, OpenChannelResponse,
 };
+use ldk_node::UserChannelId;
 
 use crate::AppState;
 use crate::db;
 use crate::error::ApiError;
 
 #[axum::debug_handler]
-pub async fn node_id(State(state): State<AppState>) -> Json<NodeIdResponse> {
+pub async fn ldk_node_id(State(state): State<AppState>) -> Json<NodeIdResponse> {
     Json(NodeIdResponse {
         node_id: state.node.node_id(),
     })
 }
 
 #[axum::debug_handler]
-pub async fn new_address(
+pub async fn ldk_onchain_receive(
     State(state): State<AppState>,
 ) -> Result<Json<NewAddressResponse>, ApiError> {
     state
@@ -32,7 +33,27 @@ pub async fn new_address(
 }
 
 #[axum::debug_handler]
-pub async fn balances(State(state): State<AppState>) -> Result<Json<BalancesResponse>, ApiError> {
+pub async fn ldk_onchain_send(
+    State(state): State<AppState>,
+    Json(request): Json<OnchainSendRequest>,
+) -> Result<Json<()>, ApiError> {
+    state
+        .node
+        .onchain_payment()
+        .send_to_address(
+            &request.address.assume_checked(),
+            request.amount_sats,
+            request.fee_rate,
+        )
+        .map_err(ApiError::internal_server_error)?;
+
+    Ok(Json(()))
+}
+
+#[axum::debug_handler]
+pub async fn ldk_balances(
+    State(state): State<AppState>,
+) -> Result<Json<BalancesResponse>, ApiError> {
     let total_onchain_balance_sats = state.node.list_balances().total_onchain_balance_sats;
 
     let total_inbound_capacity_msats = state
@@ -59,7 +80,7 @@ pub async fn balances(State(state): State<AppState>) -> Result<Json<BalancesResp
 }
 
 #[axum::debug_handler]
-pub async fn open_channel(
+pub async fn ldk_channel_open(
     State(state): State<AppState>,
     Json(request): Json<OpenChannelRequest>,
 ) -> Result<Json<OpenChannelResponse>, ApiError> {
@@ -78,6 +99,38 @@ pub async fn open_channel(
             })
         })
         .map_err(ApiError::internal_server_error)
+}
+
+#[axum::debug_handler]
+pub async fn ldk_channel_close(
+    State(state): State<AppState>,
+    Json(request): Json<CloseChannelRequest>,
+) -> Result<Json<()>, ApiError> {
+    match request.force {
+        true => {
+            state
+                .node
+                .force_close_channel(
+                    &UserChannelId(request.user_channel_id),
+                    request.counterparty_node_id,
+                    None,
+                )
+                .map_err(ApiError::internal_server_error)?;
+
+            Ok(Json(()))
+        }
+        false => {
+            state
+                .node
+                .close_channel(
+                    &UserChannelId(request.user_channel_id),
+                    request.counterparty_node_id,
+                )
+                .map_err(ApiError::internal_server_error)?;
+
+            Ok(Json(()))
+        }
+    }
 }
 
 #[axum::debug_handler]

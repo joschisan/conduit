@@ -167,11 +167,16 @@ fn main() -> Result<()> {
     };
 
     let admin_router = Router::new()
-        .route("/node_id", post(rpc::admin::node_id))
-        .route("/new_address", post(rpc::admin::new_address))
-        .route("/balances", post(rpc::admin::balances))
-        .route("/open-channel", post(rpc::admin::open_channel))
         .route("/credit-user", post(rpc::admin::credit_user))
+        .route("/ldk/node-id", post(rpc::admin::ldk_node_id))
+        .route("/ldk/balances", post(rpc::admin::ldk_balances))
+        .route(
+            "/ldk/onchain/receive",
+            post(rpc::admin::ldk_onchain_receive),
+        )
+        .route("/ldk/onchain/send", post(rpc::admin::ldk_onchain_send))
+        .route("/ldk/channel/open", post(rpc::admin::ldk_channel_open))
+        .route("/ldk/channel/close", post(rpc::admin::ldk_channel_close))
         .layer(middleware::from_fn_with_state(
             app_state.clone(),
             admin_auth_middleware,

@@ -90,8 +90,6 @@ pub async fn bolt11_send(
     Extension(username): Extension<String>,
     Json(request): Json<UserBolt11SendRequest>,
 ) -> Result<Json<()>, ApiError> {
-
-
     let amount_msat = request
         .invoice
         .amount_milli_satoshis()

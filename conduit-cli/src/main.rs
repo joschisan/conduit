@@ -2,7 +2,9 @@ use anyhow::ensure;
 use anyhow::{Context, Result};
 use clap::{Parser, Subcommand};
 use conduit_core::account::{LoginRequest, RegisterRequest};
-use conduit_core::admin::{CreditUserRequest, OpenChannelRequest};
+use conduit_core::admin::{
+    CloseChannelRequest, CreditUserRequest, OnchainSendRequest, OpenChannelRequest,
+};
 use conduit_core::user::{UserBolt11QuoteRequest, UserBolt11ReceiveRequest, UserBolt11SendRequest};
 use serde::Serialize;
 use url::Url;
@@ -43,16 +45,47 @@ enum Commands {
 
 #[derive(Subcommand, Debug)]
 enum AdminCommands {
-    /// Get the node's public key
-    NodeId,
-    /// Generate a new Bitcoin address
-    NewAddress,
-    /// List the node's balances
-    Balances,
-    /// Open a Lightning Network channel
-    OpenChannel(OpenChannelRequest),
     /// Credit amount to a user
     CreditUser(CreditUserRequest),
+    /// LDK node management commands
+    Ldk {
+        #[command(subcommand)]
+        command: AdminLdkCommands,
+    },
+}
+
+#[derive(Subcommand, Debug)]
+enum AdminLdkCommands {
+    /// Get the node's public key
+    NodeId,
+    /// List the node's balances
+    Balances,
+    /// On-chain Bitcoin operations
+    Onchain {
+        #[command(subcommand)]
+        command: AdminOnchainCommands,
+    },
+    /// Lightning channel operations
+    Channel {
+        #[command(subcommand)]
+        command: AdminChannelCommands,
+    },
+}
+
+#[derive(Subcommand, Debug)]
+enum AdminOnchainCommands {
+    /// Generate a new Bitcoin address to receive funds
+    Receive,
+    /// Send Bitcoin to an address
+    Send(OnchainSendRequest),
+}
+
+#[derive(Subcommand, Debug)]
+enum AdminChannelCommands {
+    /// Open a Lightning channel
+    Open(OpenChannelRequest),
+    /// Close a Lightning channel
+    Close(CloseChannelRequest),
 }
 
 #[derive(Subcommand, Debug)]
@@ -93,15 +126,33 @@ fn main() -> Result<()> {
 
     match cli.command {
         Commands::Admin { auth, command } => match command {
-            AdminCommands::NodeId => request(cli.api_url, Some(auth), "admin/node_id", ()),
-            AdminCommands::NewAddress => request(cli.api_url, Some(auth), "admin/new_address", ()),
-            AdminCommands::Balances => request(cli.api_url, Some(auth), "admin/balances", ()),
-            AdminCommands::OpenChannel(req) => {
-                request(cli.api_url, Some(auth), "admin/open-channel", req)
-            }
             AdminCommands::CreditUser(req) => {
                 request(cli.api_url, Some(auth), "admin/credit-user", req)
             }
+            AdminCommands::Ldk { command } => match command {
+                AdminLdkCommands::NodeId => {
+                    request(cli.api_url, Some(auth), "admin/ldk/node-id", ())
+                }
+                AdminLdkCommands::Balances => {
+                    request(cli.api_url, Some(auth), "admin/ldk/balances", ())
+                }
+                AdminLdkCommands::Onchain { command } => match command {
+                    AdminOnchainCommands::Receive => {
+                        request(cli.api_url, Some(auth), "admin/ldk/onchain/receive", ())
+                    }
+                    AdminOnchainCommands::Send(req) => {
+                        request(cli.api_url, Some(auth), "admin/ldk/onchain/send", req)
+                    }
+                },
+                AdminLdkCommands::Channel { command } => match command {
+                    AdminChannelCommands::Open(req) => {
+                        request(cli.api_url, Some(auth), "admin/ldk/channel/open", req)
+                    }
+                    AdminChannelCommands::Close(req) => {
+                        request(cli.api_url, Some(auth), "admin/ldk/channel/close", req)
+                    }
+                },
+            },
         },
         Commands::Account { command } => match command {
             AccountCommands::Register(req) => request(cli.api_url, None, "account/register", req),

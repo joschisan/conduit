@@ -1,4 +1,5 @@
 use bitcoin::Address;
+use bitcoin::FeeRate;
 use bitcoin::address::NetworkUnchecked;
 use bitcoin::secp256k1::PublicKey;
 use clap::Args;
@@ -56,4 +57,26 @@ pub struct NodeIdResponse {
 pub struct NewAddressResponse {
     /// The generated Bitcoin address
     pub address: Address<NetworkUnchecked>,
+}
+
+#[derive(Debug, Clone, Args, Serialize, Deserialize)]
+pub struct OnchainSendRequest {
+    /// Bitcoin address to send to
+    pub address: Address<NetworkUnchecked>,
+    /// Amount in satoshis
+    pub amount_sats: u64,
+    /// Fee rate (optional)
+    #[arg(long)]
+    pub fee_rate: Option<FeeRate>,
+}
+
+#[derive(Debug, Clone, Args, Serialize, Deserialize)]
+pub struct CloseChannelRequest {
+    /// User channel ID (u128)
+    pub user_channel_id: u128,
+    /// Counterparty node public key
+    pub counterparty_node_id: PublicKey,
+    /// Force close the channel
+    #[arg(long)]
+    pub force: bool,
 }
