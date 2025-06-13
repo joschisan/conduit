@@ -319,7 +319,7 @@ pub async fn get_user_payments(db: &DbConnection, username: String) -> Vec<condu
 
         let mut all_payments = [receive_payments, send_payments].concat();
 
-        all_payments.sort_by_key(|payment| -payment.created_at);
+        all_payments.sort_by_key(|payment| payment.created_at);
 
         all_payments
     })
