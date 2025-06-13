@@ -148,7 +148,7 @@ pub async fn bolt11_send(
         state
             .node
             .bolt11_payment()
-            .send(&request.invoice, Some(sending_parameters(amount_msat)))
+            .send(&request.invoice, None)
             .inspect_err(|error| error!(?error, "ldk node bolt11 send error"))
             .map_err(ApiError::internal_server_error)?;
 
