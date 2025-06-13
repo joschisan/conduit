@@ -254,7 +254,11 @@ fn main() -> Result<()> {
 
 async fn process_events(node: Arc<Node>, db: DbConnection, event_bus: EventBus) {
     loop {
-        match node.next_event_async().await {
+        let event = node.next_event_async().await;
+
+        info!(?event, "processing ldk node event");
+
+        match event {
             Event::PaymentReceived {
                 payment_hash,
                 amount_msat,
@@ -264,6 +268,8 @@ async fn process_events(node: Arc<Node>, db: DbConnection, event_bus: EventBus) 
                     .await
                     .expect("Invoice not found")
                     .into();
+
+                info!(?payment_hash, ?amount_msat, ?receive_record.username, "payment received");
 
                 assert_eq!(receive_record.amount_msat as u64, amount_msat);
 
@@ -291,6 +297,8 @@ async fn process_events(node: Arc<Node>, db: DbConnection, event_bus: EventBus) 
                 )
                 .await;
 
+                info!(?payment_hash, ?payment_record.username, "payment successful");
+
                 let balance = db::get_user_balance(&db, payment_record.username.clone()).await;
 
                 event_bus.send_balance_event(payment_record.username.clone(), balance);
@@ -312,6 +320,8 @@ async fn process_events(node: Arc<Node>, db: DbConnection, event_bus: EventBus) 
                     "failed".to_string(),
                 )
                 .await;
+
+                info!(?payment_hash, ?payment_record.username, "payment failed");
 
                 event_bus.send_payment_event(
                     payment_record.username.clone(),

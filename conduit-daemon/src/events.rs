@@ -6,6 +6,7 @@ use futures::StreamExt;
 use tokio::sync::broadcast;
 use tokio_stream::wrappers::errors::BroadcastStreamRecvError;
 use tokio_stream::{Stream, wrappers::BroadcastStream};
+use tracing::trace;
 
 #[derive(Clone)]
 pub struct EventBus {
@@ -20,15 +21,21 @@ impl EventBus {
     }
 
     pub fn send_balance_event(&self, user_id: String, balance: Balance) {
+        trace!(?user_id, ?balance, "Balance event");
+
         self.tx.send((user_id, AppEvent::Balance(balance))).ok();
     }
 
     pub fn send_payment_event(&self, user_id: String, payment: Payment) {
+        trace!(?user_id, ?payment, "Payment event");
+
         self.tx.send((user_id, AppEvent::Payment(payment))).ok();
     }
 
     #[allow(dead_code)]
     pub fn send_notification_event(&self, user_id: String, message: String) {
+        trace!(?user_id, ?message, "Notification event");
+
         self.tx
             .send((user_id, AppEvent::Notification(Notification { message })))
             .ok();

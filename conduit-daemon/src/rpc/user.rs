@@ -7,6 +7,7 @@ use axum::{
 use bitcoin::hashes::Hash;
 use conduit_core::user::AppEvent;
 use conduit_core::user::InvoicesResponse;
+use tracing::info;
 use conduit_core::user::{
     BalanceResponse, Bolt11QuoteResponse, Bolt11ReceiveResponse, PaymentsResponse,
     UserBolt11QuoteRequest, UserBolt11ReceiveRequest, UserBolt11SendRequest,
@@ -19,6 +20,8 @@ use std::future;
 use std::pin::Pin;
 use tokio_stream::Stream;
 use tokio_stream::StreamExt;
+use tracing::error;
+use tracing::trace;
 
 use crate::AppState;
 use crate::Bolt11Receive;
@@ -30,9 +33,9 @@ pub async fn balance(
     State(state): State<AppState>,
     Extension(username): Extension<String>,
 ) -> Result<Json<BalanceResponse>, ApiError> {
-    let balance = db::get_user_balance(&state.db, username).await;
-
-    Ok(Json(BalanceResponse { balance }))
+    Ok(Json(BalanceResponse {
+        balance: db::get_user_balance(&state.db, username).await,
+    }))
 }
 
 #[axum::debug_handler]
@@ -40,9 +43,9 @@ pub async fn payments(
     State(state): State<AppState>,
     Extension(username): Extension<String>,
 ) -> Result<Json<PaymentsResponse>, ApiError> {
-    let payments = db::get_user_payments(&state.db, username).await;
-
-    Ok(Json(PaymentsResponse { payments }))
+    Ok(Json(PaymentsResponse {
+        payments: db::get_user_payments(&state.db, username).await,
+    }))
 }
 
 #[axum::debug_handler]
@@ -50,9 +53,9 @@ pub async fn invoices(
     State(state): State<AppState>,
     Extension(username): Extension<String>,
 ) -> Result<Json<InvoicesResponse>, ApiError> {
-    let invoices = db::get_user_invoices(&state.db, username).await;
-
-    Ok(Json(InvoicesResponse { invoices }))
+    Ok(Json(InvoicesResponse {
+        invoices: db::get_user_invoices(&state.db, username).await,
+    }))
 }
 
 #[axum::debug_handler]
@@ -71,6 +74,7 @@ pub async fn bolt11_receive(
                 .map_err(ApiError::bad_request)?,
             request.expiry_secs,
         )
+        .inspect_err(|error| error!(?error, "ldk node bolt11 receive error"))
         .map_err(ApiError::internal_server_error)?;
 
     db::create_bolt11_invoice(
@@ -78,14 +82,17 @@ pub async fn bolt11_receive(
         username,
         invoice.clone(),
         request.amount_msat.into(),
-        request.description,
+        request.description.clone(),
     )
     .await;
+
+    info!(?request, invoice = ?invoice.to_string(), "bolt11 receive");
 
     Ok(Json(Bolt11ReceiveResponse { invoice }))
 }
 
 #[axum::debug_handler]
+#[tracing::instrument(skip(state))]
 pub async fn bolt11_send(
     State(state): State<AppState>,
     Extension(username): Extension<String>,
@@ -113,9 +120,13 @@ pub async fn bolt11_send(
     let invoice_opt = db::get_bolt11_invoice(&state.db, payment_hash).await;
 
     let send_status = if let Some(invoice) = invoice_opt {
+        trace!("detected internal invoice");
+
         if invoice.username == username {
             return Err(ApiError::bad_request("This is your own invoice"));
         }
+
+        info!("processing internal payment");
 
         db::create_bolt11_receive_payment(&state.db, invoice.clone().into()).await;
 
@@ -132,10 +143,13 @@ pub async fn bolt11_send(
 
         "successful".to_string()
     } else {
+        info!("initiating lightning payment");
+
         state
             .node
             .bolt11_payment()
             .send(&request.invoice, Some(sending_parameters(amount_msat)))
+            .inspect_err(|error| error!(?error, "ldk node bolt11 send error"))
             .map_err(ApiError::internal_server_error)?;
 
         "pending".to_string()
@@ -199,6 +213,8 @@ pub async fn bolt11_quote(
         expiry_secs: request.invoice.expiry_time().as_secs(),
     };
 
+    trace!(?request, ?response, "bolt11 quote");
+
     Ok(Json(response))
 }
 
@@ -208,6 +224,8 @@ pub async fn events(
     State(state): State<AppState>,
     Extension(username): Extension<String>,
 ) -> Sse<Pin<Box<dyn Stream<Item = Result<Event, String>> + Send>>> {
+    trace!(?username, "open event stream");
+
     let stream = state
         .event_bus
         .clone()
