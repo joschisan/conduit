@@ -174,16 +174,14 @@ pub async fn update_bolt11_send_payment_status(
 ) -> Bolt11Send {
     let mut conn = db.get().expect("Failed to get connection from pool");
 
-    let payment_hash_str = payment_hash.as_hex().to_string();
-
     tokio::task::spawn_blocking(move || {
-        diesel::update(bolt11_send::table.filter(bolt11_send::payment_hash.eq(&payment_hash_str)))
+        diesel::update(bolt11_send::table.find(&payment_hash.as_hex().to_string()))
             .set(bolt11_send::status.eq(&status))
             .execute(&mut *conn)
             .expect("Failed to update payment status");
 
         bolt11_send::table
-            .filter(bolt11_send::payment_hash.eq(payment_hash_str))
+            .filter(bolt11_send::payment_hash.eq(payment_hash.as_hex().to_string()))
             .first::<Bolt11Send>(&mut *conn)
             .expect("Failed to fetch updated payment")
     })
@@ -240,7 +238,7 @@ pub async fn create_bolt11_receive_payment(db: &DbConnection, record: Bolt11Rece
     let mut conn = db.get().expect("Failed to get connection from pool");
 
     tokio::task::spawn_blocking(move || {
-        diesel::insert_into(bolt11_receive::table)
+        diesel::replace_into(bolt11_receive::table)
             .values(&record)
             .execute(&mut *conn)
             .expect("Failed to create receive payment");
