@@ -178,9 +178,7 @@ pub async fn ldk_channel_list(
     Ok(Json(ListChannelsResponse { channels }))
 }
 
-pub async fn user_list(
-    State(state): State<AppState>,
-) -> Result<Json<ListUsersResponse>, ApiError> {
+pub async fn user_list(State(state): State<AppState>) -> Result<Json<ListUsersResponse>, ApiError> {
     Ok(Json(ListUsersResponse {
         users: db::list_users(&state.db).await,
     }))

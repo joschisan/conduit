@@ -18,18 +18,16 @@ use ldk_node::{Builder, Node};
 use std::net::SocketAddr;
 use std::path::PathBuf;
 use std::sync::Arc;
-use tower_governor::{
-    GovernorLayer, governor::GovernorConfigBuilder,
-};
+use tower_governor::{GovernorLayer, governor::GovernorConfigBuilder};
 use tracing::{info, warn};
 use url::Url;
 
-use auth::{admin_auth_middleware, user_auth_middleware, UserIdKeyExtractor};
+use auth::{UserIdKeyExtractor, admin_auth_middleware, user_auth_middleware};
 use db::{DbConnection, setup_database};
 
+use crate::db::unix_time;
 use crate::events::EventBus;
 use crate::models::Bolt11Receive;
-use crate::db::unix_time;
 
 #[derive(Parser, Debug, Clone)]
 #[command(group(
@@ -362,10 +360,8 @@ async fn process_events(node: Arc<Node>, db: DbConnection, event_bus: EventBus) 
 
                 event_bus.send_balance_event(send_record.username.clone(), balance);
 
-                event_bus.send_payment_event(
-                    send_record.username.clone(),
-                    send_record.clone().into(),
-                );
+                event_bus
+                    .send_payment_event(send_record.username.clone(), send_record.clone().into());
 
                 event_bus.send_notification_event(
                     send_record.username.clone(),
@@ -384,10 +380,8 @@ async fn process_events(node: Arc<Node>, db: DbConnection, event_bus: EventBus) 
 
                 warn!(?payment_hash, ?send_record.username, ?latency_ms, "payment failed");
 
-                event_bus.send_payment_event(
-                    send_record.username.clone(),
-                    send_record.clone().into(),
-                );
+                event_bus
+                    .send_payment_event(send_record.username.clone(), send_record.clone().into());
 
                 event_bus.send_notification_event(
                     send_record.username.clone(),

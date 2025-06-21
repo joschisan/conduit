@@ -58,19 +58,26 @@ Testing does not require to setup TLS and users can simply connect via raw ip. H
 
 ## Install Conduit CLI
 
-The Conduit CLI allows you to manage your ldk node and trigger user commands for testing. You can install the cli with:
+The Conduit CLI allows you to manage your conduit dameon. You can install the cli with:
 
 ```bash
 cargo install --git https://github.com/joschisan/conduit conduit-cli
 ```
 
-## Admin CLI Commands
+## CLI Commands
 
-Inspect you balances:
+Get your node ID (share this with LSPs for inbound channels):
 
 ```bash
-conduit-cli --api-url <URL> \
-  admin --auth <TOKEN> \
+conduit-cli --api-url <URL> --auth <TOKEN> \
+  ldk \
+  node-id
+```
+
+Inspect your balances:
+
+```bash
+conduit-cli --api-url <URL> --auth <TOKEN> \
   ldk \
   balances
 ```
@@ -78,8 +85,7 @@ conduit-cli --api-url <URL> \
 Generate receiving address:
 
 ```bash
-conduit-cli --api-url <URL> \
-  admin --auth <TOKEN> \
+conduit-cli --api-url <URL> --auth <TOKEN> \
   ldk \
   onchain \
   receive
@@ -88,8 +94,7 @@ conduit-cli --api-url <URL> \
 Send on-chain payment:
 
 ```bash
-conduit-cli --api-url <URL> \
-  admin --auth <TOKEN> \
+conduit-cli --api-url <URL> --auth <TOKEN> \
   ldk \
   onchain \
   send --address bc1q... --amount-sats 100000 --fee-rate 10
@@ -98,82 +103,54 @@ conduit-cli --api-url <URL> \
 Open channel to peer:
 
 ```bash
-conduit-cli --api-url <URL> \
-  admin --auth <TOKEN> \
+conduit-cli --api-url <URL> --auth <TOKEN> \
   ldk \
   channel \
   open --node-id 03abc... --address 127.0.0.1:9735 --channel-amount-sats 1000000
 ```
 
-Get your node ID (share this with LSPs for inbound channels):
+Close a channel:
 
 ```bash
-conduit-cli --api-url <URL> \
-  admin --auth <TOKEN> \
+conduit-cli --api-url <URL> --auth <TOKEN> \
   ldk \
-  node-id
-```
-
-Connect to peer:
-
-```bash
-conduit-cli --api-url <URL> \
-  admin --auth <TOKEN> \
-  ldk \
-  peer \
-  connect --node-id 03abc... --address 127.0.0.1:9735
+  channel \
+  close --channel-id <CHANNEL_ID>
 ```
 
 List channels:
 
 ```bash
-conduit-cli --api-url <URL> \
-  admin --auth <TOKEN> \
+conduit-cli --api-url <URL> --auth <TOKEN> \
   ldk \
   channel \
   list
 ```
 
-## User CLI Commands for Testing
-
-Register new user (returns JWT token):
+Connect to peer:
 
 ```bash
-conduit-cli --api-url <URL> \
-  account \
-  register --username alice --password secret123
+conduit-cli --api-url <URL> --auth <TOKEN> \
+  ldk \
+  peer \
+  connect --node-id 03abc... --address 127.0.0.1:9735
 ```
 
-Login (returns JWT token):
+Disconnect from peer:
 
 ```bash
-conduit-cli --api-url <URL> \
-  account \
-  login --username alice --password secret123
+conduit-cli --api-url <URL> --auth <TOKEN> \
+  ldk \
+  peer \
+  disconnect --node-id <NODE_ID>
 ```
 
-Check balance:
+List connected peers:
 
 ```bash
-conduit-cli --api-url <URL> \
-  user --auth <TOKEN> \
-  balance
+conduit-cli --api-url <URL> --auth <TOKEN> \
+  ldk \
+  peer \
+  list
 ```
 
-Create invoice:
-
-```bash
-conduit-cli --api-url <URL> \
-  user --auth <TOKEN> \
-  bolt11 \
-  receive --amount-msat 50000 --description "Coffee payment"
-```
-
-Pay invoice:
-
-```bash
-conduit-cli --api-url <URL> \
-  user --auth <TOKEN> \
-  bolt11 \
-  send --invoice lnbc500...
-```

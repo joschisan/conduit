@@ -1,4 +1,7 @@
-mod cli;
+mod account;
+mod admin;
+mod daemon;
+mod user;
 
 use anyhow::{Context, Result};
 use bitcoincore_rpc::bitcoin::Address;
@@ -34,17 +37,17 @@ fn main() -> Result<()> {
 
     let (api_port_a, ldk_port_a, api_port_b, ldk_port_b) = (8080, 8081, 8082, 8083);
 
-    cli::daemon::start(&args, &args.data_dir.join("a"), api_port_a, ldk_port_a)?;
-    cli::daemon::start(&args, &args.data_dir.join("b"), api_port_b, ldk_port_b)?;
+    daemon::start(&args, &args.data_dir.join("a"), api_port_a, ldk_port_a)?;
+    daemon::start(&args, &args.data_dir.join("b"), api_port_b, ldk_port_b)?;
 
     sleep(Duration::from_secs(1)); // Wait for daemons to start their APIs
 
     fund_daemon(&rpc, api_port_a)?;
     fund_daemon(&rpc, api_port_b)?;
 
-    let node_id_b = cli::admin::node_id(api_port_b)?;
+    let node_id_b = admin::node_id(api_port_b)?;
 
-    cli::admin::open_channel(api_port_a, node_id_b, ldk_port_b)?;
+    admin::open_channel(api_port_a, node_id_b, ldk_port_b)?;
 
     sleep(Duration::from_secs(1)); // Wait for funding tx to enter the mempool
 
@@ -53,42 +56,61 @@ fn main() -> Result<()> {
     await_channel_capacity(api_port_a)?;
     await_channel_capacity(api_port_b)?;
 
-    let jwt_a = cli::account::register(api_port_a, "a", "pass_a")?;
-    let jwt_b = cli::account::register(api_port_a, "b", "pass_b")?;
+    let jwt_a = account::register(api_port_a, "a", "pass_a")?;
+    let jwt_b = account::register(api_port_a, "b", "pass_b")?;
 
-    assert_eq!(cli::user::balance(api_port_a, &jwt_a.token)?, 0);
+    assert_eq!(user::balance(api_port_a, &jwt_a.token)?.balance.msat, 0);
 
-    cli::admin::credit_user(api_port_a, "a".to_string(), 1000000)?;
+    admin::user_credit(api_port_a, "a", 1000000)?;
 
-    assert_eq!(cli::user::balance(api_port_a, &jwt_a.token)?, 1000000);
+    assert_eq!(
+        user::balance(api_port_a, &jwt_a.token)?.balance.msat,
+        1000000
+    );
 
-    cli::user::bolt11_send(
+    user::bolt11_send(
         api_port_a,
         &jwt_a.token,
-        &cli::user::bolt11_receive(api_port_a, &jwt_b.token, 250000)?,
+        user::bolt11_receive(api_port_a, &jwt_b.token, 250000)?.invoice,
+        None,
     )?;
 
     sleep(Duration::from_secs(1));
 
-    assert_eq!(cli::user::balance(api_port_a, &jwt_a.token)?, 699975);
-    assert_eq!(cli::user::balance(api_port_a, &jwt_b.token)?, 250000);
+    assert_eq!(
+        user::balance(api_port_a, &jwt_a.token)?.balance.msat,
+        699975
+    );
+    assert_eq!(
+        user::balance(api_port_a, &jwt_b.token)?.balance.msat,
+        250000
+    );
 
-    let jwt_c = cli::account::register(api_port_b, "c", "pass_c")?;
+    let jwt_c = account::register(api_port_b, "c", "pass_c")?;
 
-    cli::user::bolt11_send(
+    user::bolt11_send(
         api_port_a,
         &jwt_a.token,
-        &cli::user::bolt11_receive(api_port_b, &jwt_c.token, 250000)?,
+        user::bolt11_receive(api_port_b, &jwt_c.token, 250000)?.invoice,
+        None,
     )?;
 
     sleep(Duration::from_secs(1));
 
-    assert_eq!(cli::user::balance(api_port_a, &jwt_a.token)?, 399950);
-    assert_eq!(cli::user::balance(api_port_b, &jwt_c.token)?, 250000);
+    assert_eq!(
+        user::balance(api_port_a, &jwt_a.token)?.balance.msat,
+        399950
+    );
+    assert_eq!(
+        user::balance(api_port_b, &jwt_c.token)?.balance.msat,
+        250000
+    );
 
-    let invoice = cli::user::bolt11_receive(api_port_a, &jwt_a.token, 250000)?;
-
-    cli::user::bolt11_quote(api_port_a, &jwt_a.token, &invoice)?;
+    user::bolt11_quote(
+        api_port_a,
+        &jwt_a.token,
+        user::bolt11_receive(api_port_a, &jwt_a.token, 250000)?.invoice,
+    )?;
 
     // sleep(Duration::from_secs(1000));
 
@@ -114,12 +136,12 @@ fn dummy_address() -> Address {
 }
 
 fn fund_daemon(rpc: &Client, api_port: u16) -> Result<()> {
-    let address = cli::admin::new_address(api_port)?;
+    let address = admin::onchain_receive(api_port)?;
 
     rpc.generate_to_address(101, &address)?;
 
     loop {
-        let balances = cli::admin::balances(api_port)?;
+        let balances = admin::balances(api_port)?;
 
         if balances.total_onchain_balance_sats > 10_000_000 {
             break;
@@ -133,7 +155,7 @@ fn fund_daemon(rpc: &Client, api_port: u16) -> Result<()> {
 
 fn await_channel_capacity(api_port: u16) -> Result<()> {
     loop {
-        let balances = cli::admin::balances(api_port)?;
+        let balances = admin::balances(api_port)?;
 
         if balances.total_outbound_capacity_msats > 1_000_000_000
             && balances.total_inbound_capacity_msats > 1_000_000_000

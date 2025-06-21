@@ -241,9 +241,10 @@ pub async fn count_pending_invoices(db: &DbConnection, username: String) -> i64 
         bolt11_invoice::table
             .filter(bolt11_invoice::username.eq(username))
             .filter(bolt11_invoice::expires_at.gt(unix_time()))
-            .left_join(bolt11_receive::table.on(
-                bolt11_invoice::payment_hash.eq(bolt11_receive::payment_hash)
-            ))
+            .left_join(
+                bolt11_receive::table
+                    .on(bolt11_invoice::payment_hash.eq(bolt11_receive::payment_hash)),
+            )
             .filter(bolt11_receive::payment_hash.is_null())
             .count()
             .first::<i64>(&mut *conn)

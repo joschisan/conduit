@@ -18,3 +18,4 @@ postgres = { workspace = true }
 rand = { workspace = true }
 url = { workspace = true }
 base64 = "0.21.0"
+reqwest = { version = "0.11", features = ["json", "blocking"] }
