@@ -47,15 +47,24 @@ enum Commands {
 
 #[derive(Subcommand, Debug)]
 enum AdminCommands {
-    /// Credit amount to a user
-    CreditUser(CreditUserRequest),
-    /// List all users
-    ListUsers,
+    /// User management commands
+    User {
+        #[command(subcommand)]
+        command: AdminUserCommands,
+    },
     /// LDK node management commands
     Ldk {
         #[command(subcommand)]
         command: AdminLdkCommands,
     },
+}
+
+#[derive(Subcommand, Debug)]
+enum AdminUserCommands {
+    /// Credit amount to a user
+    Credit(CreditUserRequest),
+    /// List all users
+    List,
 }
 
 #[derive(Subcommand, Debug)]
@@ -145,10 +154,10 @@ fn main() -> Result<()> {
 
     match cli.command {
         Commands::Admin { auth, command } => match command {
-            AdminCommands::CreditUser(req) => {
-                request(cli.api_url, Some(auth), "admin/credit-user", req)
-            }
-            AdminCommands::ListUsers => request(cli.api_url, Some(auth), "admin/list-users", ()),
+            AdminCommands::User { command } => match command {
+                AdminUserCommands::Credit(req) => request(cli.api_url, Some(auth), "admin/user/credit", req),
+                AdminUserCommands::List => request(cli.api_url, Some(auth), "admin/user/list", ()),
+            },
             AdminCommands::Ldk { command } => match command {
                 AdminLdkCommands::NodeId => {
                     request(cli.api_url, Some(auth), "admin/ldk/node-id", ())

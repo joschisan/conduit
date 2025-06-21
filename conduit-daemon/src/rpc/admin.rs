@@ -142,7 +142,7 @@ pub async fn ldk_channel_close(
 }
 
 #[axum::debug_handler]
-pub async fn credit_user(
+pub async fn user_credit(
     State(state): State<AppState>,
     Json(request): Json<CreditUserRequest>,
 ) -> Result<Json<()>, ApiError> {
@@ -178,7 +178,7 @@ pub async fn ldk_channel_list(
     Ok(Json(ListChannelsResponse { channels }))
 }
 
-pub async fn list_users(
+pub async fn user_list(
     State(state): State<AppState>,
 ) -> Result<Json<ListUsersResponse>, ApiError> {
     Ok(Json(ListUsersResponse {

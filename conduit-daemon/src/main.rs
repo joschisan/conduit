@@ -216,10 +216,13 @@ fn main() -> Result<()> {
         .nest("/channel", channel_router)
         .nest("/peer", peer_router);
 
+    let admin_user_router = Router::new()
+        .route("/credit", post(rpc::admin::user_credit))
+        .route("/list", post(rpc::admin::user_list));
+
     let admin_router = Router::new()
-        .route("/credit-user", post(rpc::admin::credit_user))
-        .route("/list-users", post(rpc::admin::list_users))
         .nest("/ldk", ldk_router)
+        .nest("/user", admin_user_router)
         .layer(middleware::from_fn_with_state(
             app_state.clone(),
             admin_auth_middleware,

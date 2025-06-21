@@ -141,7 +141,6 @@ pub struct ListPeersResponse {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct UserInfo {
     pub username: String,
-    pub password_hash: String,
     pub balance: Balance,
     pub created_at: i64,
 }

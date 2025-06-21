@@ -379,7 +379,6 @@ pub async fn list_users(db: &DbConnection) -> Vec<UserInfo> {
     for user_record in user_records {
         user_infos.push(UserInfo {
             username: user_record.username.clone(),
-            password_hash: user_record.password_hash.clone(),
             balance: get_user_balance(db, user_record.username).await,
             created_at: user_record.created_at,
         });
