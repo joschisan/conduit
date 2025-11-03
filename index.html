@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Conduit - A Minimal Fedimint Wallet</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script>
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        colors: {
+                            bg: "#0a0a0a",
+                            surface: "#141414",
+                            border: "#262626",
+                            accent: "#7c3aed",
+                            "accent-dim": "#5b21b6",
+                        },
+                    },
+                },
+            };
+        </script>
+        <style>
+            @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap");
+            body {
+                font-family: "Inter", sans-serif;
+            }
+            .mono {
+                font-family: "JetBrains Mono", monospace;
+            }
+        </style>
+    </head>
+    <body class="bg-bg text-gray-100 min-h-screen">
+        <!-- Header -->
+        <header class="border-b border-border">
+            <div
+                class="max-w-3xl mx-auto px-6 py-4 flex items-center justify-between"
+            >
+                <div class="flex items-center gap-2">
+                    <span class="text-xl font-semibold">Conduit</span>
+                    <span
+                        class="text-xs mono text-gray-500 bg-surface px-2 py-0.5 rounded"
+                        >v0.1.0</span
+                    >
+                </div>
+                <a
+                    href="https://github.com/joschisan/conduit"
+                    class="text-gray-400 hover:text-white transition-colors text-sm"
+                >
+                    GitHub
+                </a>
+            </div>
+        </header>
+
+        <!-- Hero -->
+        <main class="max-w-3xl mx-auto px-6 py-16">
+            <section class="mb-16">
+                <h1 class="text-4xl font-semibold mb-4">
+                    Bitcoin Community Custody
+                </h1>
+                <p class="text-xl text-gray-400 leading-relaxed">
+                    Fedimint lets communities create private community banks on
+                    Bitcoin called Federations. Conduit is your wallet to access
+                    them and make Lightning, Bitcoin and internal eCash payments
+                    all from a single app.
+                </p>
+            </section>
+
+            <!-- What is Fedimint -->
+            <section class="mb-16">
+                <h2 class="text-lg font-medium mb-4 text-gray-300">
+                    What is Fedimint?
+                </h2>
+                <p class="text-gray-400 leading-relaxed mb-4">
+                    Fedimint is a federated Chaumian e-cash mint backed by
+                    Bitcoin. It allows communities to collaboratively custody
+                    Bitcoin while providing users with strong privacy guarantees
+                    through blind signatures. Multiple guardians share custody
+                    of the funds, eliminating single points of failure.
+                </p>
+                <a
+                    href="https://fedimint.org"
+                    class="text-accent hover:text-purple-400 transition-colors inline-flex items-center gap-1"
+                >
+                    Learn more at fedimint.org
+                    <svg
+                        class="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                    >
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                        />
+                    </svg>
+                </a>
+            </section>
+        </main>
+    </body>
+</html>
