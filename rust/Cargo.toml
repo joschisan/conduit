@@ -1,0 +1,59 @@
+[package]
+name = "conduit"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[lints.rust]
+unexpected_cfgs = { level = "allow", check-cfg = ['cfg(frb_expand)'] }
+
+[dependencies]
+fedimint-api-client = { git = "https://github.com/joschisan/fedimint.git", branch = "master" }
+fedimint-bip39 = { git = "https://github.com/joschisan/fedimint.git", branch = "master" }
+fedimint-core = { git = "https://github.com/joschisan/fedimint.git", branch = "master" }
+fedimint-connectors = { git = "https://github.com/joschisan/fedimint.git", branch = "master" }
+fedimint-client = { git = "https://github.com/joschisan/fedimint.git", branch = "master" }
+fedimint-eventlog = { git = "https://github.com/joschisan/fedimint.git", branch = "master" }
+fedimint-fountain = { git = "https://github.com/joschisan/fedimint.git", branch = "master" }
+fedimint-rocksdb = { git = "https://github.com/joschisan/fedimint.git", branch = "master" }
+fedimint-lnv2-client = { git = "https://github.com/joschisan/fedimint.git", branch = "master" }
+fedimint-lnv2-common = { git = "https://github.com/joschisan/fedimint.git", branch = "master" }
+fedimint-mint-client = { git = "https://github.com/joschisan/fedimint.git", branch = "master" }
+fedimint-wallet-client = { git = "https://github.com/joschisan/fedimint.git", branch = "master" }
+bitcoin = "0.32.5"
+log = "0.4"
+android_logger = "0.14"
+flutter_rust_bridge = "=2.10.0"
+futures-util = "0.3.30"
+lightning-invoice = { version = "0.33.2", features = ["std"] }
+lnurl-pay = "0.6.0"
+# Pin versions to avoid netwatch/socket2 incompatibility in fedimint 0.9.0
+reqwest = { version = "=0.12.22", features = ["rustls-tls", "json"], default-features = false }
+serde = { version = "1.0.219", features = ["derive"] }
+tokio = "=1.46.1"
+regex = "1"
+hyper-util = "=0.1.14"
+surge-ping = "=0.8.2"
+socket2 = "=0.5.9"
+url = "2"
+
+[profile.dev.package]
+tikv-jemalloc-sys = { opt-level = 3 }
+librocksdb-sys = { opt-level = 3 }
+secp256k1 = { opt-level = 3}
+secp256k1-sys = { opt-level = 3}
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+strip = false
+debug = "line-tables-only"
+
+[profile.release.package]
+tikv-jemalloc-sys = { opt-level = 3 }
+librocksdb-sys = { opt-level = 3 }
+secp256k1 = { opt-level = 3}
+secp256k1-sys = { opt-level = 3}
