@@ -179,7 +179,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
       await widget.client.lnSend(invoice: invoice);
 
-      NotificationUtils.showSuccess(context, 'Payment sent successfully!');
+      NotificationUtils.showSuccess(context, 'Payment sent!');
     });
   }
 
@@ -187,7 +187,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return safeTask(() async {
       await widget.client.ecashReceive(notes: ecash);
 
-      NotificationUtils.showSuccess(context, 'Ecash redeemed successfully!');
+      NotificationUtils.showSuccess(context, 'eCash received!');
     });
   }
 
@@ -229,7 +229,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
       await client.lnSend(invoice: invoice);
 
-      NotificationUtils.showSuccess(context, 'Payment sent successfully!');
+      NotificationUtils.showSuccess(context, 'Payment sent!');
 
       if (!context.mounted) return;
 
