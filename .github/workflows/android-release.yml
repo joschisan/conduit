@@ -74,6 +74,12 @@ jobs:
           # Copy the C++ shared library
           cp "$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/libc++_shared.so" "$JNI_LIBS_DIR/" 2>/dev/null || true
 
+      - name: Clean up Rust build artifacts
+        run: |
+          cd rust
+          cargo clean
+          df -h
+
       - name: Setup Release Keystore
         run: |
           # Create keystore directory
