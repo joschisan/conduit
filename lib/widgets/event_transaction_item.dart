@@ -23,6 +23,7 @@ class EventTransactionItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final date = DateTime.fromMillisecondsSinceEpoch(event.timestamp);
     final formattedAmount = NumberFormat('#,###').format(event.amountSats);
+    final sign = event.incoming ? '+' : '-';
 
     // Determine icon based on payment type and status
     IconData getPaymentTypeIcon() {
@@ -84,7 +85,7 @@ class EventTransactionItem extends StatelessWidget {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
-                      '$formattedAmount sats',
+                      '$sign $formattedAmount sats',
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.onPrimary,
                         fontSize: 18,
@@ -94,7 +95,7 @@ class EventTransactionItem extends StatelessWidget {
                   ),
                 )
                 : Text(
-                  '$formattedAmount sats',
+                  '$sign $formattedAmount sats',
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,

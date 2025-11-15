@@ -935,7 +935,7 @@ impl ConduitClient {
         let mut parsed_entry_ids = VecDeque::new();
 
         loop {
-            let batch = self.client.get_event_log(Some(position), 1000).await;
+            let batch = self.client.get_event_log(Some(position), 100).await;
 
             if batch.is_empty() {
                 if log_event_added_rx.changed().await.is_err() {
@@ -951,8 +951,8 @@ impl ConduitClient {
                         // Track this entry ID
                         parsed_entry_ids.push_back(entry.event_id);
 
-                        // If we've tracked 1000 entries, update position to the oldest
-                        if parsed_entry_ids.len() == 10 {
+                        // If we've tracked 100 entries, update position to the oldest
+                        if parsed_entry_ids.len() >= 100 {
                             if let Some(oldest_id) = parsed_entry_ids.pop_front() {
                                 self.event_log_start_position
                                     .update_position(oldest_id)
