@@ -45,8 +45,6 @@ class MultiScannerWidget extends StatefulWidget {
   final TaskEither<String, void> Function(LnurlWrapper, int) onLnurlPayment;
   final TaskEither<String, void> Function(BitcoinAddressWrapper, int)
   onBitcoinWithdrawal;
-  final VoidCallback? onLightningPaymentSuccess;
-  final VoidCallback? onEcashRedeemSuccess;
 
   const MultiScannerWidget({
     super.key,
@@ -55,8 +53,6 @@ class MultiScannerWidget extends StatefulWidget {
     required this.onEcashRedeem,
     required this.onLnurlPayment,
     required this.onBitcoinWithdrawal,
-    this.onLightningPaymentSuccess,
-    this.onEcashRedeemSuccess,
   });
 
   @override
@@ -175,7 +171,8 @@ class _MultiScannerWidgetState extends State<MultiScannerWidget> {
           AsyncActionButton(
             text: 'Confirm Payment',
             onPressed: () => widget.onLightningPayment(invoice),
-            onSuccess: widget.onLightningPaymentSuccess,
+            onSuccess:
+                () => Navigator.of(context).popUntil((route) => route.isFirst),
           ),
         ],
       ),
@@ -232,7 +229,8 @@ class _MultiScannerWidgetState extends State<MultiScannerWidget> {
           AsyncActionButton(
             text: 'Redeem Notes',
             onPressed: () => widget.onEcashRedeem(ecash),
-            onSuccess: widget.onEcashRedeemSuccess,
+            onSuccess:
+                () => Navigator.of(context).popUntil((route) => route.isFirst),
           ),
         ],
       ),

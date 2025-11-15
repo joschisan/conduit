@@ -145,8 +145,6 @@ class _HomeScreenState extends State<HomeScreen> {
         onEcashRedeem: _handleEcashRedeem,
         onLnurlPayment: _handleLnurlPayment,
         onBitcoinWithdrawal: _handleBitcoinWithdrawal,
-        onLightningPaymentSuccess: () => Navigator.of(context).pop(),
-        onEcashRedeemSuccess: () => Navigator.of(context).pop(),
       ),
     );
   }
@@ -195,10 +193,6 @@ class _HomeScreenState extends State<HomeScreen> {
       }
 
       await widget.client.lnSend(invoice: invoice);
-
-      if (!context.mounted) return;
-
-      Navigator.of(context).pop();
     });
   }
 
@@ -218,10 +212,6 @@ class _HomeScreenState extends State<HomeScreen> {
       }
 
       await widget.client.onchainSend(address: address, amountSats: amountSats);
-
-      if (!context.mounted) return;
-
-      Navigator.of(context).pop();
     });
   }
 
