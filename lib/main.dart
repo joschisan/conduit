@@ -19,7 +19,17 @@ void main() async {
   final clientFactory = await ConduitClientFactory.tryLoad(db: db);
 
   if (clientFactory != null) {
-    runApp(ConduitApp(home: SettingsScreen(clientFactory: clientFactory)));
+    final client = await clientFactory.loadSelected();
+
+    if (client != null) {
+      runApp(
+        ConduitApp(
+          home: HomeScreen(client: client, clientFactory: clientFactory),
+        ),
+      );
+    } else {
+      runApp(ConduitApp(home: SettingsScreen(clientFactory: clientFactory)));
+    }
   } else {
     runApp(ConduitApp(home: WalletChoiceScreen(db: db)));
   }

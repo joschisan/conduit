@@ -4,8 +4,13 @@ import 'package:conduit/screens/home_screen.dart';
 
 class RecoveryScreen extends StatefulWidget {
   final ConduitClient client;
+  final ConduitClientFactory clientFactory;
 
-  const RecoveryScreen({super.key, required this.client});
+  const RecoveryScreen({
+    super.key,
+    required this.client,
+    required this.clientFactory,
+  });
 
   @override
   State<RecoveryScreen> createState() => _RecoveryScreenState();
@@ -27,8 +32,16 @@ class _RecoveryScreenState extends State<RecoveryScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
 
+      Navigator.of(context).pop();
+
       Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (_) => HomeScreen(client: widget.client)),
+        MaterialPageRoute(
+          builder:
+              (_) => HomeScreen(
+                client: widget.client,
+                clientFactory: widget.clientFactory,
+              ),
+        ),
       );
     });
   }

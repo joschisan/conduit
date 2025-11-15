@@ -30,16 +30,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void initState() {
     super.initState();
     _refreshFederations();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) async {
-      final client = await widget.clientFactory.loadSelected();
-
-      if (client != null) {
-        Navigator.of(
-          context,
-        ).push(MaterialPageRoute(builder: (_) => HomeScreen(client: client)));
-      }
-    });
   }
 
   void _refreshFederations() {
@@ -128,12 +118,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
       // Check if recovery is needed
       if (client.hasPendingRecoveries()) {
         Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => RecoveryScreen(client: client)),
+          MaterialPageRoute(
+            builder:
+                (_) => RecoveryScreen(
+                  client: client,
+                  clientFactory: widget.clientFactory,
+                ),
+          ),
         );
       } else {
-        Navigator.of(
-          context,
-        ).push(MaterialPageRoute(builder: (_) => HomeScreen(client: client)));
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder:
+                (_) => HomeScreen(
+                  client: client,
+                  clientFactory: widget.clientFactory,
+                ),
+          ),
+        );
       }
     });
   }
@@ -151,12 +153,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
       // Check if recovery is needed
       if (client.hasPendingRecoveries()) {
         Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => RecoveryScreen(client: client)),
+          MaterialPageRoute(
+            builder:
+                (_) => RecoveryScreen(
+                  client: client,
+                  clientFactory: widget.clientFactory,
+                ),
+          ),
         );
       } else {
-        Navigator.of(
-          context,
-        ).push(MaterialPageRoute(builder: (_) => HomeScreen(client: client)));
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder:
+                (_) => HomeScreen(
+                  client: client,
+                  clientFactory: widget.clientFactory,
+                ),
+          ),
+        );
       }
     });
   }
@@ -250,12 +264,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
       // Check if recovery is needed
       if (client.hasPendingRecoveries()) {
         Navigator.of(context).push(
-          MaterialPageRoute(builder: (_) => RecoveryScreen(client: client)),
+          MaterialPageRoute(
+            builder:
+                (_) => RecoveryScreen(
+                  client: client,
+                  clientFactory: widget.clientFactory,
+                ),
+          ),
         );
       } else {
-        Navigator.of(
-          context,
-        ).push(MaterialPageRoute(builder: (_) => HomeScreen(client: client)));
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder:
+                (_) => HomeScreen(
+                  client: client,
+                  clientFactory: widget.clientFactory,
+                ),
+          ),
+        );
       }
     } catch (e) {
       _showError(e.toString());

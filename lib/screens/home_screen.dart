@@ -10,6 +10,7 @@ import 'package:conduit/screens/amount_screen.dart';
 import 'package:conduit/screens/display_invoice_screen.dart';
 import 'package:conduit/screens/display_ecash_screen.dart';
 import 'package:conduit/screens/bitcoin_address_screen.dart';
+import 'package:conduit/screens/settings_screen.dart';
 import 'package:conduit/utils/notification_utils.dart';
 import 'package:conduit/utils/fp_utils.dart';
 import 'package:conduit/utils/auth_utils.dart';
@@ -17,8 +18,13 @@ import 'package:conduit/utils/drawer_utils.dart';
 
 class HomeScreen extends StatefulWidget {
   final ConduitClient client;
+  final ConduitClientFactory clientFactory;
 
-  const HomeScreen({super.key, required this.client});
+  const HomeScreen({
+    super.key,
+    required this.client,
+    required this.clientFactory,
+  });
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -300,7 +306,14 @@ class _HomeScreenState extends State<HomeScreen> {
         automaticallyImplyLeading: false,
         leading: IconButton(
           icon: const Icon(Icons.settings),
-          onPressed: () => Navigator.of(context).pop(),
+          onPressed: () {
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                builder:
+                    (_) => SettingsScreen(clientFactory: widget.clientFactory),
+              ),
+            );
+          },
         ),
         actions: [
           IconButton(
