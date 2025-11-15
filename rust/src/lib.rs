@@ -35,8 +35,7 @@ use fedimint_lnv2_client::{events::SendPaymentStatus, LightningClientInit, Light
 use fedimint_lnv2_common::Bolt11InvoiceDescription;
 use fedimint_lnv2_common::KIND as LIGHTNING_KIND;
 use fedimint_mint_client::{
-    event::ReceivePaymentStatus, MintClientInit, MintClientModule, OOBNotes,
-    SelectNotesWithExactAmount, KIND as MINT_KIND,
+    event::ReceivePaymentStatus, MintClientInit, MintClientModule, OOBNotes, KIND as MINT_KIND,
 };
 use fedimint_rocksdb::RocksDb;
 use fedimint_wallet_client::{
@@ -727,15 +726,9 @@ impl ConduitClient {
         self.client
             .get_first_module::<MintClientModule>()
             .unwrap()
-            .spend_notes_with_selector(
-                &SelectNotesWithExactAmount,
-                Amount::from_sats(amount_sat as u64),
-                Duration::from_secs(60 * 60 * 24),
-                true,
-                (),
-            )
+            .send_ecash(Amount::from_sats(amount_sat as u64), ())
             .await
-            .map(|entry| OOBNotesWrapper(entry.1))
+            .map(OOBNotesWrapper)
             .map_err(|e| e.to_string())
     }
 
@@ -1021,7 +1014,7 @@ fn parse_event_log_entry(entry: &PersistedLogEntry) -> Option<ConduitEvent> {
             fee_sats: None,
             timestamp: (entry.timestamp / 1000) as i64,
             success: Some(true),
-            oob: Some(send.oob_notes),
+            oob: send.oob_notes,
         }));
     }
 
