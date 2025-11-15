@@ -242,7 +242,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   context,
                 ).colorScheme.primary.withValues(alpha: 0.1),
                 child: Icon(
-                  event.incoming ? Icons.arrow_downward : Icons.arrow_upward,
+                  switch (event.paymentType) {
+                    PaymentType.lightning => Icons.bolt,
+                    PaymentType.bitcoin => Icons.currency_bitcoin,
+                    PaymentType.ecash => Icons.toll,
+                  },
                   color: Theme.of(context).colorScheme.primary,
                   size: 24,
                 ),

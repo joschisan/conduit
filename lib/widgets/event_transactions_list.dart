@@ -63,6 +63,7 @@ class _EventTransactionsListState extends State<EventTransactionsList> {
             _events[index] = ConduitPayment(
               operationId: event.operationId,
               incoming: event.incoming,
+              paymentType: event.paymentType,
               amountSats: event.amountSats,
               feeSats: event.feeSats,
               timestamp: event.timestamp,

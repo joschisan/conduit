@@ -24,7 +24,15 @@ class EventTransactionItem extends StatelessWidget {
     final date = DateTime.fromMillisecondsSinceEpoch(event.timestamp);
     final formattedAmount = NumberFormat('#,###').format(event.amountSats);
 
-    // Determine icon based on status
+    // Determine icon based on payment type and status
+    IconData getPaymentTypeIcon() {
+      return switch (event.paymentType) {
+        PaymentType.lightning => Icons.bolt,
+        PaymentType.bitcoin => Icons.currency_bitcoin,
+        PaymentType.ecash => Icons.toll,
+      };
+    }
+
     Widget leadingIcon = switch (event.success) {
       null => const SizedBox(
         width: 24,
@@ -32,10 +40,10 @@ class EventTransactionItem extends StatelessWidget {
         child: CircularProgressIndicator(strokeWidth: 2),
       ), // Pending - spinner
       true => Icon(
-        event.incoming ? Icons.arrow_downward : Icons.arrow_upward,
+        getPaymentTypeIcon(),
         color: Theme.of(context).colorScheme.primary,
         size: 26,
-      ), // Success - arrow
+      ), // Success - payment type icon
       false => const Icon(
         Icons.error_outline,
         color: Colors.red,

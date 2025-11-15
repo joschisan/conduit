@@ -597,11 +597,20 @@ struct ConduitClient {
     exchange_rate_cache: Arc<Mutex<Option<(FediPriceResponse, Instant)>>>,
 }
 
+/// Type of payment
+#[frb]
+pub enum PaymentType {
+    Lightning,
+    Bitcoin,
+    Ecash,
+}
+
 /// Payment event - emitted when a payment is initiated or completes
 #[frb]
 pub struct ConduitPayment {
     pub operation_id: String,
     pub incoming: bool,
+    pub payment_type: PaymentType,
     pub amount_sats: i64,
     pub fee_sats: Option<i64>,
     pub timestamp: i64,
@@ -973,6 +982,7 @@ impl ConduitClient {
                 ConduitEvent::Event(ConduitPayment {
                     operation_id: send.operation_id.fmt_short().to_string(),
                     incoming: false,
+                    payment_type: PaymentType::Lightning,
                     amount_sats: (send.amount.msats / 1000) as i64,
                     fee_sats: send.fee.map(|fee| (fee.msats / 1000) as i64),
                     timestamp: (entry.timestamp / 1000) as i64,
@@ -1008,6 +1018,7 @@ impl ConduitClient {
                 ConduitEvent::Event(ConduitPayment {
                     operation_id: receive.operation_id.fmt_short().to_string(),
                     incoming: true,
+                    payment_type: PaymentType::Lightning,
                     amount_sats: (receive.amount.msats / 1000) as i64,
                     fee_sats: None,
                     timestamp: (entry.timestamp / 1000) as i64,
@@ -1027,6 +1038,7 @@ impl ConduitClient {
                 ConduitEvent::Event(ConduitPayment {
                     operation_id: send.operation_id.fmt_short().to_string(),
                     incoming: false,
+                    payment_type: PaymentType::Ecash,
                     amount_sats: (send.amount.msats / 1000) as i64,
                     fee_sats: None,
                     timestamp: (entry.timestamp / 1000) as i64,
@@ -1046,6 +1058,7 @@ impl ConduitClient {
                 ConduitEvent::Event(ConduitPayment {
                     operation_id: receive.operation_id.fmt_short().to_string(),
                     incoming: true,
+                    payment_type: PaymentType::Ecash,
                     amount_sats: (receive.amount.msats / 1000) as i64,
                     fee_sats: None,
                     timestamp: (entry.timestamp / 1000) as i64,
@@ -1081,6 +1094,7 @@ impl ConduitClient {
                 ConduitEvent::Event(ConduitPayment {
                     operation_id: send.operation_id.fmt_short().to_string(),
                     incoming: false,
+                    payment_type: PaymentType::Bitcoin,
                     amount_sats: send.amount.to_sat() as i64,
                     fee_sats: Some(send.fee.to_sat() as i64),
                     timestamp: (entry.timestamp / 1000) as i64,
@@ -1121,6 +1135,7 @@ impl ConduitClient {
                 ConduitEvent::Event(ConduitPayment {
                     operation_id: receive.operation_id.fmt_short().to_string(),
                     incoming: true,
+                    payment_type: PaymentType::Bitcoin,
                     amount_sats: (receive.amount.msats / 1000) as i64,
                     fee_sats: None,
                     timestamp: (entry.timestamp / 1000) as i64,

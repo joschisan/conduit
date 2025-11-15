@@ -3317,6 +3317,7 @@ impl SseDecode for crate::ConduitPayment {
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         let mut var_operationId = <String>::sse_decode(deserializer);
         let mut var_incoming = <bool>::sse_decode(deserializer);
+        let mut var_paymentType = <crate::PaymentType>::sse_decode(deserializer);
         let mut var_amountSats = <i64>::sse_decode(deserializer);
         let mut var_feeSats = <Option<i64>>::sse_decode(deserializer);
         let mut var_timestamp = <i64>::sse_decode(deserializer);
@@ -3325,6 +3326,7 @@ impl SseDecode for crate::ConduitPayment {
         return crate::ConduitPayment {
             operation_id: var_operationId,
             incoming: var_incoming,
+            payment_type: var_paymentType,
             amount_sats: var_amountSats,
             fee_sats: var_feeSats,
             timestamp: var_timestamp,
@@ -3347,6 +3349,13 @@ impl SseDecode for crate::ConduitUpdate {
             success: var_success,
             oob: var_oob,
         };
+    }
+}
+
+impl SseDecode for i32 {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        deserializer.cursor.read_i32::<NativeEndian>().unwrap()
     }
 }
 
@@ -3534,6 +3543,19 @@ impl SseDecode for Option<crate::LnurlWrapper> {
     }
 }
 
+impl SseDecode for crate::PaymentType {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <i32>::sse_decode(deserializer);
+        return match inner {
+            0 => crate::PaymentType::Lightning,
+            1 => crate::PaymentType::Bitcoin,
+            2 => crate::PaymentType::Ecash,
+            _ => unreachable!("Invalid variant for PaymentType: {}", inner),
+        };
+    }
+}
+
 impl SseDecode for (i64, String) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -3559,13 +3581,6 @@ impl SseDecode for usize {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         deserializer.cursor.read_u64::<NativeEndian>().unwrap() as _
-    }
-}
-
-impl SseDecode for i32 {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
-        deserializer.cursor.read_i32::<NativeEndian>().unwrap()
     }
 }
 
@@ -3945,6 +3960,7 @@ impl flutter_rust_bridge::IntoDart for crate::ConduitPayment {
         [
             self.operation_id.into_into_dart().into_dart(),
             self.incoming.into_into_dart().into_dart(),
+            self.payment_type.into_into_dart().into_dart(),
             self.amount_sats.into_into_dart().into_dart(),
             self.fee_sats.into_into_dart().into_dart(),
             self.timestamp.into_into_dart().into_dart(),
@@ -3987,6 +4003,23 @@ impl flutter_rust_bridge::IntoDart for crate::LnurlWrapper {
 impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for crate::LnurlWrapper {}
 impl flutter_rust_bridge::IntoIntoDart<crate::LnurlWrapper> for crate::LnurlWrapper {
     fn into_into_dart(self) -> crate::LnurlWrapper {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::PaymentType {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        match self {
+            Self::Lightning => 0.into_dart(),
+            Self::Bitcoin => 1.into_dart(),
+            Self::Ecash => 2.into_dart(),
+            _ => unreachable!(),
+        }
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for crate::PaymentType {}
+impl flutter_rust_bridge::IntoIntoDart<crate::PaymentType> for crate::PaymentType {
+    fn into_into_dart(self) -> crate::PaymentType {
         self
     }
 }
@@ -4319,6 +4352,7 @@ impl SseEncode for crate::ConduitPayment {
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
         <String>::sse_encode(self.operation_id, serializer);
         <bool>::sse_encode(self.incoming, serializer);
+        <crate::PaymentType>::sse_encode(self.payment_type, serializer);
         <i64>::sse_encode(self.amount_sats, serializer);
         <Option<i64>>::sse_encode(self.fee_sats, serializer);
         <i64>::sse_encode(self.timestamp, serializer);
@@ -4334,6 +4368,13 @@ impl SseEncode for crate::ConduitUpdate {
         <i64>::sse_encode(self.timestamp, serializer);
         <bool>::sse_encode(self.success, serializer);
         <Option<String>>::sse_encode(self.oob, serializer);
+    }
+}
+
+impl SseEncode for i32 {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        serializer.cursor.write_i32::<NativeEndian>(self).unwrap();
     }
 }
 
@@ -4501,6 +4542,23 @@ impl SseEncode for Option<crate::LnurlWrapper> {
     }
 }
 
+impl SseEncode for crate::PaymentType {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <i32>::sse_encode(
+            match self {
+                crate::PaymentType::Lightning => 0,
+                crate::PaymentType::Bitcoin => 1,
+                crate::PaymentType::Ecash => 2,
+                _ => {
+                    unimplemented!("");
+                }
+            },
+            serializer,
+        );
+    }
+}
+
 impl SseEncode for (i64, String) {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -4528,13 +4586,6 @@ impl SseEncode for usize {
             .cursor
             .write_u64::<NativeEndian>(self as _)
             .unwrap();
-    }
-}
-
-impl SseEncode for i32 {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
-        serializer.cursor.write_i32::<NativeEndian>(self).unwrap();
     }
 }
 
