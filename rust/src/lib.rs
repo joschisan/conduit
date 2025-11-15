@@ -118,7 +118,7 @@ impl OOBNotesWrapper {
     }
 
     #[frb(sync)]
-    pub fn encode_prefixed(&self) -> String {
+    pub fn to_string(&self) -> String {
         self.0.to_string()
     }
 }

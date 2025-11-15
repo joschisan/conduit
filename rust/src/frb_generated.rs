@@ -38,7 +38,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.10.0";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 1182955438;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 903843352;
 
 // Section: executor
 
@@ -2558,14 +2558,14 @@ fn wire__crate__OobNotesWrapper_amount_sats_impl(
         },
     )
 }
-fn wire__crate__OobNotesWrapper_encode_prefixed_impl(
+fn wire__crate__OobNotesWrapper_to_string_impl(
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
     rust_vec_len_: i32,
     data_len_: i32,
 ) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
     FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
         flutter_rust_bridge::for_generated::TaskInfo {
-            debug_name: "OobNotesWrapper_encode_prefixed",
+            debug_name: "OobNotesWrapper_to_string",
             port: None,
             mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
         },
@@ -2599,7 +2599,7 @@ fn wire__crate__OobNotesWrapper_encode_prefixed_impl(
                 }
                 let api_that_guard = api_that_guard.unwrap();
                 let output_ok =
-                    Result::<_, ()>::Ok(crate::OOBNotesWrapper::encode_prefixed(&*api_that_guard))?;
+                    Result::<_, ()>::Ok(crate::OOBNotesWrapper::to_string(&*api_that_guard))?;
                 Ok(output_ok)
             })())
         },
@@ -3698,7 +3698,7 @@ fn pde_ffi_dispatcher_sync_impl(
         41 => wire__crate__OobNotesDecoder_new_impl(ptr, rust_vec_len, data_len),
         42 => wire__crate__OobNotesEncoder_new_impl(ptr, rust_vec_len, data_len),
         44 => wire__crate__OobNotesWrapper_amount_sats_impl(ptr, rust_vec_len, data_len),
-        45 => wire__crate__OobNotesWrapper_encode_prefixed_impl(ptr, rust_vec_len, data_len),
+        45 => wire__crate__OobNotesWrapper_to_string_impl(ptr, rust_vec_len, data_len),
         48 => wire__crate__parse_bitcoin_address_impl(ptr, rust_vec_len, data_len),
         49 => wire__crate__parse_bolt11_invoice_impl(ptr, rust_vec_len, data_len),
         50 => wire__crate__parse_invite_code_impl(ptr, rust_vec_len, data_len),

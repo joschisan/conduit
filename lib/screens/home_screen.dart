@@ -128,7 +128,7 @@ class _HomeScreenState extends State<HomeScreen> {
           builder:
               (_) => DisplayEcashScreen(
                 encoder: OobNotesEncoder(notes: notes),
-                ecashNotes: notes.encodePrefixed(),
+                ecashNotes: notes.toString(),
                 amount: amountSats,
               ),
         ),
