@@ -56,6 +56,7 @@ use crate::db::DbKeyPrefix;
 use crate::db::EventLogStartPositionKey;
 use crate::db::RootEntropyKey;
 use crate::db::SelectedCurrencyKey;
+use crate::db::SelectedFederationKey;
 use crate::frb_generated::StreamSink;
 
 #[frb(sync)]
@@ -379,6 +380,8 @@ impl ConduitClientFactory {
 
         self.save_config(&client.config().await).await;
 
+        self.set_selected_federation(federation_id).await;
+
         Ok(self.create_fclient(Arc::new(client), federation_id).await)
     }
 
@@ -414,6 +417,8 @@ impl ConduitClientFactory {
 
         self.save_config(&client.config().await).await;
 
+        self.set_selected_federation(federation_id).await;
+
         Ok(self.create_fclient(Arc::new(client), federation_id).await)
     }
 
@@ -435,6 +440,8 @@ impl ConduitClientFactory {
             .expect("Failed to open client");
 
         self.save_config(&client.config().await).await;
+
+        self.set_selected_federation(*federation_id).await;
 
         Some(self.create_fclient(Arc::new(client), *federation_id).await)
     }
@@ -502,6 +509,27 @@ impl ConduitClientFactory {
             .get_value(&SelectedCurrencyKey)
             .await
             .unwrap_or_else(|| "USD".to_string())
+    }
+
+    async fn set_selected_federation(&self, federation_id: FederationId) {
+        let mut dbtx = self.db.begin_transaction().await;
+
+        dbtx.insert_entry(&SelectedFederationKey, &federation_id)
+            .await;
+
+        dbtx.commit_tx().await;
+    }
+
+    #[frb]
+    pub async fn load_selected(&self) -> Option<ConduitClient> {
+        let federation_id = self
+            .db
+            .begin_transaction_nc()
+            .await
+            .get_value(&SelectedFederationKey)
+            .await?;
+
+        self.load(&federation_id).await
     }
 
     #[frb]

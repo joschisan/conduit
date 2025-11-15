@@ -15,6 +15,7 @@ pub enum DbKeyPrefix {
     ClientConfig = 0x02,
     EventLogStartPosition = 0x03,
     SelectedCurrency = 0x04,
+    SelectedFederation = 0x05,
 }
 
 #[frb(ignore)]
@@ -61,4 +62,14 @@ impl_db_record!(
     key = SelectedCurrencyKey,
     value = String,
     db_prefix = DbKeyPrefix::SelectedCurrency,
+);
+
+#[frb(ignore)]
+#[derive(Clone, Debug, Encodable, Decodable)]
+pub struct SelectedFederationKey;
+
+impl_db_record!(
+    key = SelectedFederationKey,
+    value = FederationId,
+    db_prefix = DbKeyPrefix::SelectedFederation,
 );

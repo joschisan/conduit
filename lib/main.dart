@@ -5,6 +5,7 @@ import 'package:conduit/bridge_generated.dart/frb_generated.dart';
 import 'package:conduit/bridge_generated.dart/lib.dart';
 import 'package:conduit/screens/wallet_choice_screen.dart';
 import 'package:conduit/screens/settings_screen.dart';
+import 'package:conduit/screens/home_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

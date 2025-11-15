@@ -30,6 +30,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
   void initState() {
     super.initState();
     _refreshFederations();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      final client = await widget.clientFactory.loadSelected();
+
+      if (client != null) {
+        Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (_) => HomeScreen(client: client)));
+      }
+    });
   }
 
   void _refreshFederations() {
