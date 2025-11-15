@@ -119,7 +119,7 @@ impl OOBNotesWrapper {
 
     #[frb(sync)]
     pub fn encode_prefixed(&self) -> String {
-        encode_prefixed(FEDIMINT_PREFIX, &self.0.consensus_encode_to_vec())
+        self.0.to_string()
     }
 }
 
@@ -943,7 +943,7 @@ impl ConduitClient {
                 }
             } else {
                 for entry in &batch {
-                    if let Some(event) = Self::parse_event_log_entry(&entry) {
+                    if let Some(event) = parse_event_log_entry(&entry) {
                         if sink.add(event).is_err() {
                             return;
                         }
@@ -970,183 +970,143 @@ impl ConduitClient {
             }
         }
     }
+}
 
-    fn parse_event_log_entry(entry: &PersistedLogEntry) -> Option<ConduitEvent> {
-        // Try to deserialize as SendPaymentEvent
-        if entry.event_kind == fedimint_lnv2_client::events::SendPaymentEvent::KIND {
-            return serde_json::from_value::<fedimint_lnv2_client::events::SendPaymentEvent>(
-                entry.value.clone(),
-            )
-            .ok()
-            .map(|send| {
-                ConduitEvent::Event(ConduitPayment {
-                    operation_id: send.operation_id.fmt_short().to_string(),
-                    incoming: false,
-                    payment_type: PaymentType::Lightning,
-                    amount_sats: (send.amount.msats / 1000) as i64,
-                    fee_sats: send.fee.map(|fee| (fee.msats / 1000) as i64),
-                    timestamp: (entry.timestamp / 1000) as i64,
-                    success: None,
-                    oob: None,
-                })
-            });
-        }
-
-        // Try to deserialize as SendPaymentUpdateEvent
-        if entry.event_kind == fedimint_lnv2_client::events::SendPaymentUpdateEvent::KIND {
-            return serde_json::from_value::<fedimint_lnv2_client::events::SendPaymentUpdateEvent>(
-                entry.value.clone(),
-            )
-            .ok()
-            .map(|update| {
-                ConduitEvent::Update(ConduitUpdate {
-                    operation_id: update.operation_id.fmt_short().to_string(),
-                    timestamp: (entry.timestamp / 1000) as i64,
-                    success: matches!(update.status, SendPaymentStatus::Success(_)),
-                    oob: None,
-                })
-            });
-        }
-
-        // Try to deserialize as ReceivePaymentEvent
-        if entry.event_kind == fedimint_lnv2_client::events::ReceivePaymentEvent::KIND {
-            return serde_json::from_value::<fedimint_lnv2_client::events::ReceivePaymentEvent>(
-                entry.value.clone(),
-            )
-            .ok()
-            .map(|receive| {
-                ConduitEvent::Event(ConduitPayment {
-                    operation_id: receive.operation_id.fmt_short().to_string(),
-                    incoming: true,
-                    payment_type: PaymentType::Lightning,
-                    amount_sats: (receive.amount.msats / 1000) as i64,
-                    fee_sats: None,
-                    timestamp: (entry.timestamp / 1000) as i64,
-                    success: Some(true),
-                    oob: None,
-                })
-            });
-        }
-
-        // Try to deserialize as MintSendPaymentEvent
-        if entry.event_kind == fedimint_mint_client::event::SendPaymentEvent::KIND {
-            return serde_json::from_value::<fedimint_mint_client::event::SendPaymentEvent>(
-                entry.value.clone(),
-            )
-            .ok()
-            .map(|send| {
-                ConduitEvent::Event(ConduitPayment {
-                    operation_id: send.operation_id.fmt_short().to_string(),
-                    incoming: false,
-                    payment_type: PaymentType::Ecash,
-                    amount_sats: (send.amount.msats / 1000) as i64,
-                    fee_sats: None,
-                    timestamp: (entry.timestamp / 1000) as i64,
-                    success: Some(true),
-                    oob: Some(send.oob_notes),
-                })
-            });
-        }
-
-        // Try to deserialize as MintReceivePaymentEvent
-        if entry.event_kind == fedimint_mint_client::event::ReceivePaymentEvent::KIND {
-            return serde_json::from_value::<fedimint_mint_client::event::ReceivePaymentEvent>(
-                entry.value.clone(),
-            )
-            .ok()
-            .map(|receive| {
-                ConduitEvent::Event(ConduitPayment {
-                    operation_id: receive.operation_id.fmt_short().to_string(),
-                    incoming: true,
-                    payment_type: PaymentType::Ecash,
-                    amount_sats: (receive.amount.msats / 1000) as i64,
-                    fee_sats: None,
-                    timestamp: (entry.timestamp / 1000) as i64,
-                    success: None,
-                    oob: None,
-                })
-            });
-        }
-
-        // Try to deserialize as MintReceivePaymentUpdateEvent
-        if entry.event_kind == fedimint_mint_client::event::ReceivePaymentUpdateEvent::KIND {
-            return serde_json::from_value::<fedimint_mint_client::event::ReceivePaymentUpdateEvent>(
-                entry.value.clone(),
-            )
-            .ok()
-            .map(|update| {
-                ConduitEvent::Update(ConduitUpdate {
-                    operation_id: update.operation_id.fmt_short().to_string(),
-                    timestamp: (entry.timestamp / 1000) as i64,
-                    success: matches!(update.status, ReceivePaymentStatus::Success),
-                    oob: None,
-                })
-            });
-        }
-
-        // Try to deserialize as WalletSendPaymentEvent
-        if entry.event_kind == fedimint_wallet_client::events::SendPaymentEvent::KIND {
-            return serde_json::from_value::<fedimint_wallet_client::events::SendPaymentEvent>(
-                entry.value.clone(),
-            )
-            .ok()
-            .map(|send| {
-                ConduitEvent::Event(ConduitPayment {
-                    operation_id: send.operation_id.fmt_short().to_string(),
-                    incoming: false,
-                    payment_type: PaymentType::Bitcoin,
-                    amount_sats: send.amount.to_sat() as i64,
-                    fee_sats: Some(send.fee.to_sat() as i64),
-                    timestamp: (entry.timestamp / 1000) as i64,
-                    success: None,
-                    oob: None,
-                })
-            });
-        }
-
-        // Try to deserialize as WalletSendPaymentStatusEvent
-        if entry.event_kind == fedimint_wallet_client::events::SendPaymentStatusEvent::KIND {
-            return serde_json::from_value::<fedimint_wallet_client::events::SendPaymentStatusEvent>(
-                entry.value.clone(),
-            )
-            .ok()
-            .map(|status| {
-                let (success, oob) = match status.status {
-                    WalletSendPaymentStatus::Success(txid) => (true, Some(txid.to_string())),
-                    WalletSendPaymentStatus::Aborted => (false, None),
-                };
-
-                ConduitEvent::Update(ConduitUpdate {
-                    operation_id: status.operation_id.fmt_short().to_string(),
-                    timestamp: (entry.timestamp / 1000) as i64,
-                    success,
-                    oob,
-                })
-            });
-        }
-
-        // Try to deserialize as WalletReceivePaymentEvent
-        if entry.event_kind == fedimint_wallet_client::events::ReceivePaymentEvent::KIND {
-            return serde_json::from_value::<fedimint_wallet_client::events::ReceivePaymentEvent>(
-                entry.value.clone(),
-            )
-            .ok()
-            .map(|receive| {
-                ConduitEvent::Event(ConduitPayment {
-                    operation_id: receive.operation_id.fmt_short().to_string(),
-                    incoming: true,
-                    payment_type: PaymentType::Bitcoin,
-                    amount_sats: (receive.amount.msats / 1000) as i64,
-                    fee_sats: None,
-                    timestamp: (entry.timestamp / 1000) as i64,
-                    success: Some(true),
-                    oob: Some(receive.txid.to_string()),
-                })
-            });
-        }
-
-        None
+fn parse_event_log_entry(entry: &PersistedLogEntry) -> Option<ConduitEvent> {
+    // Try to deserialize as SendPaymentEvent
+    if let Some(send) = parse::<fedimint_lnv2_client::events::SendPaymentEvent>(entry) {
+        return Some(ConduitEvent::Event(ConduitPayment {
+            operation_id: send.operation_id.fmt_short().to_string(),
+            incoming: false,
+            payment_type: PaymentType::Lightning,
+            amount_sats: (send.amount.msats / 1000) as i64,
+            fee_sats: send.fee.map(|fee| (fee.msats / 1000) as i64),
+            timestamp: (entry.timestamp / 1000) as i64,
+            success: None,
+            oob: None,
+        }));
     }
+
+    // Try to deserialize as SendPaymentUpdateEvent
+    if let Some(update) = parse::<fedimint_lnv2_client::events::SendPaymentUpdateEvent>(entry) {
+        return Some(ConduitEvent::Update(ConduitUpdate {
+            operation_id: update.operation_id.fmt_short().to_string(),
+            timestamp: (entry.timestamp / 1000) as i64,
+            success: matches!(update.status, SendPaymentStatus::Success(_)),
+            oob: None,
+        }));
+    }
+
+    // Try to deserialize as ReceivePaymentEvent
+    if let Some(receive) = parse::<fedimint_lnv2_client::events::ReceivePaymentEvent>(entry) {
+        return Some(ConduitEvent::Event(ConduitPayment {
+            operation_id: receive.operation_id.fmt_short().to_string(),
+            incoming: true,
+            payment_type: PaymentType::Lightning,
+            amount_sats: (receive.amount.msats / 1000) as i64,
+            fee_sats: None,
+            timestamp: (entry.timestamp / 1000) as i64,
+            success: Some(true),
+            oob: None,
+        }));
+    }
+
+    // Try to deserialize as MintSendPaymentEvent
+    if let Some(send) = parse::<fedimint_mint_client::event::SendPaymentEvent>(entry) {
+        return Some(ConduitEvent::Event(ConduitPayment {
+            operation_id: send.operation_id.fmt_short().to_string(),
+            incoming: false,
+            payment_type: PaymentType::Ecash,
+            amount_sats: (send.amount.msats / 1000) as i64,
+            fee_sats: None,
+            timestamp: (entry.timestamp / 1000) as i64,
+            success: Some(true),
+            oob: Some(send.oob_notes),
+        }));
+    }
+
+    // Try to deserialize as MintReceivePaymentEvent
+    if let Some(receive) = parse::<fedimint_mint_client::event::ReceivePaymentEvent>(entry) {
+        return Some(ConduitEvent::Event(ConduitPayment {
+            operation_id: receive.operation_id.fmt_short().to_string(),
+            incoming: true,
+            payment_type: PaymentType::Ecash,
+            amount_sats: (receive.amount.msats / 1000) as i64,
+            fee_sats: None,
+            timestamp: (entry.timestamp / 1000) as i64,
+            success: None,
+            oob: None,
+        }));
+    }
+
+    // Try to deserialize as MintReceivePaymentUpdateEvent
+    if let Some(update) = parse::<fedimint_mint_client::event::ReceivePaymentUpdateEvent>(entry) {
+        return Some(ConduitEvent::Update(ConduitUpdate {
+            operation_id: update.operation_id.fmt_short().to_string(),
+            timestamp: (entry.timestamp / 1000) as i64,
+            success: matches!(update.status, ReceivePaymentStatus::Success),
+            oob: None,
+        }));
+    }
+
+    // Try to deserialize as WalletSendPaymentEvent
+    if let Some(send) = parse::<fedimint_wallet_client::events::SendPaymentEvent>(entry) {
+        return Some(ConduitEvent::Event(ConduitPayment {
+            operation_id: send.operation_id.fmt_short().to_string(),
+            incoming: false,
+            payment_type: PaymentType::Bitcoin,
+            amount_sats: send.amount.to_sat() as i64,
+            fee_sats: Some(send.fee.to_sat() as i64),
+            timestamp: (entry.timestamp / 1000) as i64,
+            success: None,
+            oob: None,
+        }));
+    }
+
+    // Try to deserialize as WalletSendPaymentStatusEvent
+    if let Some(status) = parse::<fedimint_wallet_client::events::SendPaymentStatusEvent>(entry) {
+        let (success, oob) = match status.status {
+            WalletSendPaymentStatus::Success(txid) => (true, Some(txid.to_string())),
+            WalletSendPaymentStatus::Aborted => (false, None),
+        };
+
+        return Some(ConduitEvent::Update(ConduitUpdate {
+            operation_id: status.operation_id.fmt_short().to_string(),
+            timestamp: (entry.timestamp / 1000) as i64,
+            success,
+            oob,
+        }));
+    }
+
+    // Try to deserialize as WalletReceivePaymentEvent
+    if let Some(receive) = parse::<fedimint_wallet_client::events::ReceivePaymentEvent>(entry) {
+        return Some(ConduitEvent::Event(ConduitPayment {
+            operation_id: receive.operation_id.fmt_short().to_string(),
+            incoming: true,
+            payment_type: PaymentType::Bitcoin,
+            amount_sats: (receive.amount.msats / 1000) as i64,
+            fee_sats: None,
+            timestamp: (entry.timestamp / 1000) as i64,
+            success: Some(true),
+            oob: Some(receive.txid.to_string()),
+        }));
+    }
+
+    None
+}
+
+fn parse<T: Event>(entry: &PersistedLogEntry) -> Option<T> {
+    if let Some(module) = T::MODULE {
+        if entry.module.clone()?.0 != module {
+            return None;
+        }
+    }
+
+    if entry.event_kind != T::KIND {
+        return None;
+    }
+
+    serde_json::from_value::<T>(entry.value.clone()).ok()
 }
 
 #[frb(opaque)]
