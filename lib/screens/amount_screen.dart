@@ -194,8 +194,6 @@ class _AmountScreenState extends State<AmountScreen> {
               child: AsyncActionButton(
                 text: 'Continue',
                 onPressed: _handleSubmit,
-                onSuccess: () =>
-                    Navigator.of(context).popUntil((route) => route.isFirst),
               ),
             ),
 
