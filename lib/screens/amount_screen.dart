@@ -191,7 +191,7 @@ class _AmountScreenState extends State<AmountScreen> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0),
               child: AsyncActionButton(
-                text: 'Continue',
+                text: 'Confirm',
                 onPressed: _handleSubmit,
               ),
             ),

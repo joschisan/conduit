@@ -111,12 +111,12 @@ class _InviteScannerWidgetState extends State<InviteScannerWidget> {
           ),
           const SizedBox(height: 16),
           AsyncActionButton(
-            text: 'Recover Federation',
+            text: 'Recover',
             onPressed: () => widget.onRecover(invite),
           ),
           const SizedBox(height: 12),
           AsyncActionButton(
-            text: 'Join Federation',
+            text: 'Join',
             onPressed: () => widget.onJoin(invite),
           ),
         ],
