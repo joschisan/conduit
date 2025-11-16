@@ -38,7 +38,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.10.0";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 903843352;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -2072227685;
 
 // Section: executor
 
@@ -2827,6 +2827,36 @@ fn wire__crate__parse_mnemonic_impl(
         },
     )
 }
+fn wire__crate__parse_money_badger_impl(
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "parse_money_badger",
+            port: None,
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_input = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            transform_result_sse::<_, ()>((move || {
+                let output_ok = Result::<_, ()>::Ok(crate::parse_money_badger(api_input))?;
+                Ok(output_ok)
+            })())
+        },
+    )
+}
 fn wire__crate__parse_oob_notes_impl(
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
     rust_vec_len_: i32,
@@ -2886,6 +2916,42 @@ fn wire__crate__resolve_lnurl_impl(
                 transform_result_sse::<_, String>(
                     (move || async move {
                         let output_ok = crate::resolve_lnurl(api_lnurl, api_amount_sats).await?;
+                        Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
+fn wire__crate__resolve_money_badger_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "resolve_money_badger",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_mb = <crate::MoneyBadgerWrapper>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, String>(
+                    (move || async move {
+                        let output_ok = crate::resolve_money_badger(api_mb).await?;
                         Ok(output_ok)
                     })()
                     .await,
@@ -3422,6 +3488,14 @@ impl SseDecode for crate::LnurlWrapper {
     }
 }
 
+impl SseDecode for crate::MoneyBadgerWrapper {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_field0 = <String>::sse_decode(deserializer);
+        return crate::MoneyBadgerWrapper(var_field0);
+    }
+}
+
 impl SseDecode for Option<String> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -3537,6 +3611,17 @@ impl SseDecode for Option<crate::LnurlWrapper> {
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
         if (<bool>::sse_decode(deserializer)) {
             return Some(<crate::LnurlWrapper>::sse_decode(deserializer));
+        } else {
+            return None;
+        }
+    }
+}
+
+impl SseDecode for Option<crate::MoneyBadgerWrapper> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        if (<bool>::sse_decode(deserializer)) {
+            return Some(<crate::MoneyBadgerWrapper>::sse_decode(deserializer));
         } else {
             return None;
         }
@@ -3667,7 +3752,8 @@ fn pde_ffi_dispatcher_primary_impl(
         46 => wire__crate__generate_mnemonic_impl(port, ptr, rust_vec_len, data_len),
         47 => wire__crate__open_database_impl(port, ptr, rust_vec_len, data_len),
         52 => wire__crate__parse_mnemonic_impl(port, ptr, rust_vec_len, data_len),
-        54 => wire__crate__resolve_lnurl_impl(port, ptr, rust_vec_len, data_len),
+        55 => wire__crate__resolve_lnurl_impl(port, ptr, rust_vec_len, data_len),
+        56 => wire__crate__resolve_money_badger_impl(port, ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -3703,8 +3789,9 @@ fn pde_ffi_dispatcher_sync_impl(
         49 => wire__crate__parse_bolt11_invoice_impl(ptr, rust_vec_len, data_len),
         50 => wire__crate__parse_invite_code_impl(ptr, rust_vec_len, data_len),
         51 => wire__crate__parse_lnurl_impl(ptr, rust_vec_len, data_len),
-        53 => wire__crate__parse_oob_notes_impl(ptr, rust_vec_len, data_len),
-        55 => wire__crate__word_list_impl(ptr, rust_vec_len, data_len),
+        53 => wire__crate__parse_money_badger_impl(ptr, rust_vec_len, data_len),
+        54 => wire__crate__parse_oob_notes_impl(ptr, rust_vec_len, data_len),
+        57 => wire__crate__word_list_impl(ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -4003,6 +4090,18 @@ impl flutter_rust_bridge::IntoDart for crate::LnurlWrapper {
 impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for crate::LnurlWrapper {}
 impl flutter_rust_bridge::IntoIntoDart<crate::LnurlWrapper> for crate::LnurlWrapper {
     fn into_into_dart(self) -> crate::LnurlWrapper {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::MoneyBadgerWrapper {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [self.0.into_into_dart().into_dart()].into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for crate::MoneyBadgerWrapper {}
+impl flutter_rust_bridge::IntoIntoDart<crate::MoneyBadgerWrapper> for crate::MoneyBadgerWrapper {
+    fn into_into_dart(self) -> crate::MoneyBadgerWrapper {
         self
     }
 }
@@ -4432,6 +4531,13 @@ impl SseEncode for crate::LnurlWrapper {
     }
 }
 
+impl SseEncode for crate::MoneyBadgerWrapper {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.0, serializer);
+    }
+}
+
 impl SseEncode for Option<String> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -4538,6 +4644,16 @@ impl SseEncode for Option<crate::LnurlWrapper> {
         <bool>::sse_encode(self.is_some(), serializer);
         if let Some(value) = self {
             <crate::LnurlWrapper>::sse_encode(value, serializer);
+        }
+    }
+}
+
+impl SseEncode for Option<crate::MoneyBadgerWrapper> {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <bool>::sse_encode(self.is_some(), serializer);
+        if let Some(value) = self {
+            <crate::MoneyBadgerWrapper>::sse_encode(value, serializer);
         }
     }
 }

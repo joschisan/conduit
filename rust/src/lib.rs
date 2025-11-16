@@ -47,6 +47,7 @@ use futures_util::StreamExt;
 use lightning_invoice::{Bolt11Invoice, Bolt11InvoiceDescriptionRef};
 use lnurl_pay::LightningAddress;
 use lnurl_pay::LnUrl;
+use regex::Regex;
 use serde::Deserialize;
 
 use crate::db::ClientConfigKey;
@@ -178,6 +179,82 @@ pub fn parse_lnurl(request: String) -> Option<LnurlWrapper> {
     }
 
     None
+}
+
+#[frb]
+pub struct MoneyBadgerWrapper(String);
+
+/// Strict URI encode adhering to RFC 3986
+fn strict_uri_encode(input: &str) -> String {
+    input
+        .bytes()
+        .map(|byte| match byte {
+            b'A'..=b'Z' | b'a'..=b'z' | b'0'..=b'9' | b'-' | b'_' | b'.' | b'~' => {
+                (byte as char).to_string()
+            }
+            _ => format!("%{:02X}", byte),
+        })
+        .collect()
+}
+
+/// Merchant patterns following blink-client approach
+const MERCHANT_PATTERNS: &[&str] = &[
+    r"(?i)za\.co\.electrum\.picknpay",
+    r"(?i)za\.co\.ecentric",
+    r"(wigroup\.co|yoyogroup\.co)",
+    r"(zapper\.com|\d+\.zap\.pe)",
+    r"payat\.io",
+    r"paynow\.netcash\.co\.za",
+    r"paynow\.sagepay\.co\.za",
+    r"^SK-\d{1,}-\d{23}$",
+    r"transactionjunction\.co\.za",
+    r"^CRSTPC-\d+-\d+-\d+-\d+-\d+$",
+    r"scantopay\.io",
+    r"snapscan",
+    r"^\d{10}$",
+    r"^.{2}/.{4}/.{20}$",
+];
+
+#[frb(sync)]
+pub fn parse_money_badger(input: String) -> Option<MoneyBadgerWrapper> {
+    // Check if input matches any merchant pattern
+    if MERCHANT_PATTERNS
+        .iter()
+        .any(|pattern| Regex::new(pattern).unwrap().is_match(&input))
+    {
+        let address = format!("{}@cryptoqr.net", strict_uri_encode(&input));
+
+        return LightningAddress::from_str(&address)
+            .ok()
+            .map(|address| MoneyBadgerWrapper(address.endpoint()));
+    }
+
+    None
+}
+
+#[frb]
+pub async fn resolve_money_badger(mb: MoneyBadgerWrapper) -> Result<Bolt11InvoiceWrapper, String> {
+    let response = reqwest::get(mb.0)
+        .await
+        .map_err(|_| "Failed to fetch LNURL".to_string())?
+        .json::<LnUrlPayResponse>()
+        .await
+        .map_err(|_| "Failed to parse LNURL response".to_string())?;
+
+    if response.min_sendable != response.max_sendable {
+        return Err("Amount ist not fixed".to_string());
+    }
+
+    let callback_url = format!("{}?amount={}", response.callback, response.min_sendable);
+
+    let response = reqwest::get(callback_url)
+        .await
+        .map_err(|_| "Failed to fetch LNURL callback".to_string())?
+        .json::<LnUrlPayInvoiceResponse>()
+        .await
+        .map_err(|_| "Failed to parse LNURL callback response".to_string())?;
+
+    Ok(Bolt11InvoiceWrapper(response.pr))
 }
 
 #[derive(Deserialize)]

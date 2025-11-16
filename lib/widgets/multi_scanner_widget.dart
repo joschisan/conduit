@@ -5,6 +5,7 @@ import 'package:fpdart/fpdart.dart' hide State;
 import 'package:conduit/bridge_generated.dart/lib.dart';
 import 'package:conduit/utils/notification_utils.dart';
 import 'package:conduit/utils/drawer_utils.dart';
+import 'package:conduit/utils/fp_utils.dart';
 import 'package:conduit/widgets/async_action_button.dart';
 import 'package:conduit/widgets/amount_display.dart';
 import 'package:conduit/widgets/navigation_button.dart';
@@ -104,6 +105,14 @@ class _MultiScannerWidgetState extends State<MultiScannerWidget> {
     if (bitcoinAddress != null) {
       _isScanning = false;
       _showBitcoinAddressDrawer(bitcoinAddress);
+      return;
+    }
+
+    final moneyBadger = parseMoneyBadger(input: input);
+
+    if (moneyBadger != null) {
+      _isScanning = false;
+      _showMoneyBadgerDrawer(moneyBadger);
       return;
     }
 
@@ -230,6 +239,55 @@ class _MultiScannerWidgetState extends State<MultiScannerWidget> {
           AsyncActionButton(
             text: 'Receive',
             onPressed: () => widget.onEcashRedeem(ecash),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showMoneyBadgerDrawer(MoneyBadgerWrapper moneyBadger) {
+    Navigator.of(context).pop();
+
+    showStandardDrawer(
+      context: context,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              CircleAvatar(
+                radius: 24,
+                backgroundColor: Theme.of(
+                  context,
+                ).colorScheme.primary.withValues(alpha: 0.1),
+                child: Icon(
+                  Icons.shopping_cart,
+                  color: Theme.of(context).colorScheme.primary,
+                  size: 32,
+                ),
+              ),
+              const SizedBox(width: 16),
+              const Text(
+                'Money Badger QR Code',
+                style: TextStyle(fontSize: 18),
+              ),
+              const Spacer(),
+            ],
+          ),
+          const SizedBox(height: 24),
+          AsyncActionButton(
+            text: 'Continue',
+            onPressed:
+                () => safeTask(() async {
+                  final invoice = await resolveMoneyBadger(mb: moneyBadger);
+
+                  if (!context.mounted) return;
+
+                  Navigator.of(context).pop();
+
+                  _showLightningDrawer(invoice);
+                }),
           ),
         ],
       ),

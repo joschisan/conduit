@@ -827,6 +827,7 @@ dependencies = [
  "lightning-invoice",
  "lnurl-pay",
  "minicbor",
+ "regex",
  "reqwest",
  "serde",
  "socket2 0.5.9",
