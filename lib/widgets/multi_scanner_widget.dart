@@ -140,7 +140,7 @@ class _MultiScannerWidgetState extends State<MultiScannerWidget> {
                   context,
                 ).colorScheme.primary.withValues(alpha: 0.1),
                 child: Icon(
-                  Icons.arrow_upward,
+                  Icons.bolt,
                   color: Theme.of(context).colorScheme.primary,
                   size: 32,
                 ),
@@ -198,7 +198,7 @@ class _MultiScannerWidgetState extends State<MultiScannerWidget> {
                   context,
                 ).colorScheme.primary.withValues(alpha: 0.1),
                 child: Icon(
-                  Icons.arrow_downward,
+                  Icons.toll,
                   color: Theme.of(context).colorScheme.primary,
                   size: 32,
                 ),

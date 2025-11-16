@@ -71,25 +71,45 @@ class NotificationUtils {
     );
   }
 
-  static void showReceive(BuildContext context, int amountSat) {
+  static void showReceive(
+    BuildContext context,
+    int amountSat,
+    PaymentType paymentType,
+  ) {
     HapticFeedback.heavyImpact();
+
+    final icon = switch (paymentType) {
+      PaymentType.lightning => Icons.bolt,
+      PaymentType.bitcoin => Icons.currency_bitcoin,
+      PaymentType.ecash => Icons.toll,
+    };
 
     _showNotification(
       context,
       'You received ${NumberFormat('#,###').format(amountSat)} sats.',
-      Icons.arrow_downward,
+      icon,
       Theme.of(context).colorScheme.primary,
       const Duration(seconds: 3),
     );
   }
 
-  static void showSend(BuildContext context, int amountSat) {
+  static void showSend(
+    BuildContext context,
+    int amountSat,
+    PaymentType paymentType,
+  ) {
     HapticFeedback.heavyImpact();
+
+    final icon = switch (paymentType) {
+      PaymentType.lightning => Icons.bolt,
+      PaymentType.bitcoin => Icons.currency_bitcoin,
+      PaymentType.ecash => Icons.toll,
+    };
 
     _showNotification(
       context,
       'You sent ${NumberFormat('#,###').format(amountSat)} sats.',
-      Icons.arrow_upward,
+      icon,
       Theme.of(context).colorScheme.primary,
       const Duration(seconds: 3),
     );

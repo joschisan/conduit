@@ -42,9 +42,17 @@ class _EventTransactionsListState extends State<EventTransactionsList> {
           if (field0.timestamp > DateTime.now().millisecondsSinceEpoch - 1000) {
             if (field0.success != null && field0.success == true) {
               if (field0.incoming) {
-                NotificationUtils.showReceive(context, field0.amountSats);
+                NotificationUtils.showReceive(
+                  context,
+                  field0.amountSats,
+                  field0.paymentType,
+                );
               } else {
-                NotificationUtils.showSend(context, field0.amountSats);
+                NotificationUtils.showSend(
+                  context,
+                  field0.amountSats,
+                  field0.paymentType,
+                );
               }
             }
           }
@@ -76,9 +84,17 @@ class _EventTransactionsListState extends State<EventTransactionsList> {
           if (field0.timestamp > DateTime.now().millisecondsSinceEpoch - 1000) {
             if (field0.success == true) {
               if (event.incoming) {
-                NotificationUtils.showReceive(context, event.amountSats);
+                NotificationUtils.showReceive(
+                  context,
+                  event.amountSats,
+                  event.paymentType,
+                );
               } else {
-                NotificationUtils.showSend(context, event.amountSats);
+                NotificationUtils.showSend(
+                  context,
+                  event.amountSats,
+                  event.paymentType,
+                );
               }
             } else {
               if (event.incoming) {
