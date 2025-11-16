@@ -174,8 +174,6 @@ class _MultiScannerWidgetState extends State<MultiScannerWidget> {
           AsyncActionButton(
             text: 'Confirm',
             onPressed: () => widget.onLightningPayment(invoice),
-            onSuccess:
-                () => Navigator.of(context).popUntil((route) => route.isFirst),
           ),
         ],
       ),
@@ -232,8 +230,6 @@ class _MultiScannerWidgetState extends State<MultiScannerWidget> {
           AsyncActionButton(
             text: 'Receive',
             onPressed: () => widget.onEcashRedeem(ecash),
-            onSuccess:
-                () => Navigator.of(context).popUntil((route) => route.isFirst),
           ),
         ],
       ),

@@ -163,12 +163,20 @@ class _HomeScreenState extends State<HomeScreen> {
       }
 
       await widget.client.lnSend(invoice: invoice);
+
+      if (!context.mounted) return;
+
+      Navigator.of(context).popUntil((route) => route.isFirst);
     });
   }
 
   TaskEither<String, void> _handleEcashRedeem(OobNotesWrapper ecash) {
     return safeTask(() async {
       await widget.client.ecashReceive(notes: ecash);
+
+      if (!context.mounted) return;
+
+      Navigator.of(context).popUntil((route) => route.isFirst);
     });
   }
 
