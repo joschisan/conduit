@@ -275,7 +275,7 @@ class _AmountScreenState extends State<AmountScreen> {
     if (_enterFiat) {
       return '${_currency.symbol} ${NumberFormat('#,##0.00').format(amount / 100)}';
     } else {
-      return '$amount sats';
+      return '₿ ${NumberFormat('#,###').format(amount)}';
     }
   }
 
