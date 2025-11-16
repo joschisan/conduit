@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:overlay_support/overlay_support.dart';
+import 'package:conduit/bridge_generated.dart/lib.dart';
 
 class NotificationUtils {
   static void _showNotification(

@@ -4,7 +4,6 @@ import 'package:intl/intl.dart';
 import 'package:currency_picker/currency_picker.dart';
 import 'package:conduit/widgets/async_action_button.dart';
 import 'package:conduit/widgets/async_text_button.dart';
-import 'package:conduit/widgets/amount_display.dart';
 import 'package:conduit/bridge_generated.dart/lib.dart';
 import 'package:conduit/screens/display_lnurl_screen.dart';
 import 'package:conduit/utils/fp_utils.dart';
