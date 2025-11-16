@@ -10,28 +10,31 @@ import 'package:conduit/widgets/async_action_button.dart';
 Widget _buildQrScanner(
   MobileScannerController controller,
   void Function(BarcodeCapture) onDetect,
+  VoidCallback? onPaste,
 ) => LayoutBuilder(
   builder: (context, constraints) {
     final size = constraints.maxWidth;
     return SizedBox(
       width: size,
       height: size,
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(10),
-        child: MobileScanner(controller: controller, onDetect: onDetect),
+      child: Stack(
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: MobileScanner(controller: controller, onDetect: onDetect),
+          ),
+          Positioned(
+            top: 16,
+            right: 16,
+            child: IconButton(
+              onPressed: onPaste,
+              icon: const Icon(Icons.paste, color: Colors.white, size: 36),
+            ),
+          ),
+        ],
       ),
     );
   },
-);
-
-Widget _buildPasteButton(VoidCallback? onPaste) => ElevatedButton.icon(
-  onPressed: onPaste,
-  icon: const Icon(Icons.paste, size: 24),
-  label: const Text('Paste from Clipboard'),
-  style: ElevatedButton.styleFrom(
-    padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-  ),
 );
 
 class InviteScannerWidget extends StatefulWidget {
@@ -143,13 +146,6 @@ class _InviteScannerWidgetState extends State<InviteScannerWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _buildQrScanner(_controller, _onDetect),
-        const SizedBox(height: 16),
-        _buildPasteButton(_handleClipboardPaste),
-      ],
-    );
+    return _buildQrScanner(_controller, _onDetect, _handleClipboardPaste);
   }
 }
