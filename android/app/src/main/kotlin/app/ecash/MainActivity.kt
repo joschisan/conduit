@@ -1,4 +1,4 @@
-package org.fedimint.app.master
+package io.github.joschisan.conduit
 
 import io.flutter.embedding.android.FlutterFragmentActivity
 
