@@ -7,12 +7,12 @@ import 'package:conduit/utils/notification_utils.dart';
 
 class EventTransactionsList extends StatefulWidget {
   final Stream<ConduitEvent> stream;
-  final void Function(ConduitPayment)? onTransactionTap;
+  final void Function(ConduitPayment) onTransactionTap;
 
   const EventTransactionsList({
     super.key,
     required this.stream,
-    this.onTransactionTap,
+    required this.onTransactionTap,
   });
 
   @override
@@ -21,10 +21,27 @@ class EventTransactionsList extends StatefulWidget {
 
 class _EventTransactionsListState extends State<EventTransactionsList> {
   final List<ConduitPayment> _events = [];
+  final Set<String> _animatingIds = {};
   StreamSubscription<ConduitEvent>? _subscription;
 
   // Only notify for events in the last second (prevents old events from showing notifications on load)
   static const _notificationWindowMs = 1000;
+
+  bool _isRecentEvent(int timestamp) {
+    return timestamp > DateTime.now().millisecondsSinceEpoch - _notificationWindowMs;
+  }
+
+  void _markForAnimation(String operationId) {
+    _animatingIds.add(operationId);
+    // Remove from set after animation duration
+    Future.delayed(const Duration(milliseconds: 1000), () {
+      if (mounted) {
+        setState(() {
+          _animatingIds.remove(operationId);
+        });
+      }
+    });
+  }
 
   @override
   void initState() {
@@ -40,8 +57,7 @@ class _EventTransactionsListState extends State<EventTransactionsList> {
     required PaymentType paymentType,
   }) {
     // Only show notifications for recent events
-    if (timestamp <=
-        DateTime.now().millisecondsSinceEpoch - _notificationWindowMs) {
+    if (!_isRecentEvent(timestamp)) {
       return;
     }
 
@@ -71,6 +87,11 @@ class _EventTransactionsListState extends State<EventTransactionsList> {
           setState(() {
             _events.add(field0);
           });
+
+          // Only animate recent events (not initial load)
+          if (_isRecentEvent(field0.timestamp)) {
+            _markForAnimation(field0.operationId);
+          }
 
           _showEventNotification(
             timestamp: field0.timestamp,
@@ -141,11 +162,10 @@ class _EventTransactionsListState extends State<EventTransactionsList> {
         // Access items in reverse order (newest at end of list, show at top)
         final event = _events[_events.length - 1 - index];
         return EventTransactionItem(
+          key: ValueKey(event.operationId),
           event: event,
-          onTap:
-              widget.onTransactionTap != null
-                  ? () => widget.onTransactionTap!(event)
-                  : null,
+          animate: _animatingIds.contains(event.operationId),
+          onTap: () => widget.onTransactionTap(event),
         );
       },
     );
