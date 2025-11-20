@@ -6,6 +6,8 @@ class DrawerShell extends StatelessWidget {
   final String title;
   final Widget? topRightButton;
   final List<Widget> children;
+  final bool showSpinner;
+  final Color? iconColor;
 
   const DrawerShell({
     super.key,
@@ -13,10 +15,28 @@ class DrawerShell extends StatelessWidget {
     required this.title,
     this.topRightButton,
     required this.children,
+    this.showSpinner = false,
+    this.iconColor,
   });
 
   @override
   Widget build(BuildContext context) {
+    Widget iconWidget = IconBadge(icon: icon, iconSize: 32, color: iconColor);
+
+    if (showSpinner) {
+      iconWidget = Stack(
+        alignment: Alignment.center,
+        children: [
+          iconWidget,
+          const SizedBox(
+            width: 56,
+            height: 56,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+        ],
+      );
+    }
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -33,7 +53,7 @@ class DrawerShell extends StatelessWidget {
                 // Header
                 Row(
                   children: [
-                    IconBadge(icon: icon, iconSize: 32),
+                    iconWidget,
                     const SizedBox(width: 16),
                     Expanded(
                       child: Text(title, style: const TextStyle(fontSize: 18)),

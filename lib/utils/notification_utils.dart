@@ -9,14 +9,31 @@ import 'package:conduit/widgets/icon_badge.dart';
 class NotificationUtils {
   static const _defaultNotificationDuration = Duration(milliseconds: 1500);
 
-  static void _showNotification(
+  static OverlaySupportEntry _showNotification(
     BuildContext context,
     String message,
     IconData icon,
     Color iconColor,
-    Duration duration,
-  ) {
-    showOverlayNotification(
+    Duration duration, {
+    bool showSpinner = false,
+  }) {
+    Widget iconWidget = IconBadge(icon: icon, iconSize: 26, color: iconColor);
+
+    if (showSpinner) {
+      iconWidget = Stack(
+        alignment: Alignment.center,
+        children: [
+          iconWidget,
+          const SizedBox(
+            width: 48,
+            height: 48,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+        ],
+      );
+    }
+
+    return showOverlayNotification(
       (overlayContext) => Material(
         color: Colors.transparent,
         child: Container(
@@ -39,7 +56,7 @@ class NotificationUtils {
             bottom: false,
             child: Row(
               children: [
-                IconBadge(icon: icon, iconSize: 26, color: iconColor),
+                iconWidget,
                 const SizedBox(width: 16),
                 Expanded(
                   child: Text(

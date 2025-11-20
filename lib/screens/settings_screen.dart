@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:conduit/bridge_generated.dart/lib.dart';
 import 'package:conduit/screens/home_screen.dart';
-import 'package:conduit/screens/recovery_screen.dart';
 import 'package:conduit/screens/display_seed_screen.dart';
 import 'package:conduit/screens/currency_selection_screen.dart';
 import 'package:conduit/utils/notification_utils.dart';
 import 'package:conduit/utils/auth_utils.dart';
 import 'package:conduit/drawers/invite_scanner_drawer.dart';
 import 'package:conduit/drawers/federation_invite_drawer.dart';
+import 'package:conduit/drawers/recovery_drawer.dart';
 import 'package:conduit/widgets/settings_card.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -116,14 +116,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     if (!mounted) return;
 
     if (client.hasPendingRecoveries()) {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder:
-              (_) => RecoveryScreen(
-                client: client,
-                clientFactory: widget.clientFactory,
-              ),
-        ),
+      RecoveryDrawer.show(
+        context,
+        client: client,
+        clientFactory: widget.clientFactory,
       );
     } else {
       Navigator.of(context).pushReplacement(
