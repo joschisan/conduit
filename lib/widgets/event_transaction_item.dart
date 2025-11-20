@@ -68,15 +68,20 @@ class _EventTransactionItemState extends State<EventTransactionItem>
     final sign = widget.event.incoming ? '+' : '-';
 
     Widget leading = switch (widget.event.success) {
-      null => IconBadge(
-        iconSize: 26,
-        color: Colors.grey,
-        child: const SizedBox(
-          width: 24,
-          height: 24,
-          child: CircularProgressIndicator(strokeWidth: 2),
-        ),
-      ), // Pending - spinner
+      null => Stack(
+        alignment: Alignment.center,
+        children: [
+          IconBadge(
+            icon: PaymentTypeUtils.getIcon(widget.event.paymentType),
+            iconSize: 26,
+          ),
+          const SizedBox(
+            width: 48,
+            height: 48,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+        ],
+      ), // Pending - icon with spinner on rim
       true => IconBadge(
         icon: PaymentTypeUtils.getIcon(widget.event.paymentType),
         iconSize: 26,
