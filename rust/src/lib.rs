@@ -92,14 +92,7 @@ pub struct DatabaseWrapper(Database);
 pub async fn open_database(db_path: &str) -> DatabaseWrapper {
     #[cfg(target_os = "android")]
     android_logger::init_once(
-        android_logger::Config::default()
-            .with_max_level(log::LevelFilter::Debug)
-            .with_tag("CONDUIT_RUST")
-            .with_filter(
-                android_logger::FilterBuilder::new()
-                    .parse("conduit=debug,iroh=debug,fedimint=info,fedimint_api_client=debug,fedimint_connectors=debug")
-                    .build(),
-            ),
+        android_logger::Config::default().with_max_level(log::LevelFilter::Info),
     );
 
     fedimint_core::rustls::install_crypto_provider().await;
@@ -756,6 +749,17 @@ impl ConduitClient {
 
         while let Some(amount) = stream.next().await {
             if sink.add((amount.msats / 1000) as i64).is_err() {
+                break;
+            }
+        }
+    }
+
+    #[frb]
+    pub async fn subscribe_connection_status(&self, sink: StreamSink<Vec<bool>>) {
+        let mut stream = self.client.connection_status_stream();
+
+        while let Some(status_map) = stream.next().await {
+            if sink.add(status_map.into_values().collect()).is_err() {
                 break;
             }
         }

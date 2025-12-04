@@ -1353,7 +1353,7 @@ checksum = "37909eebbb50d72f9059c3b6d82c0463f2ff062c9e95845c43a6c9c0355411be"
 [[package]]
 name = "fedimint-aead"
 version = "0.10.0-alpha"
-source = "git+https://github.com/joschisan/fedimint.git?branch=master#b13399b119b4d9161ac8ba4b27707f65e45dcb09"
+source = "git+https://github.com/joschisan/fedimint.git?branch=fast_fail_requests#65cd3a25e8580ca0c17299f52078ff10989d486a"
 dependencies = [
  "anyhow",
  "argon2",
@@ -1365,10 +1365,11 @@ dependencies = [
 [[package]]
 name = "fedimint-api-client"
 version = "0.10.0-alpha"
-source = "git+https://github.com/joschisan/fedimint.git?branch=master#b13399b119b4d9161ac8ba4b27707f65e45dcb09"
+source = "git+https://github.com/joschisan/fedimint.git?branch=fast_fail_requests#65cd3a25e8580ca0c17299f52078ff10989d486a"
 dependencies = [
  "anyhow",
  "async-channel",
+ "async-stream",
  "async-trait",
  "bitcoin",
  "fedimint-connectors",
@@ -1383,13 +1384,14 @@ dependencies = [
  "serde_json",
  "thiserror 2.0.17",
  "tokio",
+ "tokio-stream",
  "tracing",
 ]
 
 [[package]]
 name = "fedimint-bip39"
 version = "0.10.0-alpha"
-source = "git+https://github.com/joschisan/fedimint.git?branch=master#b13399b119b4d9161ac8ba4b27707f65e45dcb09"
+source = "git+https://github.com/joschisan/fedimint.git?branch=fast_fail_requests#65cd3a25e8580ca0c17299f52078ff10989d486a"
 dependencies = [
  "bip39",
  "fedimint-client",
@@ -1401,7 +1403,7 @@ dependencies = [
 [[package]]
 name = "fedimint-bitcoind"
 version = "0.10.0-alpha"
-source = "git+https://github.com/joschisan/fedimint.git?branch=master#b13399b119b4d9161ac8ba4b27707f65e45dcb09"
+source = "git+https://github.com/joschisan/fedimint.git?branch=fast_fail_requests#65cd3a25e8580ca0c17299f52078ff10989d486a"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -1415,7 +1417,7 @@ dependencies = [
 [[package]]
 name = "fedimint-build"
 version = "0.10.0-alpha"
-source = "git+https://github.com/joschisan/fedimint.git?branch=master#b13399b119b4d9161ac8ba4b27707f65e45dcb09"
+source = "git+https://github.com/joschisan/fedimint.git?branch=fast_fail_requests#65cd3a25e8580ca0c17299f52078ff10989d486a"
 dependencies = [
  "serde_json",
 ]
@@ -1423,7 +1425,7 @@ dependencies = [
 [[package]]
 name = "fedimint-client"
 version = "0.10.0-alpha"
-source = "git+https://github.com/joschisan/fedimint.git?branch=master#b13399b119b4d9161ac8ba4b27707f65e45dcb09"
+source = "git+https://github.com/joschisan/fedimint.git?branch=fast_fail_requests#65cd3a25e8580ca0c17299f52078ff10989d486a"
 dependencies = [
  "anyhow",
  "async-stream",
@@ -1452,7 +1454,7 @@ dependencies = [
 [[package]]
 name = "fedimint-client-module"
 version = "0.10.0-alpha"
-source = "git+https://github.com/joschisan/fedimint.git?branch=master#b13399b119b4d9161ac8ba4b27707f65e45dcb09"
+source = "git+https://github.com/joschisan/fedimint.git?branch=fast_fail_requests#65cd3a25e8580ca0c17299f52078ff10989d486a"
 dependencies = [
  "anyhow",
  "aquamarine",
@@ -1483,7 +1485,7 @@ dependencies = [
 [[package]]
 name = "fedimint-connectors"
 version = "0.10.0-alpha"
-source = "git+https://github.com/joschisan/fedimint.git?branch=master#b13399b119b4d9161ac8ba4b27707f65e45dcb09"
+source = "git+https://github.com/joschisan/fedimint.git?branch=fast_fail_requests#65cd3a25e8580ca0c17299f52078ff10989d486a"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -1514,7 +1516,7 @@ dependencies = [
 [[package]]
 name = "fedimint-core"
 version = "0.10.0-alpha"
-source = "git+https://github.com/joschisan/fedimint.git?branch=master#b13399b119b4d9161ac8ba4b27707f65e45dcb09"
+source = "git+https://github.com/joschisan/fedimint.git?branch=fast_fail_requests#65cd3a25e8580ca0c17299f52078ff10989d486a"
 dependencies = [
  "anyhow",
  "async-channel",
@@ -1577,7 +1579,7 @@ dependencies = [
 [[package]]
 name = "fedimint-db-locked"
 version = "0.10.0-alpha"
-source = "git+https://github.com/joschisan/fedimint.git?branch=master#b13399b119b4d9161ac8ba4b27707f65e45dcb09"
+source = "git+https://github.com/joschisan/fedimint.git?branch=fast_fail_requests#65cd3a25e8580ca0c17299f52078ff10989d486a"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -1590,7 +1592,7 @@ dependencies = [
 [[package]]
 name = "fedimint-derive"
 version = "0.10.0-alpha"
-source = "git+https://github.com/joschisan/fedimint.git?branch=master#b13399b119b4d9161ac8ba4b27707f65e45dcb09"
+source = "git+https://github.com/joschisan/fedimint.git?branch=fast_fail_requests#65cd3a25e8580ca0c17299f52078ff10989d486a"
 dependencies = [
  "itertools 0.14.0",
  "proc-macro2",
@@ -1601,7 +1603,7 @@ dependencies = [
 [[package]]
 name = "fedimint-derive-secret"
 version = "0.10.0-alpha"
-source = "git+https://github.com/joschisan/fedimint.git?branch=master#b13399b119b4d9161ac8ba4b27707f65e45dcb09"
+source = "git+https://github.com/joschisan/fedimint.git?branch=fast_fail_requests#65cd3a25e8580ca0c17299f52078ff10989d486a"
 dependencies = [
  "anyhow",
  "bitcoin_hashes",
@@ -1614,7 +1616,7 @@ dependencies = [
 [[package]]
 name = "fedimint-eventlog"
 version = "0.10.0-alpha"
-source = "git+https://github.com/joschisan/fedimint.git?branch=master#b13399b119b4d9161ac8ba4b27707f65e45dcb09"
+source = "git+https://github.com/joschisan/fedimint.git?branch=fast_fail_requests#65cd3a25e8580ca0c17299f52078ff10989d486a"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -1632,7 +1634,7 @@ dependencies = [
 [[package]]
 name = "fedimint-fountain"
 version = "0.10.0-alpha"
-source = "git+https://github.com/joschisan/fedimint.git?branch=master#b13399b119b4d9161ac8ba4b27707f65e45dcb09"
+source = "git+https://github.com/joschisan/fedimint.git?branch=fast_fail_requests#65cd3a25e8580ca0c17299f52078ff10989d486a"
 dependencies = [
  "anyhow",
  "bitcoin_hashes",
@@ -1644,7 +1646,7 @@ dependencies = [
 [[package]]
 name = "fedimint-hkdf"
 version = "0.10.0-alpha"
-source = "git+https://github.com/joschisan/fedimint.git?branch=master#b13399b119b4d9161ac8ba4b27707f65e45dcb09"
+source = "git+https://github.com/joschisan/fedimint.git?branch=fast_fail_requests#65cd3a25e8580ca0c17299f52078ff10989d486a"
 dependencies = [
  "bitcoin_hashes",
 ]
@@ -1652,7 +1654,7 @@ dependencies = [
 [[package]]
 name = "fedimint-ln-common"
 version = "0.10.0-alpha"
-source = "git+https://github.com/joschisan/fedimint.git?branch=master#b13399b119b4d9161ac8ba4b27707f65e45dcb09"
+source = "git+https://github.com/joschisan/fedimint.git?branch=fast_fail_requests#65cd3a25e8580ca0c17299f52078ff10989d486a"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -1676,7 +1678,7 @@ dependencies = [
 [[package]]
 name = "fedimint-lnv2-client"
 version = "0.10.0-alpha"
-source = "git+https://github.com/joschisan/fedimint.git?branch=master#b13399b119b4d9161ac8ba4b27707f65e45dcb09"
+source = "git+https://github.com/joschisan/fedimint.git?branch=fast_fail_requests#65cd3a25e8580ca0c17299f52078ff10989d486a"
 dependencies = [
  "anyhow",
  "aquamarine",
@@ -1707,7 +1709,7 @@ dependencies = [
 [[package]]
 name = "fedimint-lnv2-common"
 version = "0.10.0-alpha"
-source = "git+https://github.com/joschisan/fedimint.git?branch=master#b13399b119b4d9161ac8ba4b27707f65e45dcb09"
+source = "git+https://github.com/joschisan/fedimint.git?branch=fast_fail_requests#65cd3a25e8580ca0c17299f52078ff10989d486a"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -1729,7 +1731,7 @@ dependencies = [
 [[package]]
 name = "fedimint-logging"
 version = "0.10.0-alpha"
-source = "git+https://github.com/joschisan/fedimint.git?branch=master#b13399b119b4d9161ac8ba4b27707f65e45dcb09"
+source = "git+https://github.com/joschisan/fedimint.git?branch=fast_fail_requests#65cd3a25e8580ca0c17299f52078ff10989d486a"
 dependencies = [
  "anyhow",
  "tracing-subscriber",
@@ -1738,7 +1740,7 @@ dependencies = [
 [[package]]
 name = "fedimint-mint-client"
 version = "0.10.0-alpha"
-source = "git+https://github.com/joschisan/fedimint.git?branch=master#b13399b119b4d9161ac8ba4b27707f65e45dcb09"
+source = "git+https://github.com/joschisan/fedimint.git?branch=fast_fail_requests#65cd3a25e8580ca0c17299f52078ff10989d486a"
 dependencies = [
  "anyhow",
  "aquamarine",
@@ -1776,7 +1778,7 @@ dependencies = [
 [[package]]
 name = "fedimint-mint-common"
 version = "0.10.0-alpha"
-source = "git+https://github.com/joschisan/fedimint.git?branch=master#b13399b119b4d9161ac8ba4b27707f65e45dcb09"
+source = "git+https://github.com/joschisan/fedimint.git?branch=fast_fail_requests#65cd3a25e8580ca0c17299f52078ff10989d486a"
 dependencies = [
  "anyhow",
  "bitcoin_hashes",
@@ -1790,7 +1792,7 @@ dependencies = [
 [[package]]
 name = "fedimint-rocksdb"
 version = "0.10.0-alpha"
-source = "git+https://github.com/joschisan/fedimint.git?branch=master#b13399b119b4d9161ac8ba4b27707f65e45dcb09"
+source = "git+https://github.com/joschisan/fedimint.git?branch=fast_fail_requests#65cd3a25e8580ca0c17299f52078ff10989d486a"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -1806,7 +1808,7 @@ dependencies = [
 [[package]]
 name = "fedimint-tbs"
 version = "0.10.0-alpha"
-source = "git+https://github.com/joschisan/fedimint.git?branch=master#b13399b119b4d9161ac8ba4b27707f65e45dcb09"
+source = "git+https://github.com/joschisan/fedimint.git?branch=fast_fail_requests#65cd3a25e8580ca0c17299f52078ff10989d486a"
 dependencies = [
  "bls12_381",
  "fedimint-core",
@@ -1843,7 +1845,7 @@ dependencies = [
 [[package]]
 name = "fedimint-tpe"
 version = "0.10.0-alpha"
-source = "git+https://github.com/joschisan/fedimint.git?branch=master#b13399b119b4d9161ac8ba4b27707f65e45dcb09"
+source = "git+https://github.com/joschisan/fedimint.git?branch=fast_fail_requests#65cd3a25e8580ca0c17299f52078ff10989d486a"
 dependencies = [
  "bitcoin_hashes",
  "bls12_381",
@@ -1858,7 +1860,7 @@ dependencies = [
 [[package]]
 name = "fedimint-util-error"
 version = "0.10.0-alpha"
-source = "git+https://github.com/joschisan/fedimint.git?branch=master#b13399b119b4d9161ac8ba4b27707f65e45dcb09"
+source = "git+https://github.com/joschisan/fedimint.git?branch=fast_fail_requests#65cd3a25e8580ca0c17299f52078ff10989d486a"
 dependencies = [
  "anyhow",
 ]
@@ -1866,7 +1868,7 @@ dependencies = [
 [[package]]
 name = "fedimint-wallet-client"
 version = "0.10.0-alpha"
-source = "git+https://github.com/joschisan/fedimint.git?branch=master#b13399b119b4d9161ac8ba4b27707f65e45dcb09"
+source = "git+https://github.com/joschisan/fedimint.git?branch=fast_fail_requests#65cd3a25e8580ca0c17299f52078ff10989d486a"
 dependencies = [
  "anyhow",
  "aquamarine",
@@ -1895,7 +1897,7 @@ dependencies = [
 [[package]]
 name = "fedimint-wallet-common"
 version = "0.10.0-alpha"
-source = "git+https://github.com/joschisan/fedimint.git?branch=master#b13399b119b4d9161ac8ba4b27707f65e45dcb09"
+source = "git+https://github.com/joschisan/fedimint.git?branch=fast_fail_requests#65cd3a25e8580ca0c17299f52078ff10989d486a"
 dependencies = [
  "anyhow",
  "bitcoin",

@@ -27,6 +27,7 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   late final Stream<ConduitEvent> _eventStream;
   late final Stream<int> _balanceStream;
+  late final Stream<List<bool>> _connectionStream;
   bool _balanceHidden = true;
 
   @override
@@ -34,6 +35,7 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _eventStream = widget.client.subscribeEventLog();
     _balanceStream = widget.client.subscribeBalance();
+    _connectionStream = widget.client.subscribeConnectionStatus();
   }
 
   void _onCreateInvoice() {
@@ -99,6 +101,35 @@ class _HomeScreenState extends State<HomeScreen> {
             );
           },
         ),
+        title: StreamBuilder<List<bool>>(
+          stream: _connectionStream,
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              return const SizedBox.shrink();
+            }
+            return Row(
+              mainAxisSize: MainAxisSize.min,
+              spacing: 16,
+              children:
+                  snapshot.data!.map((connected) {
+                    return Container(
+                      width: 10,
+                      height: 10,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color:
+                            connected
+                                ? Theme.of(context).colorScheme.primary
+                                : Theme.of(
+                                  context,
+                                ).colorScheme.primary.withOpacity(0.3),
+                      ),
+                    );
+                  }).toList(),
+            );
+          },
+        ),
+        centerTitle: true,
         actions: [
           IconButton(
             icon: const Icon(Icons.qr_code_scanner),

@@ -10,18 +10,18 @@ crate-type = ["cdylib"]
 unexpected_cfgs = { level = "allow", check-cfg = ['cfg(frb_expand)'] }
 
 [dependencies]
-fedimint-api-client = { git = "https://github.com/joschisan/fedimint.git", branch = "master" }
-fedimint-bip39 = { git = "https://github.com/joschisan/fedimint.git", branch = "master" }
-fedimint-core = { git = "https://github.com/joschisan/fedimint.git", branch = "master" }
-fedimint-connectors = { git = "https://github.com/joschisan/fedimint.git", branch = "master" }
-fedimint-client = { git = "https://github.com/joschisan/fedimint.git", branch = "master" }
-fedimint-eventlog = { git = "https://github.com/joschisan/fedimint.git", branch = "master" }
-fedimint-fountain = { git = "https://github.com/joschisan/fedimint.git", branch = "master" }
-fedimint-rocksdb = { git = "https://github.com/joschisan/fedimint.git", branch = "master" }
-fedimint-lnv2-client = { git = "https://github.com/joschisan/fedimint.git", branch = "master" }
-fedimint-lnv2-common = { git = "https://github.com/joschisan/fedimint.git", branch = "master" }
-fedimint-mint-client = { git = "https://github.com/joschisan/fedimint.git", branch = "master" }
-fedimint-wallet-client = { git = "https://github.com/joschisan/fedimint.git", branch = "master" }
+fedimint-api-client = { git = "https://github.com/joschisan/fedimint.git", branch = "fast_fail_requests" }
+fedimint-bip39 = { git = "https://github.com/joschisan/fedimint.git", branch = "fast_fail_requests" }
+fedimint-core = { git = "https://github.com/joschisan/fedimint.git", branch = "fast_fail_requests" }
+fedimint-connectors = { git = "https://github.com/joschisan/fedimint.git", branch = "fast_fail_requests" }
+fedimint-client = { git = "https://github.com/joschisan/fedimint.git", branch = "fast_fail_requests" }
+fedimint-eventlog = { git = "https://github.com/joschisan/fedimint.git", branch = "fast_fail_requests" }
+fedimint-fountain = { git = "https://github.com/joschisan/fedimint.git", branch = "fast_fail_requests" }
+fedimint-rocksdb = { git = "https://github.com/joschisan/fedimint.git", branch = "fast_fail_requests" }
+fedimint-lnv2-client = { git = "https://github.com/joschisan/fedimint.git", branch = "fast_fail_requests" }
+fedimint-lnv2-common = { git = "https://github.com/joschisan/fedimint.git", branch = "fast_fail_requests" }
+fedimint-mint-client = { git = "https://github.com/joschisan/fedimint.git", branch = "fast_fail_requests" }
+fedimint-wallet-client = { git = "https://github.com/joschisan/fedimint.git", branch = "fast_fail_requests" }
 bitcoin = "0.32.5"
 log = "0.4"
 android_logger = "0.14"
