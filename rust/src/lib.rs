@@ -25,6 +25,7 @@ use fedimint_core::config::FederationId;
 use fedimint_core::db::IDatabaseTransactionOpsCoreTyped;
 use fedimint_core::module::serde_json;
 use fedimint_core::module::AmountUnit;
+use fedimint_core::task::sleep;
 use fedimint_core::util::SafeUrl;
 use fedimint_core::BitcoinHash;
 use fedimint_core::{db::Database, invite_code::InviteCode, Amount};
@@ -995,11 +996,7 @@ impl ConduitClient {
             position = key.1.saturating_add(1);
         }
 
-        let mut log_event_added_rx = self.client.log_event_added_rx();
-
         loop {
-            let changed = log_event_added_rx.changed();
-
             let batch = self.client.get_event_log(Some(position), 100).await;
 
             for persisted_entry in &batch {
@@ -1025,9 +1022,7 @@ impl ConduitClient {
             }
 
             if batch.len() < 100 {
-                if changed.await.is_err() {
-                    return;
-                }
+                sleep(Duration::from_millis(250)).await;
             }
         }
     }
