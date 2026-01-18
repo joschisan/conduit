@@ -37,7 +37,7 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   app_links: 3dbc685f76b1693c66a6d9dd1e9ab6f73d97dc0a
-  conduit: b249c56dd9040778d8fbd79873c9807513adea06
+  conduit: cd4a7fa2b845702d913a6d0315c88214bce31289
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
   local_auth_darwin: d2e8c53ef0c4f43c646462e3415432c4dab3ae19
   mobile_scanner: 9157936403f5a0644ca3779a38ff8404c5434a93
