@@ -30,24 +30,28 @@
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
+                <action android:name="android.nfc.action.NDEF_DISCOVERED" />
                 <data android:scheme="bitcoin" />
             </intent-filter>
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
+                <action android:name="android.nfc.action.NDEF_DISCOVERED" />
                 <data android:scheme="lightning" />
             </intent-filter>
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
+                <action android:name="android.nfc.action.NDEF_DISCOVERED" />
                 <data android:scheme="lnurl" />
             </intent-filter>
             <intent-filter android:autoVerify="true">
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
+                <action android:name="android.nfc.action.NDEF_DISCOVERED" />
                 <data android:scheme="fedimint" />
             </intent-filter>
         </activity>
