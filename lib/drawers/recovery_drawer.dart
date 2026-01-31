@@ -45,6 +45,11 @@ class _RecoveryDrawerState extends State<RecoveryDrawer> {
   Future<void> _performRecovery() async {
     await widget.client.waitForAllRecoveries();
 
+    // Reload the client to get a fresh instance after recovery
+    final newClient = await widget.clientFactory.load(
+      federationId: widget.client.federationId(),
+    );
+
     // Defer navigation until after the current frame completes
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -55,7 +60,7 @@ class _RecoveryDrawerState extends State<RecoveryDrawer> {
         MaterialPageRoute(
           builder:
               (_) => HomeScreen(
-                client: widget.client,
+                client: newClient!,
                 clientFactory: widget.clientFactory,
               ),
         ),

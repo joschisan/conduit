@@ -60,6 +60,11 @@ impl ConduitClient {
     }
 
     #[frb(sync)]
+    pub fn federation_id(&self) -> FederationId {
+        self.federation_id
+    }
+
+    #[frb(sync)]
     pub fn currency_code(&self) -> String {
         self.currency_code.clone()
     }
