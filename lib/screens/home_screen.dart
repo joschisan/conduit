@@ -49,6 +49,17 @@ class _HomeScreenState extends State<HomeScreen> {
     _balanceStream = widget.client.subscribeBalance();
     _connectionStream = widget.client.subscribeConnectionStatus();
     _initDeepLinks();
+    _backupToFederation();
+  }
+
+  Future<void> _backupToFederation() async {
+    try {
+      await widget.client.backupToFederation();
+    } catch (e) {
+      if (mounted) {
+        NotificationUtils.showError(context, 'Backup failed: $e');
+      }
+    }
   }
 
   @override

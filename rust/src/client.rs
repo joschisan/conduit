@@ -1,5 +1,6 @@
 use std::time::Duration;
 
+use fedimint_client::backup::Metadata;
 use fedimint_client::{ClientHandleArc, OperationId};
 use fedimint_core::config::FederationId;
 use fedimint_core::db::{Database, IDatabaseTransactionOpsCoreTyped};
@@ -48,6 +49,14 @@ impl ConduitClient {
             .global
             .federation_name()
             .map(|name| name.to_string())
+    }
+
+    #[frb]
+    pub async fn backup_to_federation(&self) -> Result<(), String> {
+        self.client
+            .backup_to_federation(Metadata::empty())
+            .await
+            .map_err(|e| e.to_string())
     }
 
     #[frb(sync)]
