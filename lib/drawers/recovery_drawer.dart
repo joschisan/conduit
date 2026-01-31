@@ -33,12 +33,10 @@ class RecoveryDrawer extends StatefulWidget {
 
 class _RecoveryDrawerState extends State<RecoveryDrawer> {
   late final Future<void> _recoveryFuture;
-  late final Stream<ConduitRecoveryProgress> _progressStream;
 
   @override
   void initState() {
     super.initState();
-    _progressStream = widget.client.subscribeRecoveryProgress();
     _recoveryFuture = _performRecovery();
   }
 
@@ -90,64 +88,19 @@ class _RecoveryDrawerState extends State<RecoveryDrawer> {
   }
 
   Widget _buildRecoveringContent() {
-    return StreamBuilder<ConduitRecoveryProgress>(
-      stream: _progressStream,
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return CircularProgressIndicator(
-            color: Theme.of(context).colorScheme.primary,
-          );
-        }
-
-        final progress =
-            snapshot.data!.complete == snapshot.data!.total
-                ? 1.0
-                : snapshot.data!.complete / snapshot.data!.total;
-
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Module ID ${snapshot.data!.moduleId}',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: 80,
-              height: 80,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  SizedBox(
-                    width: 80,
-                    height: 80,
-                    child: CircularProgressIndicator(
-                      value: progress,
-                      strokeWidth: 6,
-                      color: Theme.of(context).colorScheme.primary,
-                      backgroundColor:
-                          Theme.of(context).colorScheme.surfaceContainerHighest,
-                    ),
-                  ),
-                  Text(
-                    '${(progress * 100).toInt()}%',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'Keep this drawer open to progress the recovery.',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-          ],
-        );
-      },
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        CircularProgressIndicator(
+          color: Theme.of(context).colorScheme.primary,
+        ),
+        const SizedBox(height: 24),
+        Text(
+          'Keep this drawer open to progress the recovery.\nThis may take a few minutes.',
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.bodyMedium,
+        ),
+      ],
     );
   }
 
