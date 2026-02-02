@@ -197,7 +197,7 @@ impl ConduitClient {
 
     #[frb]
     pub async fn lnurl(&self) -> Result<String, String> {
-        let recurringd = SafeUrl::parse("https://recurringd-ytcf5.ondigitalocean.app").unwrap();
+        let recurringd = SafeUrl::parse("https://recurringdv2.fedimint.org").unwrap();
 
         self.client
             .get_first_module::<LightningClientModule>()
