@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/widgets/qr_code_widget.dart';
 import 'package:conduit/widgets/async_action_button.dart';
-import 'package:conduit/widgets/icon_badge.dart';
 import 'package:conduit/drawers/generate_address_drawer.dart';
 import 'package:conduit/utils/notification_utils.dart';
 
@@ -119,9 +118,13 @@ class _BitcoinAddressScreenState extends State<BitcoinAddressScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const Expanded(
+              Expanded(
                 child: Center(
-                  child: IconBadge(icon: Icons.currency_bitcoin, iconSize: 48),
+                  child: Icon(
+                    Icons.currency_bitcoin,
+                    size: 64,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
                 ),
               ),
               QrCodeWidget(data: currentAddress),

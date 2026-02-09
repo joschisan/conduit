@@ -1,15 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:conduit/widgets/qr_code_widget.dart';
 import 'package:conduit/widgets/amount_display.dart';
-import 'package:conduit/widgets/icon_badge.dart';
 
 // Pure UI composition
 Widget _buildInvoiceContent(BuildContext context, String invoice, int amount) =>
     Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        const Expanded(
-          child: Center(child: IconBadge(icon: Icons.bolt, iconSize: 48)),
+        Expanded(
+          child: Center(
+            child: Icon(
+              Icons.bolt,
+              size: 64,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+          ),
         ),
         QrCodeWidget(data: invoice),
         Expanded(child: Center(child: AmountDisplay(amount))),

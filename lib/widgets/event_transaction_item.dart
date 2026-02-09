@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:conduit/bridge_generated.dart/events.dart';
 import 'package:conduit/utils/payment_type_utils.dart';
-import 'package:conduit/widgets/icon_badge.dart';
 
 String _formatTime(DateTime dateTime) {
   final difference = DateTime.now().difference(dateTime);
@@ -69,13 +68,16 @@ class _EventTransactionItemState extends State<EventTransactionItem>
     ).format(widget.event.amountSats);
     final sign = widget.event.incoming ? '+' : '-';
 
+    final primaryColor = Theme.of(context).colorScheme.primary;
+
     Widget leading = switch (widget.event.success) {
       null => Stack(
         alignment: Alignment.center,
         children: [
-          IconBadge(
-            icon: PaymentTypeUtils.getIcon(widget.event.paymentType),
-            iconSize: 26,
+          Icon(
+            PaymentTypeUtils.getIcon(widget.event.paymentType),
+            size: 32,
+            color: primaryColor,
           ),
           const SizedBox(
             width: 48,
@@ -84,13 +86,14 @@ class _EventTransactionItemState extends State<EventTransactionItem>
           ),
         ],
       ), // Pending - icon with spinner on rim
-      true => IconBadge(
-        icon: PaymentTypeUtils.getIcon(widget.event.paymentType),
-        iconSize: 26,
+      true => Icon(
+        PaymentTypeUtils.getIcon(widget.event.paymentType),
+        size: 32,
+        color: primaryColor,
       ), // Success - payment type icon
-      false => IconBadge(
-        icon: Icons.error_outline,
-        iconSize: 26,
+      false => const Icon(
+        Icons.error,
+        size: 32,
         color: Colors.red,
       ), // Failed - error icon
     };

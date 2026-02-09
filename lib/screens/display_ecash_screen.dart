@@ -4,7 +4,6 @@ import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/bridge_generated.dart/fountain.dart';
 import 'package:conduit/widgets/amount_display.dart';
 import 'package:conduit/widgets/qr_code_widget.dart';
-import 'package:conduit/widgets/icon_badge.dart';
 import 'package:conduit/drawers/cancel_ecash_drawer.dart';
 
 Stream<String> _createFrameStream(OobNotesEncoder encoder) async* {
@@ -47,8 +46,14 @@ class DisplayEcashScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const Expanded(
-                child: Center(child: IconBadge(icon: Icons.toll, iconSize: 48)),
+              Expanded(
+                child: Center(
+                  child: Icon(
+                    Icons.toll,
+                    size: 64,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
               ),
               StreamBuilder<String>(
                 stream: _createFrameStream(encoder),

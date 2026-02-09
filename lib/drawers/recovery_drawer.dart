@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/bridge_generated.dart/factory.dart';
 import 'package:conduit/widgets/drawer_shell.dart';
-import 'package:conduit/widgets/icon_badge.dart';
 import 'package:conduit/utils/drawer_utils.dart';
 import 'package:conduit/screens/home_screen.dart';
 
@@ -91,9 +90,7 @@ class _RecoveryDrawerState extends State<RecoveryDrawer> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        CircularProgressIndicator(
-          color: Theme.of(context).colorScheme.primary,
-        ),
+        CircularProgressIndicator(color: Theme.of(context).colorScheme.primary),
         const SizedBox(height: 24),
         Text(
           'Keep this drawer open to progress the recovery.\nThis may take a few minutes.',
@@ -108,11 +105,7 @@ class _RecoveryDrawerState extends State<RecoveryDrawer> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        IconBadge(
-          icon: Icons.error_outline,
-          iconSize: 48,
-          color: Theme.of(context).colorScheme.error,
-        ),
+        Icon(Icons.error, size: 64, color: Theme.of(context).colorScheme.error),
         const SizedBox(height: 24),
         Text(
           'Recovery failed',

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/bridge_generated.dart/factory.dart';
 import 'package:conduit/bridge_generated.dart/lnurl.dart';
-import 'package:conduit/widgets/icon_badge.dart';
 import 'package:conduit/widgets/async_button_mixin.dart';
 import 'package:conduit/screens/lnurl_payment_amount_screen.dart';
 import 'package:conduit/drawers/lightning_payment_drawer.dart';
@@ -34,7 +33,11 @@ class _ContactTileState extends State<_ContactTile> with AsyncButtonMixin {
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        leading: IconBadge(icon: Icons.person, iconSize: 24),
+        leading: Icon(
+          Icons.person,
+          size: 32,
+          color: Theme.of(context).colorScheme.primary,
+        ),
         title: Text(widget.contact.name),
         trailing: switch (buttonState) {
           AsyncButtonState.loading => const SizedBox(

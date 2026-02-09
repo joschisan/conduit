@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:conduit/widgets/icon_badge.dart';
 
 class SettingsCard extends StatelessWidget {
   final IconData icon;
@@ -25,7 +24,11 @@ class SettingsCard extends StatelessWidget {
           vertical: 8.0,
         ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        leading: IconBadge(icon: icon, iconSize: 24),
+        leading: Icon(
+          icon,
+          size: 32,
+          color: Theme.of(context).colorScheme.primary,
+        ),
         title: Text(title),
         trailing: const Icon(Icons.chevron_right),
         onTap: onTap,

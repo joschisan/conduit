@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:conduit/widgets/qr_code_widget.dart';
-import 'package:conduit/widgets/icon_badge.dart';
 
 // Pure UI composition
 Widget _buildLnurlContent(BuildContext context, String lnurl) => Column(
   crossAxisAlignment: CrossAxisAlignment.center,
   children: [
-    const Expanded(
-      child: Center(child: IconBadge(icon: Icons.bolt, iconSize: 48)),
+    Expanded(
+      child: Center(
+        child: Icon(
+          Icons.bolt,
+          size: 64,
+          color: Theme.of(context).colorScheme.primary,
+        ),
+      ),
     ),
     QrCodeWidget(data: lnurl),
     Expanded(

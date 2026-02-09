@@ -16,7 +16,7 @@ class NotificationUtils {
     Duration duration, {
     bool showSpinner = false,
   }) {
-    Widget iconWidget = Icon(icon, size: 26, color: iconColor);
+    Widget iconWidget = Icon(icon, size: 32, color: iconColor);
 
     if (showSpinner) {
       iconWidget = Stack(
