@@ -10,7 +10,6 @@ import 'package:conduit/widgets/event_transactions_list.dart';
 import 'package:conduit/screens/lightning_receive_amount_screen.dart';
 import 'package:conduit/screens/ecash_send_amount_screen.dart';
 import 'package:conduit/screens/bitcoin_address_screen.dart';
-import 'package:conduit/screens/settings_screen.dart';
 import 'package:conduit/drawers/scanner_drawer.dart';
 import 'package:conduit/drawers/event_details_drawer.dart';
 import 'package:conduit/drawers/ecash_receive_drawer.dart';
@@ -183,14 +182,7 @@ class _HomeScreenState extends State<HomeScreen> {
         automaticallyImplyLeading: false,
         leading: IconButton(
           icon: const Icon(Icons.settings),
-          onPressed: () {
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(
-                builder:
-                    (_) => SettingsScreen(clientFactory: widget.clientFactory),
-              ),
-            );
-          },
+          onPressed: () => Navigator.of(context).pop(),
         ),
         title: StreamBuilder<List<bool>>(
           stream: _connectionStream,

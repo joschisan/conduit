@@ -14,8 +14,13 @@ import 'package:conduit/widgets/settings_card.dart';
 
 class SettingsScreen extends StatefulWidget {
   final ConduitClientFactory clientFactory;
+  final ConduitClient? initialClient;
 
-  const SettingsScreen({super.key, required this.clientFactory});
+  const SettingsScreen({
+    super.key,
+    required this.clientFactory,
+    this.initialClient,
+  });
 
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
@@ -27,7 +32,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   void initState() {
     super.initState();
+
     _refreshFederations();
+
+    if (widget.initialClient != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _navigateToClientScreen(widget.initialClient!);
+      });
+    }
   }
 
   void _refreshFederations() {
@@ -124,7 +136,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         clientFactory: widget.clientFactory,
       );
     } else {
-      Navigator.of(context).pushReplacement(
+      Navigator.of(context).push(
         MaterialPageRoute(
           builder:
               (_) => HomeScreen(

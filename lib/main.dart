@@ -8,7 +8,6 @@ import 'package:conduit/bridge_generated.dart/lib.dart';
 import 'package:conduit/bridge_generated.dart/factory.dart';
 import 'package:conduit/screens/wallet_choice_screen.dart';
 import 'package:conduit/screens/settings_screen.dart';
-import 'package:conduit/screens/home_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,17 +28,16 @@ void main() async {
   final clientFactory = await ConduitClientFactory.tryLoad(db: db);
 
   if (clientFactory != null) {
-    final client = await clientFactory.loadSelected();
+    final initialClient = await clientFactory.loadSelected();
 
-    if (client != null) {
-      runApp(
-        ConduitApp(
-          home: HomeScreen(client: client, clientFactory: clientFactory),
+    runApp(
+      ConduitApp(
+        home: SettingsScreen(
+          clientFactory: clientFactory,
+          initialClient: initialClient,
         ),
-      );
-    } else {
-      runApp(ConduitApp(home: SettingsScreen(clientFactory: clientFactory)));
-    }
+      ),
+    );
   } else {
     runApp(ConduitApp(home: WalletChoiceScreen(db: db)));
   }
