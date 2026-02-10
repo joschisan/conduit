@@ -5,13 +5,8 @@ import 'package:conduit/utils/notification_utils.dart';
 
 class QrScannerWidget extends StatefulWidget {
   final void Function(String input) onScan;
-  final VoidCallback? onContactsPressed;
 
-  const QrScannerWidget({
-    super.key,
-    required this.onScan,
-    this.onContactsPressed,
-  });
+  const QrScannerWidget({super.key, required this.onScan});
 
   @override
   State<QrScannerWidget> createState() => _QrScannerWidgetState();
@@ -78,19 +73,6 @@ class _QrScannerWidgetState extends State<QrScannerWidget> {
                   icon: const Icon(Icons.paste, color: Colors.white, size: 36),
                 ),
               ),
-              if (widget.onContactsPressed != null)
-                Positioned(
-                  top: 16,
-                  left: 16,
-                  child: IconButton(
-                    onPressed: widget.onContactsPressed,
-                    icon: const Icon(
-                      Icons.people,
-                      color: Colors.white,
-                      size: 36,
-                    ),
-                  ),
-                ),
             ],
           ),
         );

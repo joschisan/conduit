@@ -18,6 +18,7 @@ import 'package:conduit/drawers/lnurl_prompt_drawer.dart';
 import 'package:conduit/drawers/bitcoin_address_prompt_drawer.dart';
 import 'package:conduit/bridge_generated.dart/lnurl.dart';
 import 'package:conduit/utils/notification_utils.dart';
+import 'package:conduit/screens/contacts_screen.dart';
 
 class FederationScreen extends StatefulWidget {
   final ConduitClient client;
@@ -163,6 +164,18 @@ class _FederationScreenState extends State<FederationScreen> {
     }
   }
 
+  void _onContacts() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder:
+            (_) => ContactsScreen(
+              client: widget.client,
+              clientFactory: widget.clientFactory,
+            ),
+      ),
+    );
+  }
+
   void _onScan() {
     ScannerDrawer.show(
       context,
@@ -212,8 +225,9 @@ class _FederationScreenState extends State<FederationScreen> {
             );
           },
         ),
-        centerTitle: true,
+        centerTitle: false,
         actions: [
+          IconButton(icon: const Icon(Icons.people), onPressed: _onContacts),
           IconButton(
             icon: const Icon(Icons.qr_code_scanner),
             onPressed: _onScan,
