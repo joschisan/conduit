@@ -73,7 +73,7 @@ class WalletChoiceScreen extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               AsyncActionButton(
-                text: 'Enter Seed Phrase',
+                text: 'Enter Recovery Phrase',
                 onPressed: () async {
                   Navigator.of(context).push(
                     MaterialPageRoute(

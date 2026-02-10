@@ -219,7 +219,7 @@ class _BaseScreenState extends State<BaseScreen> {
   Widget _buildSeedPhraseCard() {
     return SettingsCard(
       icon: Icons.key,
-      title: 'Seed Phrase',
+      title: 'Recovery Phrase',
       onTap: _handleSeedPhraseTap,
     );
   }

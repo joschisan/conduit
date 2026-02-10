@@ -21,7 +21,7 @@ class ConfirmSeedScreen extends StatelessWidget {
 
     if (mnemonic == null) {
       if (context.mounted) {
-        NotificationUtils.showError(context, 'Invalid seed phrase');
+        NotificationUtils.showError(context, 'Invalid Recovery Phrase');
       }
       return;
     }
@@ -44,7 +44,7 @@ class ConfirmSeedScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Confirm Seed Phrase')),
+      appBar: AppBar(title: const Text('Confirm Recovery Phrase')),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -53,7 +53,7 @@ class ConfirmSeedScreen extends StatelessWidget {
             children: [
               Expanded(child: SeedPhraseGrid(words: seedPhrase)),
               AsyncActionButton(
-                text: 'Confirm Seed Phrase',
+                text: 'Confirm Recovery Phrase',
                 onPressed: () => _recoverWallet(context),
               ),
             ],

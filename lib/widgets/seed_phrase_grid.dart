@@ -9,38 +9,54 @@ class SeedPhraseGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return GridView.builder(
-      itemCount: words.length,
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: 12,
-        mainAxisSpacing: 12,
-        childAspectRatio: 3.5,
-      ),
-      itemBuilder: (context, index) {
-        final word = words[index];
-        return Container(
-          decoration: BoxDecoration(
-            color: theme.colorScheme.surface,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: theme.colorScheme.outline),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 12),
-          child: Row(
-            children: [
-              Text(
-                '${index + 1}.',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.primary,
-                  fontWeight: FontWeight.bold,
+    final half = words.length ~/ 2;
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(child: _buildColumn(theme, words.sublist(0, half), 0)),
+        const SizedBox(width: 16),
+        Expanded(child: _buildColumn(theme, words.sublist(half), half)),
+      ],
+    );
+  }
+
+  Widget _buildColumn(ThemeData theme, List<String> columnWords, int offset) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        for (int i = 0; i < columnWords.length; i++)
+          Card(
+            margin: const EdgeInsets.symmetric(vertical: 4),
+            child: ListTile(
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 16.0,
+                vertical: 4.0,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              leading: SizedBox(
+                width: 40,
+                child: Text(
+                  '${offset + i + 1}',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: theme.colorScheme.primary,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 32,
+                  ),
                 ),
               ),
-              const SizedBox(width: 8),
-              Expanded(child: Text(word, style: theme.textTheme.bodyMedium)),
-            ],
+              title: Text(
+                columnWords[i],
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
           ),
-        );
-      },
+      ],
     );
   }
 }
