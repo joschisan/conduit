@@ -62,35 +62,61 @@ class _SettingsScreenState extends State<SettingsScreen> {
     body: SafeArea(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            _buildSeedPhraseCard(),
-            const SizedBox(height: 4),
-            _buildCurrencyCard(),
-            const Spacer(),
-            _buildFederationsList(),
-          ],
+        child: FutureBuilder<List<FederationInfo>>(
+          future: _federationsFuture,
+          builder: (context, snapshot) {
+            final federations = snapshot.data ?? [];
+            final showOnboarding = snapshot.hasData && federations.isEmpty;
+
+            return Column(
+              children: [
+                if (showOnboarding) _buildOnboardingCard(),
+                _buildSeedPhraseCard(),
+                const SizedBox(height: 4),
+                _buildCurrencyCard(),
+                const Spacer(),
+                _buildFederationsContent(snapshot),
+              ],
+            );
+          },
         ),
       ),
     ),
   );
 
-  Widget _buildFederationsList() {
-    return FutureBuilder<List<FederationInfo>>(
-      future: _federationsFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return _buildLoadingState();
-        }
-
-        if (snapshot.hasError) {
-          return _buildErrorState();
-        }
-
-        final federations = snapshot.data ?? [];
-        return _buildFederationsListView(federations);
-      },
+  Widget _buildOnboardingCard() {
+    final theme = Theme.of(context);
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: theme.colorScheme.primary, width: 2),
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16.0,
+          vertical: 8.0,
+        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        title: Text(
+          'Scan or paste an invite code to join your first federation.',
+          style: TextStyle(color: theme.colorScheme.primary),
+        ),
+      ),
     );
+  }
+
+  Widget _buildFederationsContent(AsyncSnapshot<List<FederationInfo>> snapshot) {
+    if (snapshot.connectionState == ConnectionState.waiting) {
+      return _buildLoadingState();
+    }
+
+    if (snapshot.hasError) {
+      return _buildErrorState();
+    }
+
+    final federations = snapshot.data ?? [];
+    return _buildFederationsListView(federations);
   }
 
   Widget _buildLoadingState() {
@@ -107,6 +133,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildFederationsListView(List<FederationInfo> federations) {
+    if (federations.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
     return ListView.builder(
       shrinkWrap: true,
       itemCount: federations.length,
@@ -182,7 +212,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildCurrencyCard() {
     return SettingsCard(
-      icon: Icons.attach_money,
+      icon: Icons.currency_exchange,
       title: 'Select Currency',
       onTap: _handleCurrencyTap,
     );

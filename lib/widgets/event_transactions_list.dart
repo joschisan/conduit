@@ -142,18 +142,33 @@ class _EventTransactionsListState extends State<EventTransactionsList> {
     super.dispose();
   }
 
+  Widget _buildOnboardingCard(BuildContext context) {
+    final theme = Theme.of(context);
+    return Card(
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: theme.colorScheme.primary, width: 2),
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16.0,
+          vertical: 8.0,
+        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        title: Text(
+          'Tap the lightning button to create an invoice and receive your first payment.',
+          style: TextStyle(color: theme.colorScheme.primary),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_events.isEmpty) {
-      return Center(
-        child: Text(
-          'No transactions yet',
-          style: TextStyle(
-            color: Theme.of(
-              context,
-            ).colorScheme.onSurface.withValues(alpha: 0.6),
-          ),
-        ),
+      return Align(
+        alignment: Alignment.topCenter,
+        child: _buildOnboardingCard(context),
       );
     }
 

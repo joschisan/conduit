@@ -38,23 +38,11 @@ class WalletChoiceScreen extends StatelessWidget {
                 ),
               ),
 
-              AsyncActionButton(
-                text: 'Recover Wallet',
-                onPressed: () async {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder:
-                          (context) => InputSeedScreen(
-                            db: db,
-                            partialSeedPhrase: const [],
-                          ),
-                    ),
-                  );
-                },
+              Text(
+                'New to Conduit?',
+                style: TextStyle(color: theme.colorScheme.primary),
               ),
-
-              const SizedBox(height: 16),
-
+              const SizedBox(height: 8),
               AsyncActionButton(
                 text: 'Generate New Wallet',
                 onPressed: () async {
@@ -74,6 +62,28 @@ class WalletChoiceScreen extends StatelessWidget {
                       ),
                     );
                   }
+                },
+              ),
+
+              const SizedBox(height: 24),
+
+              Text(
+                'Already have a wallet?',
+                style: TextStyle(color: theme.colorScheme.primary),
+              ),
+              const SizedBox(height: 8),
+              AsyncActionButton(
+                text: 'Enter Seed Phrase',
+                onPressed: () async {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder:
+                          (context) => InputSeedScreen(
+                            db: db,
+                            partialSeedPhrase: const [],
+                          ),
+                    ),
+                  );
                 },
               ),
             ],

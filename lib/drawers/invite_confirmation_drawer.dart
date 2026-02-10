@@ -34,13 +34,24 @@ class InviteConfirmationDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return DrawerShell(
-      icon: Icons.link,
-      title: 'Invite Code',
+      icon: Icons.account_balance_wallet,
+      title: 'Federation Invite',
       children: [
-        AsyncActionButton(text: 'Recover', onPressed: () => onRecover(invite)),
-        const SizedBox(height: 12),
+        Text(
+          'New to this federation?',
+          style: TextStyle(color: theme.colorScheme.primary),
+        ),
+        const SizedBox(height: 8),
         AsyncActionButton(text: 'Join', onPressed: () => onJoin(invite)),
+        const SizedBox(height: 24),
+        Text(
+          'Already used the federation before?',
+          style: TextStyle(color: theme.colorScheme.primary),
+        ),
+        const SizedBox(height: 8),
+        AsyncActionButton(text: 'Recover', onPressed: () => onRecover(invite)),
       ],
     );
   }
