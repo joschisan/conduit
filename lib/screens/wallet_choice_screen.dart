@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:conduit/screens/input_seed_screen.dart';
-import 'package:conduit/screens/settings_screen.dart';
+import 'package:conduit/screens/base_screen.dart';
 import 'package:conduit/bridge_generated.dart/lib.dart';
 import 'package:conduit/bridge_generated.dart/factory.dart';
 import 'package:conduit/widgets/async_action_button.dart';
@@ -58,7 +58,7 @@ class WalletChoiceScreen extends StatelessWidget {
                       MaterialPageRoute(
                         builder:
                             (context) =>
-                                SettingsScreen(clientFactory: clientFactory),
+                                BaseScreen(clientFactory: clientFactory),
                       ),
                     );
                   }

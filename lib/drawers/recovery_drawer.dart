@@ -3,7 +3,7 @@ import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/bridge_generated.dart/factory.dart';
 import 'package:conduit/widgets/drawer_shell.dart';
 import 'package:conduit/utils/drawer_utils.dart';
-import 'package:conduit/screens/home_screen.dart';
+import 'package:conduit/screens/federation_screen.dart';
 
 class RecoveryDrawer extends StatefulWidget {
   final ConduitClient client;
@@ -56,7 +56,7 @@ class _RecoveryDrawerState extends State<RecoveryDrawer> {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
           builder:
-              (_) => HomeScreen(
+              (_) => FederationScreen(
                 client: newClient!,
                 clientFactory: widget.clientFactory,
               ),

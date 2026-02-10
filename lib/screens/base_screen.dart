@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:conduit/bridge_generated.dart/lib.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/bridge_generated.dart/factory.dart';
-import 'package:conduit/screens/home_screen.dart';
+import 'package:conduit/screens/federation_screen.dart';
 import 'package:conduit/screens/display_seed_screen.dart';
 import 'package:conduit/screens/currency_selection_screen.dart';
 import 'package:conduit/utils/notification_utils.dart';
@@ -12,21 +12,21 @@ import 'package:conduit/drawers/leave_federation_drawer.dart';
 import 'package:conduit/drawers/recovery_drawer.dart';
 import 'package:conduit/widgets/settings_card.dart';
 
-class SettingsScreen extends StatefulWidget {
+class BaseScreen extends StatefulWidget {
   final ConduitClientFactory clientFactory;
   final ConduitClient? initialClient;
 
-  const SettingsScreen({
+  const BaseScreen({
     super.key,
     required this.clientFactory,
     this.initialClient,
   });
 
   @override
-  State<SettingsScreen> createState() => _SettingsScreenState();
+  State<BaseScreen> createState() => _BaseScreenState();
 }
 
-class _SettingsScreenState extends State<SettingsScreen> {
+class _BaseScreenState extends State<BaseScreen> {
   late Future<List<FederationInfo>> _federationsFuture;
 
   @override
@@ -51,7 +51,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(
-      title: const Text('Settings'),
+      title: const Text('Conduit'),
       actions: [
         IconButton(
           icon: const Icon(Icons.qr_code_scanner),
@@ -68,13 +68,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
             final federations = snapshot.data ?? [];
             final showOnboarding = snapshot.hasData && federations.isEmpty;
 
+            final theme = Theme.of(context);
             return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 if (showOnboarding) _buildOnboardingCard(),
+                Text('Settings', style: theme.textTheme.titleLarge),
+                const SizedBox(height: 8),
                 _buildSeedPhraseCard(),
                 const SizedBox(height: 4),
                 _buildCurrencyCard(),
-                const Spacer(),
+                const SizedBox(height: 24),
                 _buildFederationsContent(snapshot),
               ],
             );
@@ -106,7 +110,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildFederationsContent(AsyncSnapshot<List<FederationInfo>> snapshot) {
+  Widget _buildFederationsContent(
+    AsyncSnapshot<List<FederationInfo>> snapshot,
+  ) {
     if (snapshot.connectionState == ConnectionState.waiting) {
       return _buildLoadingState();
     }
@@ -137,13 +143,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
       return const SizedBox.shrink();
     }
 
-    return ListView.builder(
-      shrinkWrap: true,
-      itemCount: federations.length,
-      itemBuilder: (context, index) {
-        final federation = federations[index];
-        return _buildFederationCard(federation);
-      },
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Federations', style: theme.textTheme.titleLarge),
+        const SizedBox(height: 8),
+        ListView.builder(
+          shrinkWrap: true,
+          itemCount: federations.length,
+          itemBuilder: (context, index) {
+            final federation = federations[index];
+            return _buildFederationCard(federation);
+          },
+        ),
+      ],
     );
   }
 
@@ -169,7 +183,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       Navigator.of(context).push(
         MaterialPageRoute(
           builder:
-              (_) => HomeScreen(
+              (_) => FederationScreen(
                 client: client,
                 clientFactory: widget.clientFactory,
               ),

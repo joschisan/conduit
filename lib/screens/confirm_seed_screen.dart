@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:conduit/bridge_generated.dart/lib.dart';
 import 'package:conduit/bridge_generated.dart/factory.dart';
-import 'package:conduit/screens/settings_screen.dart';
+import 'package:conduit/screens/base_screen.dart';
 import 'package:conduit/widgets/async_action_button.dart';
 import 'package:conduit/utils/notification_utils.dart';
 import 'package:conduit/widgets/seed_phrase_grid.dart';
@@ -34,7 +34,7 @@ class ConfirmSeedScreen extends StatelessWidget {
     if (context.mounted) {
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(
-          builder: (context) => SettingsScreen(clientFactory: clientFactory),
+          builder: (context) => BaseScreen(clientFactory: clientFactory),
         ),
         (route) => false,
       );

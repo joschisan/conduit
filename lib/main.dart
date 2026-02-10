@@ -7,7 +7,7 @@ import 'package:conduit/bridge_generated.dart/frb_generated.dart';
 import 'package:conduit/bridge_generated.dart/lib.dart';
 import 'package:conduit/bridge_generated.dart/factory.dart';
 import 'package:conduit/screens/wallet_choice_screen.dart';
-import 'package:conduit/screens/settings_screen.dart';
+import 'package:conduit/screens/base_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,7 +32,7 @@ void main() async {
 
     runApp(
       ConduitApp(
-        home: SettingsScreen(
+        home: BaseScreen(
           clientFactory: clientFactory,
           initialClient: initialClient,
         ),

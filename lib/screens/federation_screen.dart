@@ -19,21 +19,21 @@ import 'package:conduit/drawers/bitcoin_address_prompt_drawer.dart';
 import 'package:conduit/bridge_generated.dart/lnurl.dart';
 import 'package:conduit/utils/notification_utils.dart';
 
-class HomeScreen extends StatefulWidget {
+class FederationScreen extends StatefulWidget {
   final ConduitClient client;
   final ConduitClientFactory clientFactory;
 
-  const HomeScreen({
+  const FederationScreen({
     super.key,
     required this.client,
     required this.clientFactory,
   });
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<FederationScreen> createState() => _FederationScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _FederationScreenState extends State<FederationScreen> {
   late final Stream<ConduitEvent> _eventStream;
   late final Stream<int> _balanceStream;
   late final Stream<List<bool>> _connectionStream;
