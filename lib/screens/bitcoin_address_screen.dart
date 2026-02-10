@@ -93,14 +93,29 @@ class _BitcoinAddressScreenState extends State<BitcoinAddressScreen> {
   }
 
   Widget _buildEmptyState() {
-    return Center(
-      child: Text(
-        'Tap the + icon in the top right corner to generate for first bitcoin address...',
-        style: TextStyle(
-          fontSize: 18,
-          color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.7),
+    return Align(
+      alignment: Alignment.topCenter,
+      child: Card(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(
+            color: Theme.of(context).colorScheme.primary,
+            width: 2,
+          ),
         ),
-        textAlign: TextAlign.center,
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 16.0,
+            vertical: 8.0,
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          title: Text(
+            'Tap the plus icon to generate your first bitcoin address.',
+            style: TextStyle(color: Theme.of(context).colorScheme.primary),
+          ),
+        ),
       ),
     );
   }
