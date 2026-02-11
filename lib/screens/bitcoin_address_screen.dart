@@ -75,6 +75,7 @@ class _BitcoinAddressScreenState extends State<BitcoinAddressScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        title: const Text('Bitcoin'),
         actions: [
           IconButton(
             icon: const Icon(Icons.add),

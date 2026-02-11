@@ -42,7 +42,7 @@ class DisplayLnurlScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(),
+    appBar: AppBar(title: const Text('Lightning')),
     body: SafeArea(
       child: Padding(
         padding: const EdgeInsets.all(16.0),

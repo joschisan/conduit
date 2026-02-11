@@ -37,6 +37,7 @@ class LightningReceiveAmountScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        title: const Text('Lightning'),
         actions: [
           AsyncTextButton(
             text: 'LNURL',
