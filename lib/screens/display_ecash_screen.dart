@@ -49,10 +49,17 @@ class DisplayEcashScreen extends StatelessWidget {
             children: [
               Expanded(
                 child: Center(
-                  child: Icon(
-                    Icons.toll,
-                    size: 64,
-                    color: Theme.of(context).colorScheme.primary,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.toll,
+                        size: 64,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                      const SizedBox(width: 16),
+                      AmountDisplay(notes.amountSats()),
+                    ],
                   ),
                 ),
               ),
@@ -68,7 +75,23 @@ class DisplayEcashScreen extends StatelessWidget {
                   );
                 },
               ),
-              Expanded(child: Center(child: AmountDisplay(notes.amountSats()))),
+              Expanded(
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                    child: Text(
+                      'Any member of this federation can claim the funds by scanning this eCash token. It is impossible to link this token to your client in any way.',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withValues(alpha: 0.7),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
         ),

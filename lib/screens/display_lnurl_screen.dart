@@ -20,7 +20,7 @@ Widget _buildLnurlContent(BuildContext context, String lnurl) => Column(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 32.0),
           child: Text(
-            'This is a reusable payment code. You can use it to connect a point of sale that is compatible with LNURL Verify.',
+            'This is a reusable payment code. You can use it to connect a point of sale that is compatible with Lightning Url Verify.',
             style: TextStyle(
               fontSize: 14,
               color: Theme.of(
@@ -42,7 +42,7 @@ class DisplayLnurlScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Lightning')),
+    appBar: AppBar(title: const Text('Lightning Url')),
     body: SafeArea(
       child: Padding(
         padding: const EdgeInsets.all(16.0),

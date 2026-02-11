@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/widgets/qr_code_widget.dart';
-import 'package:conduit/widgets/async_action_button.dart';
 import 'package:conduit/drawers/generate_address_drawer.dart';
 import 'package:conduit/utils/notification_utils.dart';
 
@@ -69,14 +68,22 @@ class _BitcoinAddressScreenState extends State<BitcoinAddressScreen> {
   Future<void> _recheckAddress() async {
     final tweakIdx = addresses[currentIndex].$1;
     await widget.client.onchainRecheckAddress(tweakIdx: tweakIdx);
+    if (!mounted) return;
+    NotificationUtils.showSuccess(context, 'Address rechecked');
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Bitcoin'),
+        centerTitle: true,
+        title: const Text('Bitcoin Address'),
         actions: [
+          if (addresses.isNotEmpty)
+            IconButton(
+              icon: const Icon(Icons.refresh),
+              onPressed: _recheckAddress,
+            ),
           IconButton(
             icon: const Icon(Icons.add),
             onPressed: _showGenerateConfirmation,
@@ -136,19 +143,14 @@ class _BitcoinAddressScreenState extends State<BitcoinAddressScreen> {
             children: [
               Expanded(
                 child: Center(
-                  child: Icon(
-                    Icons.currency_bitcoin,
-                    size: 64,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ),
-              ),
-              QrCodeWidget(data: currentAddress),
-              Expanded(
-                child: Center(
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
+                      Icon(
+                        Icons.currency_bitcoin,
+                        size: 64,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
                       IconButton(
                         icon: const Icon(Icons.arrow_back_ios, size: 20),
                         onPressed: hasPrevious ? _previousAddress : null,
@@ -185,10 +187,27 @@ class _BitcoinAddressScreenState extends State<BitcoinAddressScreen> {
                   ),
                 ),
               ),
+              QrCodeWidget(data: currentAddress),
+              Expanded(
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                    child: Text(
+                      'Incoming onchain payments may take another hour or two after confirmation to show up in your balance. If you reuse an address you need to manually recheck it.',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withValues(alpha: 0.7),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
         ),
-        AsyncActionButton(text: 'Recheck Address', onPressed: _recheckAddress),
       ],
     );
   }

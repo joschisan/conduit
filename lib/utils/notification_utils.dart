@@ -119,6 +119,16 @@ class NotificationUtils {
     );
   }
 
+  static void showSuccess(BuildContext context, String message) {
+    _showNotification(
+      context,
+      message,
+      Icons.check_circle,
+      Colors.green,
+      _defaultNotificationDuration,
+    );
+  }
+
   static void showCopy(BuildContext context, String message) {
     _showNotification(
       context,
