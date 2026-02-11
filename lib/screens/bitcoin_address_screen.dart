@@ -104,6 +104,7 @@ class _BitcoinAddressScreenState extends State<BitcoinAddressScreen> {
     return Align(
       alignment: Alignment.topCenter,
       child: Card(
+        margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
           side: BorderSide(

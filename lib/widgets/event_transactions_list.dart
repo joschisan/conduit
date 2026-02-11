@@ -143,11 +143,14 @@ class _EventTransactionsListState extends State<EventTransactionsList> {
   }
 
   Widget _buildOnboardingCard(BuildContext context) {
-    final theme = Theme.of(context);
     return Card(
+      margin: EdgeInsets.zero,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: theme.colorScheme.primary, width: 2),
+        side: BorderSide(
+          color: Theme.of(context).colorScheme.primary,
+          width: 2,
+        ),
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(
@@ -157,7 +160,7 @@ class _EventTransactionsListState extends State<EventTransactionsList> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         title: Text(
           'Tap the lightning button to create an invoice and receive your first payment.',
-          style: TextStyle(color: theme.colorScheme.primary),
+          style: TextStyle(color: Theme.of(context).colorScheme.primary),
         ),
       ),
     );

@@ -209,20 +209,47 @@ class _ContactsScreenState extends State<ContactsScreen> with AsyncButtonMixin {
                 onChanged: (value) => setState(() => _query = value),
               ),
             ),
-            Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemCount: filtered.length,
-                itemBuilder: (context, index) {
-                  final contact = filtered[index];
-                  return _ContactTile(
-                    contact: contact,
-                    onTap: () => _handleContactTap(contact),
-                    onLongPress: () => _handleDeleteContact(contact),
-                  );
-                },
+            if (_contacts.isEmpty)
+              Card(
+                margin: const EdgeInsets.symmetric(horizontal: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(
+                    color: Theme.of(context).colorScheme.primary,
+                    width: 2,
+                  ),
+                ),
+                child: ListTile(
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16.0,
+                    vertical: 8.0,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  title: Text(
+                    'Create contacts by assigning a name to a Lightning Url or Address.',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                ),
               ),
-            ),
+            if (_contacts.isNotEmpty)
+              Expanded(
+                child: ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: filtered.length,
+                  itemBuilder: (context, index) {
+                    final contact = filtered[index];
+                    return _ContactTile(
+                      contact: contact,
+                      onTap: () => _handleContactTap(contact),
+                      onLongPress: () => _handleDeleteContact(contact),
+                    );
+                  },
+                ),
+              ),
           ],
         ),
       ),

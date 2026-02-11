@@ -89,12 +89,14 @@ class _BaseScreenState extends State<BaseScreen> {
   );
 
   Widget _buildOnboardingCard() {
-    final theme = Theme.of(context);
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: BorderSide(color: theme.colorScheme.primary, width: 2),
+        side: BorderSide(
+          color: Theme.of(context).colorScheme.primary,
+          width: 2,
+        ),
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(
@@ -104,7 +106,7 @@ class _BaseScreenState extends State<BaseScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         title: Text(
           'Scan or paste an invite code to join your first federation.',
-          style: TextStyle(color: theme.colorScheme.primary),
+          style: TextStyle(color: Theme.of(context).colorScheme.primary),
         ),
       ),
     );
