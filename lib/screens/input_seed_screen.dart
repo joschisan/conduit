@@ -76,12 +76,33 @@ class _InputSeedScreenState extends State<InputSeedScreen> {
           ),
           Expanded(
             child: ListView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               itemCount: subset.length,
               itemBuilder: (context, index) {
                 final word = subset[index];
-                return ListTile(
-                  title: Text(word),
-                  onTap: () => _selectWord(word),
+                return Card(
+                  margin: const EdgeInsets.symmetric(vertical: 4),
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16.0,
+                      vertical: 4.0,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    leading: Icon(
+                      Icons.key,
+                      color: Theme.of(context).colorScheme.primary,
+                      size: 32,
+                    ),
+                    title: Text(
+                      word,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    onTap: () => _selectWord(word),
+                  ),
                 );
               },
             ),
