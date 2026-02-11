@@ -150,6 +150,8 @@ class _ContactsScreenState extends State<ContactsScreen> with AsyncButtonMixin {
 
     final contactName = await widget.clientFactory.getContactName(lnurl: lnurl);
 
+    if (!mounted) return;
+
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
         builder:

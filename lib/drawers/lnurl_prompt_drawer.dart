@@ -58,6 +58,8 @@ class LnurlPromptDrawer extends StatelessWidget {
       // Variable amount - show amount screen with payInfo
       final contactName = await clientFactory.getContactName(lnurl: lnurl);
 
+      if (!context.mounted) return;
+
       DrawerUtils.popAndPush(
         context,
         LnurlPaymentAmountScreen(
