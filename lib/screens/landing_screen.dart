@@ -5,10 +5,10 @@ import 'package:conduit/bridge_generated.dart/lib.dart';
 import 'package:conduit/bridge_generated.dart/factory.dart';
 import 'package:conduit/widgets/async_action_button.dart';
 
-class WalletChoiceScreen extends StatelessWidget {
+class LandingScreen extends StatelessWidget {
   final DatabaseWrapper db;
 
-  const WalletChoiceScreen({super.key, required this.db});
+  const LandingScreen({super.key, required this.db});
 
   @override
   Widget build(BuildContext context) {

@@ -6,7 +6,7 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:conduit/bridge_generated.dart/frb_generated.dart';
 import 'package:conduit/bridge_generated.dart/lib.dart';
 import 'package:conduit/bridge_generated.dart/factory.dart';
-import 'package:conduit/screens/wallet_choice_screen.dart';
+import 'package:conduit/screens/landing_screen.dart';
 import 'package:conduit/screens/base_screen.dart';
 
 void main() async {
@@ -39,7 +39,7 @@ void main() async {
       ),
     );
   } else {
-    runApp(ConduitApp(home: WalletChoiceScreen(db: db)));
+    runApp(ConduitApp(home: LandingScreen(db: db)));
   }
 }
 
