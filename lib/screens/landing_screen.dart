@@ -118,7 +118,7 @@ class _LandingScreenState extends State<LandingScreen> {
                     mnemonic: mnemonic,
                   );
 
-                  if (!mounted) return;
+                  if (!context.mounted) return;
 
                   Navigator.of(context).pushReplacement(
                     MaterialPageRoute(
