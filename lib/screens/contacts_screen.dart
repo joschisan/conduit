@@ -5,7 +5,7 @@ import 'package:conduit/bridge_generated.dart/lnurl.dart';
 import 'package:conduit/widgets/async_button_mixin.dart';
 import 'package:conduit/screens/lnurl_payment_amount_screen.dart';
 import 'package:conduit/drawers/lightning_payment_drawer.dart';
-import 'package:conduit/drawers/delete_contact_drawer.dart';
+import 'package:conduit/drawers/contact_drawer.dart';
 
 class _ContactTile extends StatefulWidget {
   final ConduitContact contact;
@@ -166,13 +166,21 @@ class _ContactsScreenState extends State<ContactsScreen> with AsyncButtonMixin {
     );
   }
 
-  Future<void> _handleDeleteContact(ConduitContact contact) async {
-    await DeleteContactDrawer.show(
+  Future<void> _handleEditContact(ConduitContact contact) async {
+    final name = await ContactDrawer.show(
       context,
-      contact: contact,
       clientFactory: widget.clientFactory,
-      onSuccess: _loadContacts,
+      lnurl: contact.lnurl,
+      contactName: contact.name,
+      onDelete: () async {
+        await widget.clientFactory.deleteContact(lnurl: contact.lnurl);
+        _loadContacts();
+      },
     );
+
+    if (mounted && name != null) {
+      _loadContacts();
+    }
   }
 
   @override
@@ -247,7 +255,7 @@ class _ContactsScreenState extends State<ContactsScreen> with AsyncButtonMixin {
                     return _ContactTile(
                       contact: contact,
                       onTap: () => _handleContactTap(contact),
-                      onLongPress: () => _handleDeleteContact(contact),
+                      onLongPress: () => _handleEditContact(contact),
                     );
                   },
                 ),

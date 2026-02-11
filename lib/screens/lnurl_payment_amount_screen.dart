@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/bridge_generated.dart/factory.dart';
 import 'package:conduit/bridge_generated.dart/lnurl.dart';
 import 'package:conduit/widgets/amount_entry_widget.dart';
-import 'package:conduit/drawers/save_contact_drawer.dart';
+import 'package:conduit/drawers/contact_drawer.dart';
 import 'package:conduit/utils/auth_utils.dart';
 
 class LnurlPaymentAmountScreen extends StatefulWidget {
@@ -48,16 +49,19 @@ class _LnurlPaymentAmountScreenState extends State<LnurlPaymentAmountScreen> {
   }
 
   Future<void> _handleSaveContact() async {
-    final name = await SaveContactDrawer.show(
+    final name = await ContactDrawer.show(
       context,
       clientFactory: widget.clientFactory,
       lnurl: widget.lnurl,
-      contactName: _contactName,
     );
 
     if (mounted && name != null) {
       setState(() => _contactName = name);
     }
+  }
+
+  void _handleShare() {
+    SharePlus.instance.share(ShareParams(text: widget.lnurl.encode()));
   }
 
   @override
@@ -67,10 +71,13 @@ class _LnurlPaymentAmountScreenState extends State<LnurlPaymentAmountScreen> {
       appBar: AppBar(
         title: Text(_contactName ?? 'Lightning Url'),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.person),
-            onPressed: _handleSaveContact,
-          ),
+          if (_contactName == null)
+            IconButton(
+              icon: const Icon(Icons.person_add),
+              onPressed: _handleSaveContact,
+            )
+          else
+            IconButton(icon: const Icon(Icons.share), onPressed: _handleShare),
         ],
       ),
       body: SafeArea(
