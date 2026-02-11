@@ -77,7 +77,7 @@ class _BitcoinAddressScreenState extends State<BitcoinAddressScreen> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: const Text('Bitcoin Address'),
+        title: const Text('Onchain Address'),
         actions: [
           if (addresses.isNotEmpty)
             IconButton(
@@ -121,7 +121,7 @@ class _BitcoinAddressScreenState extends State<BitcoinAddressScreen> {
             borderRadius: BorderRadius.circular(12),
           ),
           title: Text(
-            'Tap the plus icon to generate your first bitcoin address.',
+            'Tap the plus icon to generate your first onchain address.',
             style: TextStyle(color: Theme.of(context).colorScheme.primary),
           ),
         ),

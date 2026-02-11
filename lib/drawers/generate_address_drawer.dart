@@ -27,7 +27,7 @@ class GenerateAddressDrawer extends StatelessWidget {
   Widget build(BuildContext context) {
     return DrawerShell(
       icon: Icons.add,
-      title: 'Generate Bitcoin Address?',
+      title: 'Generate Onchain Address?',
       children: [
         AsyncActionButton(
           text: 'Confirm',

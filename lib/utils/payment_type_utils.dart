@@ -11,12 +11,4 @@ class PaymentTypeUtils {
       PaymentType.ecash => Icons.toll,
     };
   }
-
-  static String getDisplayName(PaymentType type) {
-    return switch (type) {
-      PaymentType.lightning => 'Lightning',
-      PaymentType.bitcoin => 'Bitcoin',
-      PaymentType.ecash => 'eCash',
-    };
-  }
 }

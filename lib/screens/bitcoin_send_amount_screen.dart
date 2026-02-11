@@ -56,7 +56,7 @@ class _BitcoinSendAmountScreenState extends State<BitcoinSendAmountScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Bitcoin'),
+        title: const Text('Onchain'),
         actions: [
           if (_feeFuture != null)
             Padding(
