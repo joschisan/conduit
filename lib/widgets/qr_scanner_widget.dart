@@ -43,7 +43,7 @@ class _QrScannerWidgetState extends State<QrScannerWidget> {
       }
     } catch (e) {
       if (mounted) {
-        NotificationUtils.showError(context, 'Clipboard access error: $e');
+        NotificationUtils.showError(context, 'Clipboard access error');
       }
     }
   }
