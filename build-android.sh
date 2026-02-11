@@ -25,17 +25,16 @@ mkdir -p $ROOT/android/app/src/main/jniLibs/arm64-v8a
 cp $ROOT/rust/target/aarch64-linux-android/release/libconduit.so $ROOT/android/app/src/main/jniLibs/arm64-v8a/
 
 # Copy libc++_shared.so from local Android SDK/NDK
-if [ -d "$HOME/Library/Android/sdk/ndk" ]; then
-  NDK_DIR=$(ls -d $HOME/Library/Android/sdk/ndk/* | head -1)
-  if [ -f "$NDK_DIR/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/aarch64-linux-android/libc++_shared.so" ]; then
-    echo "📦 Copying libc++_shared.so from local NDK..."
-    cp "$NDK_DIR/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/aarch64-linux-android/libc++_shared.so" \
-       $ROOT/android/app/src/main/jniLibs/arm64-v8a/
-  else
-    echo "⚠️  Warning: libc++_shared.so not found in NDK (may cause runtime issues)"
-  fi
+# Use the NDK version matching build.gradle.kts to ensure 16KB page alignment
+NDK_VERSION="28.2.13676358"
+NDK_DIR="$HOME/Library/Android/sdk/ndk/$NDK_VERSION"
+if [ -f "$NDK_DIR/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/aarch64-linux-android/libc++_shared.so" ]; then
+  echo "📦 Copying libc++_shared.so from NDK $NDK_VERSION..."
+  cp "$NDK_DIR/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/aarch64-linux-android/libc++_shared.so" \
+     $ROOT/android/app/src/main/jniLibs/arm64-v8a/
 else
-  echo "⚠️  Warning: Android NDK not found (may cause runtime issues)"
+  echo "❌ Error: libc++_shared.so not found in NDK $NDK_VERSION"
+  exit 1
 fi
 
 echo "✅ Build complete! You can now run: flutter run"
