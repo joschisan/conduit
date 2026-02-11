@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
-import 'package:conduit/utils/notification_utils.dart';
+import 'package:share_plus/share_plus.dart';
 
 class QrCodeWidget extends StatelessWidget {
   final String data;
@@ -9,14 +8,13 @@ class QrCodeWidget extends StatelessWidget {
 
   const QrCodeWidget({super.key, required this.data, this.copyData});
 
-  void _handleTap(BuildContext context) {
-    Clipboard.setData(ClipboardData(text: copyData ?? data));
-    NotificationUtils.showCopy(context, copyData ?? data);
+  void _handleTap() {
+    SharePlus.instance.share(ShareParams(text: copyData ?? data));
   }
 
   @override
   Widget build(BuildContext context) => GestureDetector(
-    onTap: () => _handleTap(context),
+    onTap: _handleTap,
     child: Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(

@@ -39,7 +39,11 @@ class NotificationUtils {
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
           decoration: BoxDecoration(
-            color: Color.lerp(Theme.of(overlayContext).colorScheme.surface, iconColor, 0.15),
+            color: Color.lerp(
+              Theme.of(overlayContext).colorScheme.surface,
+              iconColor,
+              0.15,
+            ),
             borderRadius: const BorderRadius.vertical(
               bottom: Radius.circular(16),
             ),
@@ -118,16 +122,6 @@ class NotificationUtils {
       message,
       Icons.check_circle,
       Colors.green,
-      _defaultNotificationDuration,
-    );
-  }
-
-  static void showCopy(BuildContext context, String message) {
-    _showNotification(
-      context,
-      message.length > 20 ? '${message.substring(0, 20)}...' : message,
-      Icons.copy,
-      Theme.of(context).colorScheme.primary,
       _defaultNotificationDuration,
     );
   }

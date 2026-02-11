@@ -6,7 +6,6 @@ import 'package:conduit/widgets/drawer_shell.dart';
 import 'package:conduit/widgets/amount_card.dart';
 import 'package:conduit/utils/payment_type_utils.dart';
 import 'package:conduit/utils/drawer_utils.dart';
-import 'package:conduit/utils/notification_utils.dart';
 
 class EventDetailsDrawer extends StatelessWidget {
   final ConduitPayment event;
@@ -39,7 +38,7 @@ class EventDetailsDrawer extends StatelessWidget {
                 icon: const Icon(Icons.copy),
                 onPressed: () {
                   Clipboard.setData(ClipboardData(text: event.oob!));
-                  NotificationUtils.showCopy(context, event.oob!);
+                  HapticFeedback.lightImpact();
                 },
               )
               : null,
