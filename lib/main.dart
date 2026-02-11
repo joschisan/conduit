@@ -57,6 +57,7 @@ class ConduitApp extends StatelessWidget {
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
           useMaterial3: true,
+          appBarTheme: const AppBarTheme(centerTitle: true),
         ),
         darkTheme: ThemeData(
           colorScheme: ColorScheme.fromSeed(
@@ -64,6 +65,7 @@ class ConduitApp extends StatelessWidget {
             brightness: Brightness.dark,
           ),
           useMaterial3: true,
+          appBarTheme: const AppBarTheme(centerTitle: true),
         ),
         themeMode: ThemeMode.dark,
         home: home,
