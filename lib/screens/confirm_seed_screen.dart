@@ -44,7 +44,7 @@ class ConfirmSeedScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Confirm Recovery Phrase')),
+      appBar: AppBar(title: const Text('Recovery Phrase')),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(16),
@@ -53,7 +53,7 @@ class ConfirmSeedScreen extends StatelessWidget {
             children: [
               Expanded(child: SeedPhraseGrid(words: seedPhrase)),
               AsyncActionButton(
-                text: 'Confirm Recovery Phrase',
+                text: 'Confirm',
                 onPressed: () => _recoverWallet(context),
               ),
             ],

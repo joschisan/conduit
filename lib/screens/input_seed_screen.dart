@@ -57,7 +57,7 @@ class _InputSeedScreenState extends State<InputSeedScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Enter word $currentWordNumber of 12')),
+      appBar: AppBar(title: Text('Enter Word $currentWordNumber of 12')),
       body: Column(
         children: [
           Padding(
@@ -65,7 +65,7 @@ class _InputSeedScreenState extends State<InputSeedScreen> {
             child: TextField(
               autofocus: true,
               decoration: InputDecoration(
-                hintText: 'Search for word...',
+                hintText: 'Enter Word...',
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
@@ -90,10 +90,17 @@ class _InputSeedScreenState extends State<InputSeedScreen> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    leading: Icon(
-                      Icons.key,
-                      color: Theme.of(context).colorScheme.primary,
-                      size: 32,
+                    leading: SizedBox(
+                      width: 40,
+                      child: Text(
+                        '$currentWordNumber',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.primary,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 32,
+                        ),
+                      ),
                     ),
                     title: Text(
                       word,
@@ -101,6 +108,7 @@ class _InputSeedScreenState extends State<InputSeedScreen> {
                         fontWeight: FontWeight.w600,
                       ),
                     ),
+                    trailing: const Icon(Icons.chevron_right),
                     onTap: () => _selectWord(word),
                   ),
                 );
