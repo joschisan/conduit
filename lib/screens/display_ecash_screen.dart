@@ -80,7 +80,7 @@ class DisplayEcashScreen extends StatelessWidget {
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 32.0),
                     child: Text(
-                      'Any member of this federation can claim the funds by scanning this eCash token. It is impossible to link this token to your client in any way.',
+                      'Any member of this federation can claim the funds by scanning this eCash token. The token cannot be linked to you.',
                       style: TextStyle(
                         fontSize: 14,
                         color: Theme.of(

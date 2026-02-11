@@ -47,7 +47,7 @@ class InviteConfirmationDrawer extends StatelessWidget {
         AsyncActionButton(text: 'Join', onPressed: () => onJoin(invite)),
         const SizedBox(height: 24),
         Text(
-          'Already used the federation before?',
+          'Already used this federation before?',
           style: TextStyle(color: theme.colorScheme.primary),
         ),
         const SizedBox(height: 8),
