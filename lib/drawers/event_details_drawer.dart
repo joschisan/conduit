@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:intl/intl.dart';
 import 'package:conduit/bridge_generated.dart/events.dart';
 import 'package:conduit/widgets/drawer_shell.dart';
@@ -35,10 +35,9 @@ class EventDetailsDrawer extends StatelessWidget {
       topRightButton:
           event.oob != null
               ? IconButton(
-                icon: const Icon(Icons.copy),
+                icon: const Icon(Icons.share),
                 onPressed: () {
-                  Clipboard.setData(ClipboardData(text: event.oob!));
-                  HapticFeedback.lightImpact();
+                  SharePlus.instance.share(ShareParams(text: event.oob!));
                 },
               )
               : null,
