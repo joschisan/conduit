@@ -99,39 +99,54 @@ class _AmountEntryWidgetState extends State<AmountEntryWidget> {
       children: [
         // Amount display - fills remaining space above confirm button
         Expanded(
-          child: Center(
-            child: GestureDetector(
-              onTap: () {
-                setState(() {
-                  _enterFiat = !_enterFiat;
-                });
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () {
+              setState(() {
+                _enterFiat = !_enterFiat;
+              });
 
-                // Prefetch exchange rates when switching to fiat mode
-                if (_enterFiat) {
-                  widget.client.prefetchExchangeRates();
-                }
-              },
+              // Prefetch exchange rates when switching to fiat mode
+              if (_enterFiat) {
+                widget.client.prefetchExchangeRates();
+              }
+            },
+            child: Center(
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   if (_enterFiat)
-                    Text(
-                      _formatFiatAmount(),
-                      style: TextStyle(
-                        fontSize: 42,
-                        fontWeight: FontWeight.bold,
-                        color: Theme.of(context).colorScheme.onSurface,
+                    RichText(
+                      textAlign: TextAlign.center,
+                      text: TextSpan(
+                        text: _formatFiatAmount(),
+                        style: TextStyle(
+                          fontSize: 42,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
                       ),
                     )
                   else
                     AmountDisplay(_currentAmount),
                   const SizedBox(height: 8),
-                  Text(
-                    _enterFiat ? _currency.name : 'Bitcoin',
-                    style: TextStyle(
-                      fontSize: 18,
-                      color: Colors.grey.withValues(alpha: 0.8),
-                    ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.currency_exchange,
+                        size: 22,
+                        color: Colors.grey.withValues(alpha: 0.8),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        _enterFiat ? _currency.name : 'Bitcoin',
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: Colors.grey.withValues(alpha: 0.8),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
