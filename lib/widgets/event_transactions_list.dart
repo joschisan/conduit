@@ -142,36 +142,12 @@ class _EventTransactionsListState extends State<EventTransactionsList> {
     super.dispose();
   }
 
-  Widget _buildOnboardingCard(BuildContext context) {
-    return Card(
-      margin: EdgeInsets.zero,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(
-          color: Theme.of(context).colorScheme.primary,
-          width: 2,
-        ),
-      ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16.0,
-          vertical: 8.0,
-        ),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        title: Text(
-          'Tap the lightning button to create an invoice and receive your first payment.',
-          style: TextStyle(color: Theme.of(context).colorScheme.primary),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     if (_events.isEmpty) {
-      return Align(
+      return const Align(
         alignment: Alignment.topCenter,
-        child: _buildOnboardingCard(context),
+        child: _OnboardingCarousel(),
       );
     }
 
@@ -187,6 +163,123 @@ class _EventTransactionsListState extends State<EventTransactionsList> {
           onTap: () => widget.onTransactionTap(event),
         );
       },
+    );
+  }
+}
+
+class _OnboardingCarousel extends StatefulWidget {
+  const _OnboardingCarousel();
+
+  @override
+  State<_OnboardingCarousel> createState() => _OnboardingCarouselState();
+}
+
+class _OnboardingCarouselState extends State<_OnboardingCarousel> {
+  final PageController _pageController = PageController();
+  int _currentPage = 0;
+
+  static const _pages = [
+    (
+      icon: Icons.bolt,
+      title: 'Lightning',
+      description:
+          'Create a lightning invoice to receive bitcoin from any other lightning wallet.'
+          '\n\n'
+          'If you already have a lightning wallet this is the quickest way to top up your balance.',
+    ),
+    (
+      icon: Icons.currency_bitcoin,
+      title: 'Onchain',
+      description:
+          'Generate a onchain address to move onchain bitcoin directly into the federation.'
+          '\n\n'
+          'Whenever the time comes you can spend your cold storage bitcoin with great privacy.',
+    ),
+    (
+      icon: Icons.toll,
+      title: 'eCash',
+      description:
+          'Use ecash to send bitcoin to another user of this federation - simply enter the amount and share the eCash token with the recipient.'
+          '\n\n'
+          'This is the most private and fee efficient way to transact within a federation.',
+    ),
+  ];
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Card(
+      margin: EdgeInsets.zero,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              height: 220,
+              child: PageView.builder(
+                controller: _pageController,
+                onPageChanged: (index) => setState(() => _currentPage = index),
+                itemCount: _pages.length,
+                itemBuilder: (context, index) {
+                  final page = _pages[index];
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              page.icon,
+                              size: 48,
+                              color: theme.colorScheme.primary,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(page.title, style: theme.textTheme.titleLarge),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          page.description,
+                          textAlign: TextAlign.center,
+                          style: theme.textTheme.bodyMedium,
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+            const SizedBox(height: 12),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: List.generate(_pages.length, (index) {
+                return Container(
+                  width: 8,
+                  height: 8,
+                  margin: const EdgeInsets.symmetric(horizontal: 4),
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color:
+                        index == _currentPage
+                            ? theme.colorScheme.primary
+                            : theme.colorScheme.outlineVariant,
+                  ),
+                );
+              }),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
