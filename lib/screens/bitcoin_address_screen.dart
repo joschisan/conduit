@@ -78,7 +78,7 @@ class _BitcoinAddressScreenState extends State<BitcoinAddressScreen> {
     final tweakIdx = addresses[currentIndex].$1;
     await widget.client.onchainRecheckAddress(tweakIdx: tweakIdx);
     if (!mounted) return;
-    NotificationUtils.showSuccess(context, 'Checking Address for payments...');
+    NotificationUtils.showSuccess(context, 'Checking address for payments');
   }
 
   @override

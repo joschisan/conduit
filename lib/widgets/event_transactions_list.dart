@@ -68,9 +68,9 @@ class _EventTransactionsListState extends State<EventTransactionsList> {
       }
     } else if (success == false) {
       if (incoming) {
-        NotificationUtils.showError(context, 'Failed to receive payment.');
+        NotificationUtils.showError(context, 'Failed to receive payment');
       } else {
-        NotificationUtils.showError(context, 'Failed to send payment.');
+        NotificationUtils.showError(context, 'Failed to send payment');
       }
     }
   }

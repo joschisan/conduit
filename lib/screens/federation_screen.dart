@@ -57,7 +57,7 @@ class _FederationScreenState extends State<FederationScreen> {
       await widget.client.backupToFederation();
     } catch (e) {
       if (mounted) {
-        NotificationUtils.showError(context, 'Backup failed');
+        NotificationUtils.showError(context, 'Failed to store ecash backup');
       }
     }
   }

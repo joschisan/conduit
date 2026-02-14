@@ -141,7 +141,7 @@ class _ContactsScreenState extends State<ContactsScreen> with AsyncButtonMixin {
     final lnurl = parseLnurl(request: _query);
 
     if (lnurl == null) {
-      throw 'Invalid Lightning Url';
+      throw 'Failed to parse lightning url';
     }
 
     final payInfo = await lnurlFetchLimits(lnurl: lnurl);

@@ -38,12 +38,12 @@ class _QrScannerWidgetState extends State<QrScannerWidget> {
         widget.onScan(text);
       } else {
         if (mounted) {
-          NotificationUtils.showError(context, 'Clipboard is empty');
+          NotificationUtils.showError(context, 'Failed to access clipboard');
         }
       }
     } catch (e) {
       if (mounted) {
-        NotificationUtils.showError(context, 'Clipboard access error');
+        NotificationUtils.showError(context, 'Failed to access clipboard');
       }
     }
   }

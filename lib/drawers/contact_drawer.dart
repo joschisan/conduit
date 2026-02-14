@@ -53,7 +53,7 @@ class _ContactDrawerState extends State<ContactDrawer> {
     final name = _nameController.text.trim();
 
     if (name.isEmpty) {
-      NotificationUtils.showError(context, 'Please enter a Name');
+      NotificationUtils.showError(context, 'Name is empty');
       return;
     }
 

@@ -21,7 +21,7 @@ class ConfirmSeedScreen extends StatelessWidget {
 
     if (mnemonic == null) {
       if (context.mounted) {
-        NotificationUtils.showError(context, 'Invalid Recovery Phrase');
+        NotificationUtils.showError(context, 'Failed to parse recovery phrase');
       }
       return;
     }

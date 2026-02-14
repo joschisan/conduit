@@ -60,7 +60,7 @@ class _InviteScannerDrawerState extends State<InviteScannerDrawer> {
     }
 
     if (mounted) {
-      NotificationUtils.showError(context, 'Invalid invite code');
+      NotificationUtils.showError(context, 'Failed to parse invite code');
     }
   }
 
