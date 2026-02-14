@@ -50,10 +50,13 @@ class _BitcoinAddressScreenState extends State<BitcoinAddressScreen> {
   }
 
   void _showGenerateConfirmation() {
-    GenerateAddressDrawer.show(context, onConfirm: _generateNewAddress);
+    GenerateAddressDrawer.show(
+      context,
+      onConfirm: () => _generateNewAddress(notify: true),
+    );
   }
 
-  Future<void> _generateNewAddress() async {
+  Future<void> _generateNewAddress({bool notify = false}) async {
     try {
       await widget.client.onchainReceiveAddress();
       final newAddresses = await widget.client.onchainListAddresses();
@@ -62,6 +65,9 @@ class _BitcoinAddressScreenState extends State<BitcoinAddressScreen> {
         addresses = newAddresses;
         currentIndex = addresses.length - 1; // Show newest address
       });
+      if (notify && mounted) {
+        NotificationUtils.showSuccess(context, 'Generated onchain address');
+      }
     } catch (e) {
       if (!mounted) return;
       NotificationUtils.showError(context, 'Failed to generate address');
