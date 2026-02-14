@@ -223,7 +223,7 @@ class _OnboardingCarouselState extends State<_OnboardingCarousel> {
           mainAxisSize: MainAxisSize.min,
           children: [
             SizedBox(
-              height: 220,
+              height: 240,
               child: PageView.builder(
                 controller: _pageController,
                 onPageChanged: (index) => setState(() => _currentPage = index),
