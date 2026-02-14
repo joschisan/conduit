@@ -100,22 +100,6 @@ class NotificationUtils {
     );
   }
 
-  static void showSend(
-    BuildContext context,
-    int amountSat,
-    PaymentType paymentType,
-  ) {
-    HapticFeedback.heavyImpact();
-
-    _showNotification(
-      context,
-      'You sent ${NumberFormat('#,###').format(amountSat)} sats.',
-      PaymentTypeUtils.getIcon(paymentType),
-      Theme.of(context).colorScheme.primary,
-      _defaultNotificationDuration,
-    );
-  }
-
   static void showSuccess(BuildContext context, String message) {
     _showNotification(
       context,

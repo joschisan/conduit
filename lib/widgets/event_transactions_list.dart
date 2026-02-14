@@ -65,8 +65,6 @@ class _EventTransactionsListState extends State<EventTransactionsList> {
     if (success == true) {
       if (incoming) {
         NotificationUtils.showReceive(context, amountSats, paymentType);
-      } else {
-        NotificationUtils.showSend(context, amountSats, paymentType);
       }
     } else if (success == false) {
       if (incoming) {
@@ -199,7 +197,7 @@ class _OnboardingCarouselState extends State<_OnboardingCarousel> {
       icon: Icons.toll,
       title: 'eCash',
       description:
-          'Use ecash to send bitcoin to another user of this federation - simply enter the amount and share the eCash token with the recipient.'
+          'Use ecash to send bitcoin to another user of this federation - simply enter the amount and share the ecash token with the recipient.'
           '\n\n'
           'This is the most private and fee efficient way to transact within a federation.',
     ),
