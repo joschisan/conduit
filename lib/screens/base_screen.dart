@@ -52,12 +52,6 @@ class _BaseScreenState extends State<BaseScreen> {
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(
       title: const Text('Conduit'),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.qr_code_scanner),
-          onPressed: _showScannerDrawer,
-        ),
-      ],
     ),
     body: SafeArea(
       child: Padding(
@@ -72,7 +66,6 @@ class _BaseScreenState extends State<BaseScreen> {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (showOnboarding) _buildOnboardingCard(),
                 Text('Settings', style: theme.textTheme.titleLarge),
                 const SizedBox(height: 8),
                 _buildSeedPhraseCard(),
@@ -80,6 +73,8 @@ class _BaseScreenState extends State<BaseScreen> {
                 _buildCurrencyCard(),
                 const SizedBox(height: 24),
                 _buildFederationsContent(snapshot),
+                if (showOnboarding) _buildOnboardingCard(),
+                _buildAddFederationButton(),
               ],
             );
           },
@@ -160,6 +155,22 @@ class _BaseScreenState extends State<BaseScreen> {
           },
         ),
       ],
+    );
+  }
+
+  Widget _buildAddFederationButton() {
+    return Center(
+      child: TextButton(
+        onPressed: _showScannerDrawer,
+        child: Text(
+          'Add Federation',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: Theme.of(context).colorScheme.primary,
+          ),
+        ),
+      ),
     );
   }
 
