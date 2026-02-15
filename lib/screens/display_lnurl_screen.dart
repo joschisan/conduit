@@ -20,7 +20,7 @@ Widget _buildLnurlContent(BuildContext context, String lnurl) => Column(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 32.0),
           child: Text(
-            'This is a reusable payment code. You can use it to connect a point of sale that is compatible with Lightning Url Verify.',
+            'This is a reusable payment code. It supports lnurl payment verification and can therefore be used to connect a compatible point of sale.',
             style: TextStyle(
               fontSize: 14,
               color: Theme.of(
