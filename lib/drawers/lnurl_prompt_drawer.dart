@@ -38,16 +38,16 @@ class LnurlPromptDrawer extends StatelessWidget {
 
   Future<void> _handleContinue(BuildContext context) async {
     // Fetch limits from LNURL endpoint
-    final payInfo = await lnurlFetchLimits(lnurl: lnurl);
+    final payResponse = await lnurlFetchLimits(lnurl: lnurl);
 
     if (!context.mounted) return;
 
     // Check if fixed amount (MoneyBadger case: min == max)
-    if (payInfo.minSats == payInfo.maxSats) {
+    if (payResponse.minSats == payResponse.maxSats) {
       // Fixed amount - resolve invoice immediately
       final invoice = await lnurlResolve(
-        payInfo: payInfo,
-        amountSats: payInfo.minSats,
+        payResponse: payResponse,
+        amountSats: payResponse.minSats,
       );
 
       if (!context.mounted) return;
@@ -55,7 +55,7 @@ class LnurlPromptDrawer extends StatelessWidget {
       Navigator.of(context).pop(); // Close this drawer
       LightningPaymentDrawer.show(context, client: client, invoice: invoice);
     } else {
-      // Variable amount - show amount screen with payInfo
+      // Variable amount - show amount screen with payResponse
       final contactName = await clientFactory.getContactName(lnurl: lnurl);
 
       if (!context.mounted) return;
@@ -66,7 +66,7 @@ class LnurlPromptDrawer extends StatelessWidget {
           client: client,
           clientFactory: clientFactory,
           lnurl: lnurl,
-          payInfo: payInfo,
+          payResponse: payResponse,
           contactName: contactName,
         ),
       );

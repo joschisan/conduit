@@ -12,7 +12,7 @@ use std::str::FromStr;
 
 use bitcoin::address::NetworkUnchecked;
 use fedimint_bip39::{Language, Mnemonic};
-use fedimint_core::base32::{encode_prefixed, FEDIMINT_PREFIX};
+use fedimint_core::base32::{FEDIMINT_PREFIX, encode_prefixed};
 use fedimint_core::db::Database;
 use fedimint_core::invite_code::InviteCode;
 use fedimint_mint_client::OOBNotes;
@@ -29,7 +29,7 @@ pub use client::{ConduitClient, ConduitRecoveryProgress};
 pub use events::{ConduitEvent, ConduitPayment, ConduitUpdate, PaymentType};
 pub use factory::{ConduitClientFactory, ConduitContact, FederationInfo};
 pub use fountain::{OOBNotesDecoder, OOBNotesEncoder};
-pub use lnurl::{lnurl_fetch_limits, lnurl_resolve, parse_lnurl, LnurlPayInfo, LnurlWrapper};
+pub use lnurl::{LnurlWrapper, PayResponseWrapper, lnurl_fetch_limits, lnurl_resolve, parse_lnurl};
 
 #[frb(sync)]
 pub fn word_list() -> Vec<String> {

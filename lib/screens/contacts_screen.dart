@@ -104,14 +104,14 @@ class _ContactsScreenState extends State<ContactsScreen> with AsyncButtonMixin {
   }
 
   Future<void> _handleContactTap(ConduitContact contact) async {
-    final payInfo = await lnurlFetchLimits(lnurl: contact.lnurl);
+    final payResponse = await lnurlFetchLimits(lnurl: contact.lnurl);
 
     if (!mounted) return;
 
-    if (payInfo.minSats == payInfo.maxSats) {
+    if (payResponse.minSats == payResponse.maxSats) {
       final invoice = await lnurlResolve(
-        payInfo: payInfo,
-        amountSats: payInfo.minSats,
+        payResponse: payResponse,
+        amountSats: payResponse.minSats,
       );
 
       if (!mounted) return;
@@ -129,7 +129,7 @@ class _ContactsScreenState extends State<ContactsScreen> with AsyncButtonMixin {
                 client: widget.client,
                 clientFactory: widget.clientFactory,
                 lnurl: contact.lnurl,
-                payInfo: payInfo,
+                payResponse: payResponse,
                 contactName: contact.name,
               ),
         ),
@@ -144,7 +144,7 @@ class _ContactsScreenState extends State<ContactsScreen> with AsyncButtonMixin {
       throw 'Failed to parse lightning url';
     }
 
-    final payInfo = await lnurlFetchLimits(lnurl: lnurl);
+    final payResponse = await lnurlFetchLimits(lnurl: lnurl);
 
     if (!mounted) return;
 
@@ -159,7 +159,7 @@ class _ContactsScreenState extends State<ContactsScreen> with AsyncButtonMixin {
               client: widget.client,
               clientFactory: widget.clientFactory,
               lnurl: lnurl,
-              payInfo: payInfo,
+              payResponse: payResponse,
               contactName: contactName,
             ),
       ),

@@ -28,6 +28,7 @@
 use crate::client::*;
 use crate::factory::*;
 use crate::fountain::*;
+use crate::lnurl::*;
 use crate::*;
 use flutter_rust_bridge::for_generated::byteorder::{NativeEndian, ReadBytesExt, WriteBytesExt};
 use flutter_rust_bridge::for_generated::{transform_result_dco, Lifetimeable, Lockable};
@@ -41,7 +42,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.10.0";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 771032487;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -1836948468;
 
 // Section: executor
 
@@ -3122,6 +3123,102 @@ fn wire__crate__OobNotesWrapper_to_string_impl(
         },
     )
 }
+fn wire__crate__lnurl__PayResponseWrapper_max_sats_impl(
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "PayResponseWrapper_max_sats",
+            port: None,
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<PayResponseWrapper>,
+            >>::sse_decode(&mut deserializer);
+            deserializer.end();
+            transform_result_sse::<_, ()>((move || {
+                let mut api_that_guard = None;
+                let decode_indices_ =
+                    flutter_rust_bridge::for_generated::lockable_compute_decode_order(vec![
+                        flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                            &api_that, 0, false,
+                        ),
+                    ]);
+                for i in decode_indices_ {
+                    match i {
+                        0 => api_that_guard = Some(api_that.lockable_decode_sync_ref()),
+                        _ => unreachable!(),
+                    }
+                }
+                let api_that_guard = api_that_guard.unwrap();
+                let output_ok = Result::<_, ()>::Ok(crate::lnurl::PayResponseWrapper::max_sats(
+                    &*api_that_guard,
+                ))?;
+                Ok(output_ok)
+            })())
+        },
+    )
+}
+fn wire__crate__lnurl__PayResponseWrapper_min_sats_impl(
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "PayResponseWrapper_min_sats",
+            port: None,
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<PayResponseWrapper>,
+            >>::sse_decode(&mut deserializer);
+            deserializer.end();
+            transform_result_sse::<_, ()>((move || {
+                let mut api_that_guard = None;
+                let decode_indices_ =
+                    flutter_rust_bridge::for_generated::lockable_compute_decode_order(vec![
+                        flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                            &api_that, 0, false,
+                        ),
+                    ]);
+                for i in decode_indices_ {
+                    match i {
+                        0 => api_that_guard = Some(api_that.lockable_decode_sync_ref()),
+                        _ => unreachable!(),
+                    }
+                }
+                let api_that_guard = api_that_guard.unwrap();
+                let output_ok = Result::<_, ()>::Ok(crate::lnurl::PayResponseWrapper::min_sats(
+                    &*api_that_guard,
+                ))?;
+                Ok(output_ok)
+            })())
+        },
+    )
+}
 fn wire__crate__generate_mnemonic_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
@@ -3212,14 +3309,36 @@ fn wire__crate__lnurl__lnurl_resolve_impl(
             };
             let mut deserializer =
                 flutter_rust_bridge::for_generated::SseDeserializer::new(message);
-            let api_pay_info = <crate::lnurl::LnurlPayInfo>::sse_decode(&mut deserializer);
+            let api_pay_response = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<PayResponseWrapper>,
+            >>::sse_decode(&mut deserializer);
             let api_amount_sats = <i64>::sse_decode(&mut deserializer);
             deserializer.end();
             move |context| async move {
                 transform_result_sse::<_, String>(
                     (move || async move {
+                        let mut api_pay_response_guard = None;
+                        let decode_indices_ =
+                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
+                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                    &api_pay_response,
+                                    0,
+                                    false,
+                                )],
+                            );
+                        for i in decode_indices_ {
+                            match i {
+                                0 => {
+                                    api_pay_response_guard =
+                                        Some(api_pay_response.lockable_decode_async_ref().await)
+                                }
+                                _ => unreachable!(),
+                            }
+                        }
+                        let api_pay_response_guard = api_pay_response_guard.unwrap();
                         let output_ok =
-                            crate::lnurl::lnurl_resolve(&api_pay_info, api_amount_sats).await?;
+                            crate::lnurl::lnurl_resolve(&*api_pay_response_guard, api_amount_sats)
+                                .await?;
                         Ok(output_ok)
                     })()
                     .await,
@@ -3552,6 +3671,9 @@ flutter_rust_bridge::frb_generated_moi_arc_impl_value!(
 flutter_rust_bridge::frb_generated_moi_arc_impl_value!(
     flutter_rust_bridge::for_generated::RustAutoOpaqueInner<OperationId>
 );
+flutter_rust_bridge::frb_generated_moi_arc_impl_value!(
+    flutter_rust_bridge::for_generated::RustAutoOpaqueInner<PayResponseWrapper>
+);
 
 // Section: dart2rust
 
@@ -3703,6 +3825,16 @@ impl SseDecode for OperationId {
     }
 }
 
+impl SseDecode for PayResponseWrapper {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <RustOpaqueMoi<
+            flutter_rust_bridge::for_generated::RustAutoOpaqueInner<PayResponseWrapper>,
+        >>::sse_decode(deserializer);
+        return flutter_rust_bridge::for_generated::rust_auto_opaque_decode_owned(inner);
+    }
+}
+
 impl SseDecode
     for RustOpaqueMoi<
         flutter_rust_bridge::for_generated::RustAutoOpaqueInner<BitcoinAddressWrapper>,
@@ -3837,6 +3969,16 @@ impl SseDecode
 
 impl SseDecode
     for RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<OperationId>>
+{
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut inner = <usize>::sse_decode(deserializer);
+        return decode_rust_opaque_moi(inner);
+    }
+}
+
+impl SseDecode
+    for RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<PayResponseWrapper>>
 {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -4056,20 +4198,6 @@ impl SseDecode for Vec<(i64, String)> {
             ans_.push(<(i64, String)>::sse_decode(deserializer));
         }
         return ans_;
-    }
-}
-
-impl SseDecode for crate::lnurl::LnurlPayInfo {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
-        let mut var_callback = <String>::sse_decode(deserializer);
-        let mut var_minSats = <i64>::sse_decode(deserializer);
-        let mut var_maxSats = <i64>::sse_decode(deserializer);
-        return crate::lnurl::LnurlPayInfo {
-            callback: var_callback,
-            min_sats: var_minSats,
-            max_sats: var_maxSats,
-        };
     }
 }
 
@@ -4421,11 +4549,11 @@ fn pde_ffi_dispatcher_primary_impl(
             rust_vec_len,
             data_len,
         ),
-        54 => wire__crate__generate_mnemonic_impl(port, ptr, rust_vec_len, data_len),
-        55 => wire__crate__lnurl__lnurl_fetch_limits_impl(port, ptr, rust_vec_len, data_len),
-        56 => wire__crate__lnurl__lnurl_resolve_impl(port, ptr, rust_vec_len, data_len),
-        58 => wire__crate__open_database_impl(port, ptr, rust_vec_len, data_len),
-        63 => wire__crate__parse_mnemonic_impl(port, ptr, rust_vec_len, data_len),
+        56 => wire__crate__generate_mnemonic_impl(port, ptr, rust_vec_len, data_len),
+        57 => wire__crate__lnurl__lnurl_fetch_limits_impl(port, ptr, rust_vec_len, data_len),
+        58 => wire__crate__lnurl__lnurl_resolve_impl(port, ptr, rust_vec_len, data_len),
+        60 => wire__crate__open_database_impl(port, ptr, rust_vec_len, data_len),
+        65 => wire__crate__parse_mnemonic_impl(port, ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -4484,13 +4612,15 @@ fn pde_ffi_dispatcher_sync_impl(
         50 => wire__crate__fountain__OobNotesEncoder_new_impl(ptr, rust_vec_len, data_len),
         52 => wire__crate__OobNotesWrapper_amount_sats_impl(ptr, rust_vec_len, data_len),
         53 => wire__crate__OobNotesWrapper_to_string_impl(ptr, rust_vec_len, data_len),
-        57 => wire__crate__lnurl__lnurl_wrapper_encode_impl(ptr, rust_vec_len, data_len),
-        59 => wire__crate__parse_bitcoin_address_impl(ptr, rust_vec_len, data_len),
-        60 => wire__crate__parse_bolt11_invoice_impl(ptr, rust_vec_len, data_len),
-        61 => wire__crate__parse_invite_code_impl(ptr, rust_vec_len, data_len),
-        62 => wire__crate__lnurl__parse_lnurl_impl(ptr, rust_vec_len, data_len),
-        64 => wire__crate__parse_oob_notes_impl(ptr, rust_vec_len, data_len),
-        65 => wire__crate__word_list_impl(ptr, rust_vec_len, data_len),
+        54 => wire__crate__lnurl__PayResponseWrapper_max_sats_impl(ptr, rust_vec_len, data_len),
+        55 => wire__crate__lnurl__PayResponseWrapper_min_sats_impl(ptr, rust_vec_len, data_len),
+        59 => wire__crate__lnurl__lnurl_wrapper_encode_impl(ptr, rust_vec_len, data_len),
+        61 => wire__crate__parse_bitcoin_address_impl(ptr, rust_vec_len, data_len),
+        62 => wire__crate__parse_bolt11_invoice_impl(ptr, rust_vec_len, data_len),
+        63 => wire__crate__parse_invite_code_impl(ptr, rust_vec_len, data_len),
+        64 => wire__crate__lnurl__parse_lnurl_impl(ptr, rust_vec_len, data_len),
+        66 => wire__crate__parse_oob_notes_impl(ptr, rust_vec_len, data_len),
+        67 => wire__crate__word_list_impl(ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -4719,6 +4849,24 @@ impl flutter_rust_bridge::IntoIntoDart<FrbWrapper<OperationId>> for OperationId 
 }
 
 // Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for FrbWrapper<PayResponseWrapper> {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        flutter_rust_bridge::for_generated::rust_auto_opaque_encode::<_, MoiArc<_>>(self.0)
+            .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for FrbWrapper<PayResponseWrapper>
+{
+}
+
+impl flutter_rust_bridge::IntoIntoDart<FrbWrapper<PayResponseWrapper>> for PayResponseWrapper {
+    fn into_into_dart(self) -> FrbWrapper<PayResponseWrapper> {
+        self.into()
+    }
+}
+
+// Codec=Dco (DartCObject based), see doc to use other codecs
 impl flutter_rust_bridge::IntoDart for crate::events::ConduitEvent {
     fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
         match self {
@@ -4805,23 +4953,6 @@ impl flutter_rust_bridge::IntoIntoDart<crate::events::ConduitUpdate>
     for crate::events::ConduitUpdate
 {
     fn into_into_dart(self) -> crate::events::ConduitUpdate {
-        self
-    }
-}
-// Codec=Dco (DartCObject based), see doc to use other codecs
-impl flutter_rust_bridge::IntoDart for crate::lnurl::LnurlPayInfo {
-    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
-        [
-            self.callback.into_into_dart().into_dart(),
-            self.min_sats.into_into_dart().into_dart(),
-            self.max_sats.into_into_dart().into_dart(),
-        ]
-        .into_dart()
-    }
-}
-impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for crate::lnurl::LnurlPayInfo {}
-impl flutter_rust_bridge::IntoIntoDart<crate::lnurl::LnurlPayInfo> for crate::lnurl::LnurlPayInfo {
-    fn into_into_dart(self) -> crate::lnurl::LnurlPayInfo {
         self
     }
 }
@@ -4975,6 +5106,13 @@ impl SseEncode for OperationId {
     }
 }
 
+impl SseEncode for PayResponseWrapper {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<PayResponseWrapper>>>::sse_encode(flutter_rust_bridge::for_generated::rust_auto_opaque_encode::<_, MoiArc<_>>(self), serializer);
+    }
+}
+
 impl SseEncode
     for RustOpaqueMoi<
         flutter_rust_bridge::for_generated::RustAutoOpaqueInner<BitcoinAddressWrapper>,
@@ -5122,6 +5260,17 @@ impl SseEncode
 
 impl SseEncode
     for RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<OperationId>>
+{
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        let (ptr, size) = self.sse_encode_raw();
+        <usize>::sse_encode(ptr, serializer);
+        <i32>::sse_encode(size, serializer);
+    }
+}
+
+impl SseEncode
+    for RustOpaqueMoi<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<PayResponseWrapper>>
 {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -5306,15 +5455,6 @@ impl SseEncode for Vec<(i64, String)> {
     }
 }
 
-impl SseEncode for crate::lnurl::LnurlPayInfo {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
-        <String>::sse_encode(self.callback, serializer);
-        <i64>::sse_encode(self.min_sats, serializer);
-        <i64>::sse_encode(self.max_sats, serializer);
-    }
-}
-
 impl SseEncode for crate::lnurl::LnurlWrapper {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -5490,6 +5630,7 @@ mod io {
     use crate::client::*;
     use crate::factory::*;
     use crate::fountain::*;
+    use crate::lnurl::*;
     use crate::*;
     use flutter_rust_bridge::for_generated::byteorder::{
         NativeEndian, ReadBytesExt, WriteBytesExt,
@@ -5696,6 +5837,20 @@ mod io {
     ) {
         MoiArc::<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<OperationId>>::decrement_strong_count(ptr as _);
     }
+
+    #[unsafe(no_mangle)]
+    pub extern "C" fn frbgen_conduit_rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPayResponseWrapper(
+        ptr: *const std::ffi::c_void,
+    ) {
+        MoiArc::<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<PayResponseWrapper>>::increment_strong_count(ptr as _);
+    }
+
+    #[unsafe(no_mangle)]
+    pub extern "C" fn frbgen_conduit_rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPayResponseWrapper(
+        ptr: *const std::ffi::c_void,
+    ) {
+        MoiArc::<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<PayResponseWrapper>>::decrement_strong_count(ptr as _);
+    }
 }
 #[cfg(not(target_family = "wasm"))]
 pub use io::*;
@@ -5712,6 +5867,7 @@ mod web {
     use crate::client::*;
     use crate::factory::*;
     use crate::fountain::*;
+    use crate::lnurl::*;
     use crate::*;
     use flutter_rust_bridge::for_generated::byteorder::{
         NativeEndian, ReadBytesExt, WriteBytesExt,
@@ -5919,6 +6075,20 @@ mod web {
         ptr: *const std::ffi::c_void,
     ) {
         MoiArc::<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<OperationId>>::decrement_strong_count(ptr as _);
+    }
+
+    #[wasm_bindgen]
+    pub fn rust_arc_increment_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPayResponseWrapper(
+        ptr: *const std::ffi::c_void,
+    ) {
+        MoiArc::<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<PayResponseWrapper>>::increment_strong_count(ptr as _);
+    }
+
+    #[wasm_bindgen]
+    pub fn rust_arc_decrement_strong_count_RustOpaque_flutter_rust_bridgefor_generatedRustAutoOpaqueInnerPayResponseWrapper(
+        ptr: *const std::ffi::c_void,
+    ) {
+        MoiArc::<flutter_rust_bridge::for_generated::RustAutoOpaqueInner<PayResponseWrapper>>::decrement_strong_count(ptr as _);
     }
 }
 #[cfg(target_family = "wasm")]

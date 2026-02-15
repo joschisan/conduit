@@ -2,12 +2,12 @@ use std::time::Duration;
 
 use fedimint_client::backup::Metadata;
 use fedimint_client::{ClientHandleArc, OperationId};
+use fedimint_core::Amount;
 use fedimint_core::config::FederationId;
 use fedimint_core::db::{Database, IDatabaseTransactionOpsCoreTyped};
 use fedimint_core::module::AmountUnit;
 use fedimint_core::task::sleep;
 use fedimint_core::util::SafeUrl;
-use fedimint_core::Amount;
 use fedimint_eventlog::EventLogId;
 use fedimint_lnv2_client::LightningClientModule;
 use fedimint_lnv2_common::Bolt11InvoiceDescription;
@@ -18,8 +18,8 @@ use flutter_rust_bridge::frb;
 use futures_util::StreamExt;
 
 use crate::db::{EventLogEntryKey, EventLogEntryPrefix};
-use crate::events::{parse_event_log_entry, ConduitEvent};
-use crate::exchange::{fetch_exchange_rate, ExchangeRateCache};
+use crate::events::{ConduitEvent, parse_event_log_entry};
+use crate::exchange::{ExchangeRateCache, fetch_exchange_rate};
 use crate::frb_generated::StreamSink;
 use crate::{BitcoinAddressWrapper, Bolt11InvoiceWrapper, OOBNotesWrapper};
 

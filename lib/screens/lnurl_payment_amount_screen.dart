@@ -11,7 +11,7 @@ class LnurlPaymentAmountScreen extends StatefulWidget {
   final ConduitClient client;
   final ConduitClientFactory clientFactory;
   final LnurlWrapper lnurl;
-  final LnurlPayInfo payInfo;
+  final PayResponseWrapper payResponse;
   final String? contactName;
 
   const LnurlPaymentAmountScreen({
@@ -19,7 +19,7 @@ class LnurlPaymentAmountScreen extends StatefulWidget {
     required this.client,
     required this.clientFactory,
     required this.lnurl,
-    required this.payInfo,
+    required this.payResponse,
     this.contactName,
   });
 
@@ -33,7 +33,7 @@ class _LnurlPaymentAmountScreenState extends State<LnurlPaymentAmountScreen> {
 
   Future<void> _handleConfirm(int amountSats) async {
     final invoice = await lnurlResolve(
-      payInfo: widget.payInfo,
+      payResponse: widget.payResponse,
       amountSats: amountSats,
     );
 
