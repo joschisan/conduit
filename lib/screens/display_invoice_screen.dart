@@ -31,7 +31,7 @@ Widget _buildInvoiceContent(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 32.0),
           child: Text(
-            'This invoice can only be paid once. To receive recurring payments please use your Lightning Url.',
+            'This invoice can only be paid once. To receive recurring payments please use your lightning url.',
             style: TextStyle(
               fontSize: 14,
               color: Theme.of(
