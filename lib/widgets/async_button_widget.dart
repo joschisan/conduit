@@ -1,22 +1,17 @@
 import 'package:flutter/material.dart';
-import 'async_button_mixin.dart';
+import 'package:conduit/utils/async_button_mixin.dart';
 
-class AsyncActionButton extends StatefulWidget {
+class AsyncButton extends StatefulWidget {
   final String text;
   final Future<void> Function() onPressed;
 
-  const AsyncActionButton({
-    super.key,
-    required this.text,
-    required this.onPressed,
-  });
+  const AsyncButton({super.key, required this.text, required this.onPressed});
 
   @override
-  State<AsyncActionButton> createState() => _AsyncActionButtonState();
+  State<AsyncButton> createState() => _AsyncButtonState();
 }
 
-class _AsyncActionButtonState extends State<AsyncActionButton>
-    with AsyncButtonMixin {
+class _AsyncButtonState extends State<AsyncButton> with AsyncButtonMixin {
   @override
   Future<void> Function() get onPressed => widget.onPressed;
 

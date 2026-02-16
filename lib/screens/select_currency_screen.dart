@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:currency_picker/currency_picker.dart';
 import '../bridge_generated.dart/factory.dart';
 
-class CurrencySelectionScreen extends StatelessWidget {
+class SelectCurrencyScreen extends StatelessWidget {
   final ConduitClientFactory clientFactory;
 
-  const CurrencySelectionScreen({super.key, required this.clientFactory});
+  const SelectCurrencyScreen({super.key, required this.clientFactory});
 
   @override
   Widget build(BuildContext context) {

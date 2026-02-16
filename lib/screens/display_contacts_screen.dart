@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/bridge_generated.dart/factory.dart';
 import 'package:conduit/bridge_generated.dart/lnurl.dart';
-import 'package:conduit/widgets/async_button_mixin.dart';
-import 'package:conduit/screens/lnurl_payment_amount_screen.dart';
-import 'package:conduit/drawers/lightning_payment_drawer.dart';
-import 'package:conduit/drawers/contact_drawer.dart';
+import 'package:conduit/utils/async_button_mixin.dart';
+import 'package:conduit/screens/lnurl_amount_screen.dart';
+import 'package:conduit/drawers/lightning_invoice_drawer.dart';
+import 'package:conduit/drawers/edit_contact_drawer.dart';
 
 class _ContactTile extends StatefulWidget {
   final ConduitContact contact;
@@ -57,21 +57,22 @@ class _ContactTileState extends State<_ContactTile> with AsyncButtonMixin {
   }
 }
 
-class ContactsScreen extends StatefulWidget {
+class DisplayContactsScreen extends StatefulWidget {
   final ConduitClient client;
   final ConduitClientFactory clientFactory;
 
-  const ContactsScreen({
+  const DisplayContactsScreen({
     super.key,
     required this.client,
     required this.clientFactory,
   });
 
   @override
-  State<ContactsScreen> createState() => _ContactsScreenState();
+  State<DisplayContactsScreen> createState() => _DisplayContactsScreenState();
 }
 
-class _ContactsScreenState extends State<ContactsScreen> with AsyncButtonMixin {
+class _DisplayContactsScreenState extends State<DisplayContactsScreen>
+    with AsyncButtonMixin {
   final _searchController = TextEditingController();
   String _query = '';
   List<ConduitContact> _contacts = [];
@@ -116,7 +117,7 @@ class _ContactsScreenState extends State<ContactsScreen> with AsyncButtonMixin {
 
       if (!mounted) return;
 
-      LightningPaymentDrawer.show(
+      LightningInvoiceDrawer.show(
         context,
         client: widget.client,
         invoice: invoice,
@@ -125,7 +126,7 @@ class _ContactsScreenState extends State<ContactsScreen> with AsyncButtonMixin {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
           builder:
-              (_) => LnurlPaymentAmountScreen(
+              (_) => LnurlAmountScreen(
                 client: widget.client,
                 clientFactory: widget.clientFactory,
                 lnurl: contact.lnurl,
@@ -155,7 +156,7 @@ class _ContactsScreenState extends State<ContactsScreen> with AsyncButtonMixin {
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
         builder:
-            (_) => LnurlPaymentAmountScreen(
+            (_) => LnurlAmountScreen(
               client: widget.client,
               clientFactory: widget.clientFactory,
               lnurl: lnurl,
@@ -167,7 +168,7 @@ class _ContactsScreenState extends State<ContactsScreen> with AsyncButtonMixin {
   }
 
   Future<void> _handleEditContact(ConduitContact contact) async {
-    final name = await ContactDrawer.show(
+    final name = await EditContactDrawer.show(
       context,
       clientFactory: widget.clientFactory,
       lnurl: contact.lnurl,
@@ -243,7 +244,7 @@ class _ContactsScreenState extends State<ContactsScreen> with AsyncButtonMixin {
                       ),
                       const SizedBox(height: 16),
                       Text(
-                        'To make recurring payments to the same recipient create a contact by assigning a name to their lightning url or address.',
+                        'To make recurring payments to the same recipient, create a contact by assigning a name to their lightning url or address.',
                         textAlign: TextAlign.center,
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),

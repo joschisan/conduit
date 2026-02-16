@@ -1,24 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/widgets/qr_code_widget.dart';
-import 'package:conduit/drawers/generate_address_drawer.dart';
+import 'package:conduit/drawers/generate_onchain_address_drawer.dart';
 import 'package:conduit/utils/notification_utils.dart';
 
-class BitcoinAddressScreen extends StatefulWidget {
+class OnchainAddressScreen extends StatefulWidget {
   final ConduitClient client;
   final List<(int, String)> addressesList;
 
-  const BitcoinAddressScreen({
+  const OnchainAddressScreen({
     super.key,
     required this.client,
     required this.addressesList,
   });
 
   @override
-  State<BitcoinAddressScreen> createState() => _BitcoinAddressScreenState();
+  State<OnchainAddressScreen> createState() => _OnchainAddressScreenState();
 }
 
-class _BitcoinAddressScreenState extends State<BitcoinAddressScreen> {
+class _OnchainAddressScreenState extends State<OnchainAddressScreen> {
   late List<(int, String)> addresses;
   late int currentIndex;
 
@@ -50,7 +50,7 @@ class _BitcoinAddressScreenState extends State<BitcoinAddressScreen> {
   }
 
   void _showGenerateConfirmation() {
-    GenerateAddressDrawer.show(
+    GenerateOnchainAddressDrawer.show(
       context,
       onConfirm: () => _generateNewAddress(notify: true),
     );
@@ -178,7 +178,7 @@ class _BitcoinAddressScreenState extends State<BitcoinAddressScreen> {
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 32.0),
                     child: Text(
-                      'Confirmed onchain payments may take two hours to appear. A reused address must be manually checked for payments.',
+                      'Confirmed onchain payments may take a few hours to appear. A reused address must be manually checked for payments.',
                       style: TextStyle(
                         fontSize: 14,
                         color: Theme.of(

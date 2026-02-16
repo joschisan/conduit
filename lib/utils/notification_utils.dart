@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'package:conduit/bridge_generated.dart/events.dart';
-import 'package:conduit/utils/payment_type_utils.dart';
+import 'package:conduit/utils/payment_utils.dart';
 
 class NotificationUtils {
   static const _defaultNotificationDuration = Duration(milliseconds: 1500);

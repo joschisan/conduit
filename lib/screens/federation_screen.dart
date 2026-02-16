@@ -5,20 +5,20 @@ import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/bridge_generated.dart/events.dart';
 import 'package:conduit/bridge_generated.dart/factory.dart';
 import 'package:conduit/bridge_generated.dart/lib.dart';
-import 'package:conduit/widgets/amount_display.dart';
-import 'package:conduit/widgets/event_transactions_list.dart';
-import 'package:conduit/screens/lightning_receive_amount_screen.dart';
-import 'package:conduit/screens/ecash_send_amount_screen.dart';
-import 'package:conduit/screens/bitcoin_address_screen.dart';
+import 'package:conduit/widgets/amount_display_widget.dart';
+import 'package:conduit/widgets/payment_list_widget.dart';
+import 'package:conduit/screens/invoice_amount_screen.dart';
+import 'package:conduit/screens/ecash_amount_screen.dart';
+import 'package:conduit/screens/onchain_address_screen.dart';
 import 'package:conduit/drawers/scanner_drawer.dart';
-import 'package:conduit/drawers/event_details_drawer.dart';
-import 'package:conduit/drawers/ecash_receive_drawer.dart';
-import 'package:conduit/drawers/lightning_payment_drawer.dart';
-import 'package:conduit/drawers/lnurl_prompt_drawer.dart';
-import 'package:conduit/drawers/bitcoin_address_prompt_drawer.dart';
+import 'package:conduit/drawers/payment_details_drawer.dart';
+import 'package:conduit/drawers/ecash_drawer.dart';
+import 'package:conduit/drawers/lightning_invoice_drawer.dart';
+import 'package:conduit/drawers/lnurl_drawer.dart';
+import 'package:conduit/drawers/onchain_address_drawer.dart';
 import 'package:conduit/bridge_generated.dart/lnurl.dart';
 import 'package:conduit/utils/notification_utils.dart';
-import 'package:conduit/screens/contacts_screen.dart';
+import 'package:conduit/screens/display_contacts_screen.dart';
 
 class FederationScreen extends StatefulWidget {
   final ConduitClient client;
@@ -80,7 +80,7 @@ class _FederationScreenState extends State<FederationScreen> {
     final parsers = [
       (
         parseBolt11Invoice(invoice: input),
-        (dynamic result) => LightningPaymentDrawer.show(
+        (dynamic result) => LightningInvoiceDrawer.show(
           context,
           client: widget.client,
           invoice: result,
@@ -88,15 +88,12 @@ class _FederationScreenState extends State<FederationScreen> {
       ),
       (
         parseOobNotes(notes: input),
-        (dynamic result) => EcashReceiveDrawer.show(
-          context,
-          client: widget.client,
-          notes: result,
-        ),
+        (dynamic result) =>
+            EcashDrawer.show(context, client: widget.client, notes: result),
       ),
       (
         parseBitcoinAddress(address: input),
-        (dynamic result) => BitcoinAddressPromptDrawer.show(
+        (dynamic result) => OnchainAddressDrawer.show(
           context,
           client: widget.client,
           address: result,
@@ -104,7 +101,7 @@ class _FederationScreenState extends State<FederationScreen> {
       ),
       (
         parseLnurl(request: input),
-        (dynamic result) => LnurlPromptDrawer.show(
+        (dynamic result) => LnurlDrawer.show(
           context,
           client: widget.client,
           clientFactory: widget.clientFactory,
@@ -124,7 +121,7 @@ class _FederationScreenState extends State<FederationScreen> {
   void _onCreateInvoice() {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => LightningReceiveAmountScreen(client: widget.client),
+        builder: (_) => InvoiceAmountScreen(client: widget.client),
       ),
     );
   }
@@ -132,7 +129,7 @@ class _FederationScreenState extends State<FederationScreen> {
   void _onSendEcash() {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => EcashSendAmountScreen(client: widget.client),
+        builder: (_) => EcashAmountScreen(client: widget.client),
       ),
     );
   }
@@ -147,7 +144,7 @@ class _FederationScreenState extends State<FederationScreen> {
       Navigator.of(context).push(
         MaterialPageRoute(
           builder:
-              (context) => BitcoinAddressScreen(
+              (context) => OnchainAddressScreen(
                 client: widget.client,
                 addressesList: addressesList,
               ),
@@ -164,7 +161,7 @@ class _FederationScreenState extends State<FederationScreen> {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder:
-            (_) => ContactsScreen(
+            (_) => DisplayContactsScreen(
               client: widget.client,
               clientFactory: widget.clientFactory,
             ),
@@ -181,7 +178,7 @@ class _FederationScreenState extends State<FederationScreen> {
   }
 
   void _showEventDetails(ConduitPayment event) {
-    EventDetailsDrawer.show(context, event: event);
+    PaymentDetailsDrawer.show(context, event: event);
   }
 
   @override
@@ -278,7 +275,7 @@ class _FederationScreenState extends State<FederationScreen> {
             ),
             const SizedBox(height: 16),
             Expanded(
-              child: EventTransactionsList(
+              child: PaymentList(
                 stream: _eventStream,
                 onTransactionTap: _showEventDetails,
               ),

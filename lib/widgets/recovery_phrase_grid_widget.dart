@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
-class SeedPhraseGrid extends StatelessWidget {
+class RecoveryPhraseGrid extends StatelessWidget {
   final List<String> words;
 
-  const SeedPhraseGrid({super.key, required this.words});
+  const RecoveryPhraseGrid({super.key, required this.words});
 
   @override
   Widget build(BuildContext context) {

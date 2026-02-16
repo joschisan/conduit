@@ -2,24 +2,24 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:conduit/bridge_generated.dart/events.dart';
-import 'package:conduit/widgets/event_transaction_item.dart';
+import 'package:conduit/widgets/payment_card_widget.dart';
 import 'package:conduit/utils/notification_utils.dart';
 
-class EventTransactionsList extends StatefulWidget {
+class PaymentList extends StatefulWidget {
   final Stream<ConduitEvent> stream;
   final void Function(ConduitPayment) onTransactionTap;
 
-  const EventTransactionsList({
+  const PaymentList({
     super.key,
     required this.stream,
     required this.onTransactionTap,
   });
 
   @override
-  State<EventTransactionsList> createState() => _EventTransactionsListState();
+  State<PaymentList> createState() => _PaymentListState();
 }
 
-class _EventTransactionsListState extends State<EventTransactionsList> {
+class _PaymentListState extends State<PaymentList> {
   final List<ConduitPayment> _events = [];
   final Set<String> _animatingIds = {};
   StreamSubscription<ConduitEvent>? _subscription;
@@ -154,7 +154,7 @@ class _EventTransactionsListState extends State<EventTransactionsList> {
       itemBuilder: (context, index) {
         // Access items in reverse order (newest at end of list, show at top)
         final event = _events[_events.length - 1 - index];
-        return EventTransactionItem(
+        return PaymentCard(
           key: ValueKey(event.operationId),
           event: event,
           animate: _animatingIds.contains(event.operationId),
@@ -183,15 +183,15 @@ class _OnboardingCarouselState extends State<_OnboardingCarousel> {
       description:
           'Create a lightning invoice to receive bitcoin from any other lightning wallet.'
           '\n\n'
-          'If you already have a lightning wallet this is the quickest way to top up your balance.',
+          'If you already have a lightning wallet, this is the quickest way to top up your balance.',
     ),
     (
       icon: Icons.currency_bitcoin,
       title: 'Onchain',
       description:
-          'Generate a onchain address to move onchain bitcoin directly into the federation.'
+          'Generate an onchain address to move onchain bitcoin directly into the federation.'
           '\n\n'
-          'Whenever the time comes you can spend your cold storage bitcoin with great privacy.',
+          'Whenever the time comes, you can spend your cold storage bitcoin with great privacy.',
     ),
     (
       icon: Icons.toll,
@@ -199,7 +199,7 @@ class _OnboardingCarouselState extends State<_OnboardingCarousel> {
       description:
           'Use ecash to send bitcoin to another user of this federation - simply enter the amount and share the ecash token with the recipient.'
           '\n\n'
-          'This is the most private and fee efficient way to transact within a federation.',
+          'This is the most private and fee-efficient way to transact within a federation.',
     ),
   ];
 

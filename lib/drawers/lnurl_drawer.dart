@@ -2,18 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/bridge_generated.dart/factory.dart';
 import 'package:conduit/bridge_generated.dart/lnurl.dart';
-import 'package:conduit/widgets/drawer_shell.dart';
-import 'package:conduit/widgets/async_action_button.dart';
-import 'package:conduit/screens/lnurl_payment_amount_screen.dart';
-import 'package:conduit/drawers/lightning_payment_drawer.dart';
+import 'package:conduit/widgets/drawer_shell_widget.dart';
+import 'package:conduit/widgets/async_button_widget.dart';
+import 'package:conduit/screens/lnurl_amount_screen.dart';
+import 'package:conduit/drawers/lightning_invoice_drawer.dart';
 import 'package:conduit/utils/drawer_utils.dart';
 
-class LnurlPromptDrawer extends StatelessWidget {
+class LnurlDrawer extends StatelessWidget {
   final ConduitClient client;
   final ConduitClientFactory clientFactory;
   final LnurlWrapper lnurl;
 
-  const LnurlPromptDrawer({
+  const LnurlDrawer({
     super.key,
     required this.client,
     required this.clientFactory,
@@ -28,7 +28,7 @@ class LnurlPromptDrawer extends StatelessWidget {
   }) {
     return DrawerUtils.show(
       context: context,
-      child: LnurlPromptDrawer(
+      child: LnurlDrawer(
         client: client,
         clientFactory: clientFactory,
         lnurl: lnurl,
@@ -53,7 +53,7 @@ class LnurlPromptDrawer extends StatelessWidget {
       if (!context.mounted) return;
 
       Navigator.of(context).pop(); // Close this drawer
-      LightningPaymentDrawer.show(context, client: client, invoice: invoice);
+      LightningInvoiceDrawer.show(context, client: client, invoice: invoice);
     } else {
       // Variable amount - show amount screen with payResponse
       final contactName = await clientFactory.getContactName(lnurl: lnurl);
@@ -62,7 +62,7 @@ class LnurlPromptDrawer extends StatelessWidget {
 
       DrawerUtils.popAndPush(
         context,
-        LnurlPaymentAmountScreen(
+        LnurlAmountScreen(
           client: client,
           clientFactory: clientFactory,
           lnurl: lnurl,
@@ -77,10 +77,10 @@ class LnurlPromptDrawer extends StatelessWidget {
   Widget build(BuildContext context) {
     return DrawerShell(
       icon: Icons.bolt,
-      title: 'Detected Lightning Url',
+      title: 'Lightning Url',
       children: [
         const SizedBox(height: 8),
-        AsyncActionButton(
+        AsyncButton(
           text: 'Continue',
           onPressed: () => _handleContinue(context),
         ),

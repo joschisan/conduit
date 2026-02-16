@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:conduit/widgets/qr_code_widget.dart';
-import 'package:conduit/widgets/amount_display.dart';
+import 'package:conduit/widgets/amount_display_widget.dart';
 
 // Pure UI composition
 Widget _buildInvoiceContent(
@@ -31,7 +31,7 @@ Widget _buildInvoiceContent(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 32.0),
           child: Text(
-            'This invoice can only be paid once. To receive recurring payments please use your lightning url.',
+            'This invoice can only be paid once. To receive recurring payments, please use your lightning url.',
             style: TextStyle(
               fontSize: 14,
               color: Theme.of(

@@ -4,13 +4,13 @@ import 'package:conduit/bridge_generated.dart/lnurl.dart';
 import 'package:conduit/utils/drawer_utils.dart';
 import 'package:conduit/utils/notification_utils.dart';
 
-class ContactDrawer extends StatefulWidget {
+class EditContactDrawer extends StatefulWidget {
   final ConduitClientFactory clientFactory;
   final LnurlWrapper lnurl;
   final String? contactName;
   final VoidCallback? onDelete;
 
-  const ContactDrawer({
+  const EditContactDrawer({
     super.key,
     required this.clientFactory,
     required this.lnurl,
@@ -27,7 +27,7 @@ class ContactDrawer extends StatefulWidget {
   }) {
     return DrawerUtils.show<String?>(
       context: context,
-      child: ContactDrawer(
+      child: EditContactDrawer(
         clientFactory: clientFactory,
         lnurl: lnurl,
         contactName: contactName,
@@ -37,10 +37,10 @@ class ContactDrawer extends StatefulWidget {
   }
 
   @override
-  State<ContactDrawer> createState() => _ContactDrawerState();
+  State<EditContactDrawer> createState() => _EditContactDrawerState();
 }
 
-class _ContactDrawerState extends State<ContactDrawer> {
+class _EditContactDrawerState extends State<EditContactDrawer> {
   late final _nameController = TextEditingController(text: widget.contactName);
 
   @override

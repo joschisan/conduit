@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:conduit/bridge_generated.dart/lib.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
-import 'package:conduit/widgets/drawer_shell.dart';
-import 'package:conduit/widgets/async_action_button.dart';
-import 'package:conduit/screens/bitcoin_send_amount_screen.dart';
+import 'package:conduit/widgets/drawer_shell_widget.dart';
+import 'package:conduit/widgets/async_button_widget.dart';
+import 'package:conduit/screens/onchain_amount_screen.dart';
 import 'package:conduit/utils/drawer_utils.dart';
 
-class BitcoinAddressPromptDrawer extends StatelessWidget {
+class OnchainAddressDrawer extends StatelessWidget {
   final ConduitClient client;
   final BitcoinAddressWrapper address;
 
-  const BitcoinAddressPromptDrawer({
+  const OnchainAddressDrawer({
     super.key,
     required this.client,
     required this.address,
@@ -23,7 +23,7 @@ class BitcoinAddressPromptDrawer extends StatelessWidget {
   }) {
     return DrawerUtils.show(
       context: context,
-      child: BitcoinAddressPromptDrawer(client: client, address: address),
+      child: OnchainAddressDrawer(client: client, address: address),
     );
   }
 
@@ -31,15 +31,15 @@ class BitcoinAddressPromptDrawer extends StatelessWidget {
   Widget build(BuildContext context) {
     return DrawerShell(
       icon: Icons.currency_bitcoin,
-      title: 'Onchain Address Detected',
+      title: 'Onchain Address',
       children: [
         const SizedBox(height: 8),
-        AsyncActionButton(
+        AsyncButton(
           text: 'Continue',
           onPressed:
               () async => DrawerUtils.popAndPush(
                 context,
-                BitcoinSendAmountScreen(client: client, address: address),
+                OnchainAmountScreen(client: client, address: address),
               ),
         ),
       ],

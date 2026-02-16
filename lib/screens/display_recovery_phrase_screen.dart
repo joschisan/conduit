@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:conduit/widgets/seed_phrase_grid.dart';
+import 'package:conduit/widgets/recovery_phrase_grid_widget.dart';
 
-class DisplaySeedScreen extends StatelessWidget {
+class DisplayRecoveryPhraseScreen extends StatelessWidget {
   final List<String> seedPhrase;
 
-  const DisplaySeedScreen({super.key, required this.seedPhrase});
+  const DisplayRecoveryPhraseScreen({super.key, required this.seedPhrase});
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +18,7 @@ class DisplaySeedScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Expanded(flex: 3, child: SeedPhraseGrid(words: seedPhrase)),
+              Expanded(flex: 3, child: RecoveryPhraseGrid(words: seedPhrase)),
               Expanded(
                 child: Center(
                   child: Padding(

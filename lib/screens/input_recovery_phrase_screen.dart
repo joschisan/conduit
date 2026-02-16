@@ -1,22 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:conduit/bridge_generated.dart/lib.dart';
-import 'package:conduit/screens/confirm_seed_screen.dart';
+import 'package:conduit/screens/confirm_recovery_phrase_screen.dart';
 
-class InputSeedScreen extends StatefulWidget {
+class InputRecoveryPhraseScreen extends StatefulWidget {
   final DatabaseWrapper db;
   final List<String> partialSeedPhrase;
 
-  const InputSeedScreen({
+  const InputRecoveryPhraseScreen({
     super.key,
     required this.db,
     required this.partialSeedPhrase,
   });
 
   @override
-  State<InputSeedScreen> createState() => _InputSeedScreenState();
+  State<InputRecoveryPhraseScreen> createState() =>
+      _InputRecoveryPhraseScreenState();
 }
 
-class _InputSeedScreenState extends State<InputSeedScreen> {
+class _InputRecoveryPhraseScreenState extends State<InputRecoveryPhraseScreen> {
   String query = '';
   List<String> subset = wordList();
 
@@ -36,8 +37,10 @@ class _InputSeedScreenState extends State<InputSeedScreen> {
         context,
         MaterialPageRoute(
           builder:
-              (context) =>
-                  ConfirmSeedScreen(db: widget.db, seedPhrase: updatedPhrase),
+              (context) => ConfirmRecoveryPhraseScreen(
+                db: widget.db,
+                seedPhrase: updatedPhrase,
+              ),
         ),
       );
     } else {
@@ -45,7 +48,7 @@ class _InputSeedScreenState extends State<InputSeedScreen> {
         context,
         MaterialPageRoute(
           builder:
-              (context) => InputSeedScreen(
+              (context) => InputRecoveryPhraseScreen(
                 db: widget.db,
                 partialSeedPhrase: updatedPhrase,
               ),

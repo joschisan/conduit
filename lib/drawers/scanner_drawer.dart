@@ -6,10 +6,10 @@ import 'package:conduit/bridge_generated.dart/fountain.dart';
 import 'package:conduit/bridge_generated.dart/lnurl.dart';
 import 'package:conduit/utils/drawer_utils.dart';
 import 'package:conduit/widgets/qr_scanner_widget.dart';
-import 'package:conduit/drawers/lightning_payment_drawer.dart';
-import 'package:conduit/drawers/ecash_receive_drawer.dart';
-import 'package:conduit/drawers/lnurl_prompt_drawer.dart';
-import 'package:conduit/drawers/bitcoin_address_prompt_drawer.dart';
+import 'package:conduit/drawers/lightning_invoice_drawer.dart';
+import 'package:conduit/drawers/ecash_drawer.dart';
+import 'package:conduit/drawers/lnurl_drawer.dart';
+import 'package:conduit/drawers/onchain_address_drawer.dart';
 
 class ScannerDrawer extends StatefulWidget {
   final ConduitClient client;
@@ -47,7 +47,7 @@ class _ScannerDrawerState extends State<ScannerDrawer> {
     final parsers = [
       (
         parseBolt11Invoice(invoice: input),
-        (dynamic result) => LightningPaymentDrawer.show(
+        (dynamic result) => LightningInvoiceDrawer.show(
           context,
           client: widget.client,
           invoice: result,
@@ -55,15 +55,12 @@ class _ScannerDrawerState extends State<ScannerDrawer> {
       ),
       (
         parseOobNotes(notes: input),
-        (dynamic result) => EcashReceiveDrawer.show(
-          context,
-          client: widget.client,
-          notes: result,
-        ),
+        (dynamic result) =>
+            EcashDrawer.show(context, client: widget.client, notes: result),
       ),
       (
         parseBitcoinAddress(address: input),
-        (dynamic result) => BitcoinAddressPromptDrawer.show(
+        (dynamic result) => OnchainAddressDrawer.show(
           context,
           client: widget.client,
           address: result,
@@ -71,7 +68,7 @@ class _ScannerDrawerState extends State<ScannerDrawer> {
       ),
       (
         parseLnurl(request: input),
-        (dynamic result) => LnurlPromptDrawer.show(
+        (dynamic result) => LnurlDrawer.show(
           context,
           client: widget.client,
           clientFactory: widget.clientFactory,
@@ -80,11 +77,8 @@ class _ScannerDrawerState extends State<ScannerDrawer> {
       ),
       (
         _decoder.addFragment(fragment: input),
-        (dynamic result) => EcashReceiveDrawer.show(
-          context,
-          client: widget.client,
-          notes: result,
-        ),
+        (dynamic result) =>
+            EcashDrawer.show(context, client: widget.client, notes: result),
       ),
     ];
 

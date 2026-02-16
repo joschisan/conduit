@@ -5,10 +5,10 @@ import 'package:conduit/widgets/amount_entry_widget.dart';
 import 'package:conduit/screens/display_ecash_screen.dart';
 import 'package:conduit/utils/auth_utils.dart';
 
-class EcashSendAmountScreen extends StatelessWidget {
+class EcashAmountScreen extends StatelessWidget {
   final ConduitClient client;
 
-  const EcashSendAmountScreen({super.key, required this.client});
+  const EcashAmountScreen({super.key, required this.client});
 
   Future<void> _handleConfirm(BuildContext context, int amountSats) async {
     await requireBiometricAuth(context);

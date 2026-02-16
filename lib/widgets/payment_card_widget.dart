@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:conduit/bridge_generated.dart/events.dart';
-import 'package:conduit/utils/payment_type_utils.dart';
+import 'package:conduit/utils/payment_utils.dart';
 
 String _formatTime(DateTime dateTime) {
   final difference = DateTime.now().difference(dateTime);
@@ -14,12 +14,12 @@ String _formatTime(DateTime dateTime) {
   };
 }
 
-class EventTransactionItem extends StatefulWidget {
+class PaymentCard extends StatefulWidget {
   final ConduitPayment event;
   final VoidCallback onTap;
   final bool animate;
 
-  const EventTransactionItem({
+  const PaymentCard({
     super.key,
     required this.event,
     required this.animate,
@@ -27,10 +27,10 @@ class EventTransactionItem extends StatefulWidget {
   });
 
   @override
-  State<EventTransactionItem> createState() => _EventTransactionItemState();
+  State<PaymentCard> createState() => _PaymentCardState();
 }
 
-class _EventTransactionItemState extends State<EventTransactionItem>
+class _PaymentCardState extends State<PaymentCard>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _fadeAnimation;

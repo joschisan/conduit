@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'async_button_mixin.dart';
+import 'package:conduit/utils/async_button_mixin.dart';
 
 class AsyncTextButton extends StatefulWidget {
   final String text;

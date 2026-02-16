@@ -3,7 +3,7 @@ import 'package:conduit/bridge_generated.dart/lib.dart';
 import 'package:conduit/bridge_generated.dart/factory.dart';
 import 'package:conduit/utils/notification_utils.dart';
 import 'package:conduit/widgets/qr_scanner_widget.dart';
-import 'package:conduit/drawers/invite_confirmation_drawer.dart';
+import 'package:conduit/drawers/invite_drawer.dart';
 import 'package:conduit/utils/drawer_utils.dart';
 
 class InviteScannerDrawer extends StatefulWidget {
@@ -50,7 +50,7 @@ class _InviteScannerDrawerState extends State<InviteScannerDrawer> {
       _isScanning = false;
       Navigator.of(context).pop();
 
-      InviteConfirmationDrawer.show(
+      InviteDrawer.show(
         context,
         invite: inviteCode,
         onJoin: widget.onJoin,
