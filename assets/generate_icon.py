@@ -1,57 +1,68 @@
 #!/usr/bin/env python3
-from PIL import Image, ImageDraw, ImageFont
+import subprocess
+import sys
+import os
+
+# Auto-setup venv if needed
+script_dir = os.path.dirname(os.path.abspath(__file__))
+venv_dir = os.path.join(script_dir, '.venv')
+venv_python = os.path.join(venv_dir, 'bin', 'python3')
+
+if not os.path.exists(venv_python):
+    print("Setting up virtual environment...")
+    subprocess.check_call([sys.executable, '-m', 'venv', venv_dir])
+    subprocess.check_call([venv_python, '-m', 'pip', 'install', '-q', 'Pillow', 'cairosvg'])
+    os.execv(venv_python, [venv_python] + sys.argv)
+elif sys.executable != venv_python:
+    os.execv(venv_python, [venv_python] + sys.argv)
+
+from PIL import Image
+import cairosvg
+from io import BytesIO
 
 # Configuration
 ICON_SIZE = 1024
 BACKGROUND_COLOR = '#000000'  # Black background
-TEXT_COLOR = 'white'
-SYMBOL = 'ℂ'  # Complex numbers symbol
-FONT_SIZE = 850
+ICON_COLOR = '#FFFFFF'  # White icon
+PADDING = 180  # Padding around the icon
 
-# Create app icon with black background
-img = Image.new('RGB', (ICON_SIZE, ICON_SIZE), color=BACKGROUND_COLOR)
-draw = ImageDraw.Draw(img)
+# SVG with the lightning bolt icon (Phosphor Icons)
+SVG_TEMPLATE = '''<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+  <path fill="{color}" d="M215.79,118.17a8,8,0,0,0-5-5.66L153.18,90.9l14.66-73.33a8,8,0,0,0-13.69-7l-112,120a8,8,0,0,0,3,13l57.63,21.61L88.16,238.43a8,8,0,0,0,13.69,7l112-120A8,8,0,0,0,215.79,118.17ZM109.37,214l10.47-52.38a8,8,0,0,0-5-9.06L62,132.71l84.62-90.66L136.16,94.43a8,8,0,0,0,5,9.06l52.8,19.8Z"/>
+</svg>'''
 
-# Create logo with transparent background for use in app
-logo_img = Image.new('RGBA', (ICON_SIZE, ICON_SIZE), color=(0, 0, 0, 0))
-logo_draw = ImageDraw.Draw(logo_img)
+# Generate colored SVG
+svg_content = SVG_TEMPLATE.format(color=ICON_COLOR)
 
-# Try to find a font that supports the ℂ character
-font_paths = [
-    '/System/Library/Fonts/Supplemental/Arial Unicode.ttf',
-    '/System/Library/Fonts/Helvetica.ttc',
-    '/System/Library/Fonts/SFNSText.ttf',
-]
+# Render SVG to PNG at high resolution
+icon_inner_size = ICON_SIZE - (PADDING * 2)
+png_data = cairosvg.svg2png(bytestring=svg_content.encode(), output_width=icon_inner_size, output_height=icon_inner_size)
+icon_img = Image.open(BytesIO(png_data)).convert('RGBA')
 
-font = None
-for font_path in font_paths:
-    try:
-        font = ImageFont.truetype(font_path, FONT_SIZE)
-        break
-    except:
-        continue
+# Find the actual bounding box of non-transparent pixels and center
+bbox = icon_img.getbbox()
+if bbox:
+    cropped = icon_img.crop(bbox)
+    centered = Image.new('RGBA', (icon_inner_size, icon_inner_size), (0, 0, 0, 0))
+    paste_x = (icon_inner_size - cropped.width) // 2
+    paste_y = (icon_inner_size - cropped.height) // 2
+    centered.paste(cropped, (paste_x, paste_y))
+    icon_img = centered
 
-if font is None:
-    print("Warning: Using default font, may not display ℂ correctly")
-    font = ImageFont.load_default()
+# Create background
+background = Image.new('RGB', (ICON_SIZE, ICON_SIZE), color=BACKGROUND_COLOR)
 
-# Draw the symbol centered - account for bounding box offsets
-bbox = draw.textbbox((0, 0), SYMBOL, font=font)
-text_width = bbox[2] - bbox[0]
-text_height = bbox[3] - bbox[1]
+# Paste icon centered on background
+offset = PADDING
+background.paste(icon_img, (offset, offset), icon_img)
 
-# Calculate position to truly center the visual bounds
-x = (ICON_SIZE - text_width) / 2 - bbox[0]  # Subtract left offset
-y = (ICON_SIZE - text_height) / 2 - bbox[1]  # Subtract top offset
-
-draw.text((x, y), SYMBOL, fill=TEXT_COLOR, font=font)
-logo_draw.text((x, y), SYMBOL, fill=TEXT_COLOR, font=font)
-
-# Save the app icon and logo
-img.save('icon.png')
-logo_img.save('logo.png')
+# Save the app icon (with black background)
+background.save('icon.png')
 print(f"✓ Icon saved as icon.png ({ICON_SIZE}x{ICON_SIZE})")
 print(f"  Background: {BACKGROUND_COLOR}")
-print(f"  Symbol: {SYMBOL}")
-print(f"✓ Logo saved as logo.png ({ICON_SIZE}x{ICON_SIZE}, transparent)")
+print(f"  Icon color: {ICON_COLOR}")
+
+# Save the logo (transparent background, for in-app use)
+icon_img.save('logo.png')
+print(f"✓ Logo saved as logo.png ({icon_inner_size}x{icon_inner_size}, transparent)")
 
