@@ -17,11 +17,13 @@ use fedimint_wallet_client::{WalletClientModule, WalletOperationMeta, WalletOper
 use flutter_rust_bridge::frb;
 use futures_util::StreamExt;
 
+use std::str::FromStr;
+
 use crate::db::{EventLogEntryKey, EventLogEntryPrefix};
 use crate::events::{ConduitEvent, parse_event_log_entry};
 use crate::exchange::{ExchangeRateCache, fetch_exchange_rate};
 use crate::frb_generated::StreamSink;
-use crate::{BitcoinAddressWrapper, Bolt11InvoiceWrapper, OOBNotesWrapper};
+use crate::{BitcoinAddressWrapper, Bolt11InvoiceWrapper, InviteCodeWrapper, OOBNotesWrapper};
 
 #[frb]
 pub struct ConduitRecoveryProgress {
@@ -113,6 +115,27 @@ impl ConduitClient {
     #[frb(sync)]
     pub fn has_pending_recoveries(&self) -> bool {
         self.client.has_pending_recoveries()
+    }
+
+    #[frb]
+    pub async fn expiration_date(&self) -> Option<i64> {
+        self.client
+            .meta_service()
+            .get_field::<u64>(self.client.db(), "federation_expiry_timestamp")
+            .await
+            .and_then(|mv| mv.value)
+            .map(|ts| ts as i64)
+    }
+
+    #[frb]
+    pub async fn expiration_successor(&self) -> Option<InviteCodeWrapper> {
+        self.client
+            .meta_service()
+            .get_field::<String>(self.client.db(), "federation_successor")
+            .await
+            .and_then(|mv| mv.value)
+            .and_then(|s| fedimint_core::invite_code::InviteCode::from_str(&s).ok())
+            .map(InviteCodeWrapper)
     }
 
     #[frb]

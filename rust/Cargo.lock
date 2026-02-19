@@ -804,6 +804,7 @@ dependencies = [
  "fedimint-api-client",
  "fedimint-bip39",
  "fedimint-client",
+ "fedimint-client-module",
  "fedimint-connectors",
  "fedimint-core",
  "fedimint-eventlog",
@@ -811,6 +812,7 @@ dependencies = [
  "fedimint-lnurl",
  "fedimint-lnv2-client",
  "fedimint-lnv2-common",
+ "fedimint-meta-client",
  "fedimint-mint-client",
  "fedimint-rocksdb",
  "fedimint-wallet-client",
@@ -1379,7 +1381,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb"
 dependencies = [
  "libc",
- "windows-sys 0.59.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -1848,6 +1850,44 @@ dependencies = [
 ]
 
 [[package]]
+name = "fedimint-meta-client"
+version = "0.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "415cf495c9e5e4dcbbd9fde5684a724f241c63824c6b8b80d8ecc1ef5fef4ca6"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "erased-serde",
+ "fedimint-api-client",
+ "fedimint-client-module",
+ "fedimint-core",
+ "fedimint-logging",
+ "fedimint-meta-common",
+ "serde",
+ "serde_json",
+ "strum 0.27.2",
+ "strum_macros 0.27.2",
+ "thiserror 2.0.18",
+ "tracing",
+]
+
+[[package]]
+name = "fedimint-meta-common"
+version = "0.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7475cb6a210abd6cd565f8bda61a63e9f18a16a51a5716f9201a904e0b8bd4f8"
+dependencies = [
+ "anyhow",
+ "fedimint-core",
+ "fedimint-logging",
+ "hex",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.18",
+ "tracing",
+]
+
+[[package]]
 name = "fedimint-mint-client"
 version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2301,7 +2341,7 @@ dependencies = [
  "libc",
  "log",
  "rustversion",
- "windows-link 0.1.3",
+ "windows-link 0.2.1",
  "windows-result",
 ]
 
@@ -4180,7 +4220,7 @@ version = "0.50.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7957b9740744892f114936ab4a57b3f487491bbeafaf8083688b16841a4240e5"
 dependencies = [
- "windows-sys 0.59.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -4845,7 +4885,7 @@ dependencies = [
  "once_cell",
  "socket2 0.6.2",
  "tracing",
- "windows-sys 0.59.0",
+ "windows-sys 0.60.2",
 ]
 
 [[package]]
@@ -5177,7 +5217,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys 0.11.0",
- "windows-sys 0.59.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -6534,7 +6574,7 @@ version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22"
 dependencies = [
- "windows-sys 0.48.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]

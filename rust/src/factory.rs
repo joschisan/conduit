@@ -17,7 +17,10 @@ use fedimint_core::base32::{FEDIMINT_PREFIX, encode_prefixed};
 use fedimint_core::config::{ClientConfig, FederationId};
 use fedimint_core::db::{Database, IDatabaseTransactionOpsCore, IDatabaseTransactionOpsCoreTyped};
 use fedimint_core::invite_code::InviteCode;
+use fedimint_client::meta::MetaService;
 use fedimint_lnv2_client::LightningClientInit;
+use fedimint_client_module::meta::LegacyMetaSource;
+use fedimint_meta_client::{MetaClientInit, MetaModuleMetaSourceWithFallback};
 use fedimint_lnv2_common::KIND as LIGHTNING_KIND;
 use fedimint_mint_client::{KIND as MINT_KIND, MintClientInit};
 use fedimint_wallet_client::{KIND as WALLET_KIND, WalletClientInit};
@@ -135,12 +138,17 @@ impl ConduitClientFactory {
         modules.attach(MintClientInit);
         modules.attach(LightningClientInit::default());
         modules.attach(WalletClientInit::default());
+        modules.attach(MetaClientInit);
+
+        let meta_source: MetaModuleMetaSourceWithFallback<LegacyMetaSource> = Default::default();
+        let meta_service = MetaService::new(meta_source);
 
         let mut client_builder = Client::builder()
             .await
             .expect("Failed to create client builder");
 
         client_builder.with_module_inits(modules);
+        client_builder.with_meta_service(meta_service);
 
         client_builder
     }
