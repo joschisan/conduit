@@ -149,7 +149,7 @@ class _PaymentCardState extends State<PaymentCard>
                     ),
             trailing: Text(
               _formatTime(date),
-              style: const TextStyle(fontSize: 12, color: Colors.grey),
+              style: const TextStyle(fontSize: 14, color: Colors.grey),
             ),
           ),
         ),
