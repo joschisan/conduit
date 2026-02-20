@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:currency_picker/currency_picker.dart';
 import '../bridge_generated.dart/factory.dart';
+import '../utils/notification_utils.dart';
 
 class SelectCurrencyScreen extends StatelessWidget {
   final ConduitClientFactory clientFactory;
@@ -62,21 +63,15 @@ class SelectCurrencyScreen extends StatelessWidget {
                   horizontal: 16,
                   vertical: 8,
                 ),
-                leading: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
+                leading: SizedBox(
+                  width: 56,
                   child: Text(
                     currency.code,
+                    textAlign: TextAlign.center,
                     style: TextStyle(
-                      color: Theme.of(context).colorScheme.onPrimary,
-                      fontSize: 18,
+                      color: Theme.of(context).colorScheme.primary,
                       fontWeight: FontWeight.bold,
+                      fontSize: 22,
                     ),
                   ),
                 ),
@@ -87,12 +82,15 @@ class SelectCurrencyScreen extends StatelessWidget {
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                trailing: const Icon(Icons.arrow_forward_ios, size: 18),
                 onTap: () async {
                   await clientFactory.setCurrency(currencyCode: currency.code);
 
                   if (!context.mounted) return;
 
+                  NotificationUtils.showSuccess(
+                    context,
+                    'Selected ${currency.name}',
+                  );
                   Navigator.pop(context);
                 },
               ),
