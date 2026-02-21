@@ -46,6 +46,10 @@ class ExpirationDrawer extends StatelessWidget {
 
     if (!context.mounted) return;
 
+    Navigator.of(context).pop();
+
+    if (!context.mounted) return;
+
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
         builder:
