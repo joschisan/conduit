@@ -30,7 +30,7 @@ class SettingsCard extends StatelessWidget {
           color: Theme.of(context).colorScheme.primary,
         ),
         title: Text(title),
-        trailing: const Icon(Icons.chevron_right),
+        trailing: const Icon(Icons.chevron_right, size: 32),
         onTap: onTap,
         onLongPress: onLongPress,
       ),
