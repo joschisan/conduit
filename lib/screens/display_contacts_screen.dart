@@ -41,11 +41,11 @@ class _ContactTileState extends State<_ContactTile> with AsyncButtonMixin {
         title: Text(widget.contact.name),
         trailing: switch (buttonState) {
           AsyncButtonState.loading => const SizedBox(
-            width: 24,
-            height: 24,
+            width: 28,
+            height: 28,
             child: CircularProgressIndicator(strokeWidth: 2),
           ),
-          AsyncButtonState.idle => null,
+          AsyncButtonState.idle => const Icon(Icons.chevron_right, size: 32),
         },
         onTap: switch (buttonState) {
           AsyncButtonState.idle => handlePress,
