@@ -111,7 +111,6 @@ class _InputRecoveryPhraseScreenState extends State<InputRecoveryPhraseScreen> {
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    trailing: const Icon(Icons.chevron_right, size: 32),
                     onTap: () => _selectWord(word),
                   ),
                 );
