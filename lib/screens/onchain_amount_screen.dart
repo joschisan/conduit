@@ -71,37 +71,18 @@ class _OnchainAmountScreenState extends State<OnchainAmountScreen> {
                         child: CircularProgressIndicator(strokeWidth: 2),
                       );
                     } else if (snapshot.hasError) {
-                      return const Text(
-                        'Failed to calculate fee',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.red,
-                        ),
+                      return const Icon(
+                        Icons.error,
+                        color: Colors.red,
+                        size: 28,
                       );
                     } else if (snapshot.hasData) {
-                      return Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.primary.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(
-                            color: Theme.of(
-                              context,
-                            ).colorScheme.primary.withValues(alpha: 0.3),
-                          ),
-                        ),
-                        child: Text(
-                          '${snapshot.data} sats',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                          ),
+                      return Text(
+                        '${snapshot.data} sats',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Theme.of(context).colorScheme.primary,
                         ),
                       );
                     }
