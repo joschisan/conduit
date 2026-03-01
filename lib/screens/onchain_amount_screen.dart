@@ -97,7 +97,7 @@ class _OnchainAmountScreenState extends State<OnchainAmountScreen> {
                           ),
                         ),
                         child: Text(
-                          'Fee: ${snapshot.data} sats',
+                          '${snapshot.data} sats',
                           style: const TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.bold,
