@@ -39,7 +39,7 @@ class _AmountEntryWidgetState extends State<AmountEntryWidget> {
       _currentAmount = _currentAmount * 10 + int.parse(value);
     });
 
-    // Notify parent about amount change (always in sats)
+    // Notify parent about amount change (always in sat)
     _notifyParentAmountChanged();
   }
 
@@ -49,7 +49,7 @@ class _AmountEntryWidgetState extends State<AmountEntryWidget> {
         _currentAmount = _currentAmount ~/ 10;
       });
 
-      // Notify parent about amount change (always in sats)
+      // Notify parent about amount change (always in sat)
       _notifyParentAmountChanged();
     }
   }
@@ -72,7 +72,7 @@ class _AmountEntryWidgetState extends State<AmountEntryWidget> {
       );
       widget.onAmountChanged?.call(amountSats);
     } else {
-      // Already in sats
+      // Already in sat
       widget.onAmountChanged?.call(_currentAmount);
     }
   }
@@ -80,9 +80,10 @@ class _AmountEntryWidgetState extends State<AmountEntryWidget> {
   double get _fiatAmount => _currentAmount / pow(10, _currency.decimalDigits);
 
   String _formatFiatAmount() {
-    final format = _currency.decimalDigits > 0
-        ? '#,##0.${'0' * _currency.decimalDigits}'
-        : '#,##0';
+    final format =
+        _currency.decimalDigits > 0
+            ? '#,##0.${'0' * _currency.decimalDigits}'
+            : '#,##0';
     return '${_currency.symbol} ${NumberFormat(format).format(_fiatAmount)}';
   }
 

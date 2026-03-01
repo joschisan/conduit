@@ -78,7 +78,7 @@ class _OnchainAmountScreenState extends State<OnchainAmountScreen> {
                       );
                     } else if (snapshot.hasData) {
                       return Text(
-                        '${snapshot.data} sats',
+                        '${snapshot.data} sat',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
