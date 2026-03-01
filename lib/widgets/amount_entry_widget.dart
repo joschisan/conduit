@@ -1,7 +1,9 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:currency_picker/currency_picker.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
+import 'package:conduit/utils/currency_utils.dart';
 import 'package:conduit/widgets/amount_display_widget.dart';
 import 'package:conduit/widgets/async_button_widget.dart';
 
@@ -25,9 +27,9 @@ class _AmountEntryWidgetState extends State<AmountEntryWidget> {
   int _currentAmount = 0;
   bool _enterFiat = false;
 
-  Currency get _currency {
+  FiatCurrency get _currency {
     final currencyCode = widget.client.currencyCode();
-    return CurrencyService().getAll().firstWhere((c) => c.code == currencyCode);
+    return fiatCurrencies.firstWhere((c) => c.code == currencyCode);
   }
 
   void _onKeyboardTap(String value) {
@@ -65,9 +67,8 @@ class _AmountEntryWidgetState extends State<AmountEntryWidget> {
     if (widget.onAmountChanged == null) return;
 
     if (_enterFiat) {
-      // Convert fiat cents to sats asynchronously
       final amountSats = await widget.client.fiatToSats(
-        amountFiatCents: _currentAmount,
+        amountFiat: _fiatAmount,
       );
       widget.onAmountChanged?.call(amountSats);
     } else {
@@ -76,8 +77,13 @@ class _AmountEntryWidgetState extends State<AmountEntryWidget> {
     }
   }
 
+  double get _fiatAmount => _currentAmount / pow(10, _currency.decimalDigits);
+
   String _formatFiatAmount() {
-    return '${_currency.symbol} ${NumberFormat('#,##0.00').format(_currentAmount / 100)}';
+    final format = _currency.decimalDigits > 0
+        ? '#,##0.${'0' * _currency.decimalDigits}'
+        : '#,##0';
+    return '${_currency.symbol} ${NumberFormat(format).format(_fiatAmount)}';
   }
 
   Future<void> _handleConfirm() async {
@@ -87,7 +93,7 @@ class _AmountEntryWidgetState extends State<AmountEntryWidget> {
 
     final amountSats =
         _enterFiat
-            ? await widget.client.fiatToSats(amountFiatCents: _currentAmount)
+            ? await widget.client.fiatToSats(amountFiat: _fiatAmount)
             : _currentAmount;
 
     await widget.onConfirm(amountSats);

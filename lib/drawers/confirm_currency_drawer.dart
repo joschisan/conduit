@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:currency_picker/currency_picker.dart';
 import 'package:conduit/bridge_generated.dart/factory.dart';
 import 'package:conduit/widgets/drawer_shell_widget.dart';
 import 'package:conduit/widgets/async_button_widget.dart';
 import 'package:conduit/utils/drawer_utils.dart';
+import 'package:conduit/utils/currency_utils.dart';
 
 class ConfirmCurrencyDrawer extends StatefulWidget {
-  final Currency currency;
+  final FiatCurrency currency;
   final ConduitClientFactory clientFactory;
 
   const ConfirmCurrencyDrawer({
@@ -17,7 +17,7 @@ class ConfirmCurrencyDrawer extends StatefulWidget {
 
   static Future<void> show(
     BuildContext context, {
-    required Currency currency,
+    required FiatCurrency currency,
     required ConduitClientFactory clientFactory,
   }) {
     return DrawerUtils.show(

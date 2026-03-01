@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:currency_picker/currency_picker.dart';
 import '../bridge_generated.dart/factory.dart';
 import '../drawers/confirm_currency_drawer.dart';
+import '../utils/currency_utils.dart';
 
 class SelectCurrencyScreen extends StatelessWidget {
   final ConduitClientFactory clientFactory;
@@ -10,52 +10,14 @@ class SelectCurrencyScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currencies =
-        CurrencyService()
-            .getAll()
-            .where(
-              (currency) => [
-                'ARS',
-                'AUD',
-                'BRL',
-                'CAD',
-                'CHF',
-                'CLP',
-                'CZK',
-                'DKK',
-                'EUR',
-                'GBP',
-                'HKD',
-                'HUF',
-                'IDR',
-                'ILS',
-                'INR',
-                'JPY',
-                'KRW',
-                'MXN',
-                'MYR',
-                'NOK',
-                'NZD',
-                'PHP',
-                'PLN',
-                'SEK',
-                'SGD',
-                'THB',
-                'TRY',
-                'USD',
-                'ZAR',
-              ].contains(currency.code),
-            )
-            .toList();
-
     return Scaffold(
       appBar: AppBar(title: const Text('Select Currency')),
       body: SafeArea(
         child: ListView.builder(
           padding: const EdgeInsets.all(16),
-          itemCount: currencies.length,
+          itemCount: fiatCurrencies.length,
           itemBuilder: (context, index) {
-            final currency = currencies[index];
+            final currency = fiatCurrencies[index];
             return Card(
               margin: const EdgeInsets.symmetric(vertical: 4),
               child: ListTile(
