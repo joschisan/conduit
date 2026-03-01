@@ -80,7 +80,7 @@ class _OnchainAmountScreenState extends State<OnchainAmountScreen> {
                       return Text(
                         '${snapshot.data} sat',
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 18,
                           fontWeight: FontWeight.bold,
                           color: Theme.of(context).colorScheme.primary,
                         ),

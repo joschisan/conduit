@@ -43,7 +43,7 @@ class _AsyncTextButtonState extends State<AsyncTextButton>
           AsyncButtonState.idle => Text(
             widget.text,
             style: TextStyle(
-              fontSize: 16,
+              fontSize: 18,
               fontWeight: FontWeight.bold,
               color: Theme.of(context).colorScheme.primary,
             ),
