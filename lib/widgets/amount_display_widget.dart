@@ -41,10 +41,11 @@ class AmountDisplay extends StatelessWidget {
         if (fee != null) ...[
           const SizedBox(height: 8),
           Text(
-            'Fee: ${NumberFormat('#,###').format(fee)} sat',
+            '${NumberFormat('#,###').format(fee)} sat',
             style: TextStyle(
-              fontSize: 16,
-              color: textColor.withValues(alpha: 0.7),
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Theme.of(context).colorScheme.primary,
             ),
           ),
         ],
