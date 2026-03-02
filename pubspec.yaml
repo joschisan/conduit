@@ -1,7 +1,7 @@
 name: conduit
 description: "A minimal Fedimint Wallet"
 publish_to: "none"
-version: 0.2.5+21
+version: 0.2.6+22
 
 environment:
   sdk: ^3.7.2
