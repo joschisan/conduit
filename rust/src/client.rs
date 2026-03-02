@@ -54,6 +54,7 @@ impl ConduitClient {
     }
 
     #[frb]
+    #[allow(deprecated)]
     pub async fn backup_to_federation(&self) -> Result<(), String> {
         self.client
             .backup_to_federation(Metadata::empty())

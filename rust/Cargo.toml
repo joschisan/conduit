@@ -7,20 +7,22 @@ edition = "2024"
 unexpected_cfgs = { level = "allow", check-cfg = ['cfg(frb_expand)'] }
 
 [dependencies]
-fedimint-api-client = "0.10.0"
-fedimint-bip39 = "0.10.0"
-fedimint-core = "0.10.0"
-fedimint-connectors = "0.10.0"
-fedimint-client = "0.10.0"
-fedimint-eventlog = "0.10.0"
-fedimint-fountain = "0.10.0"
-fedimint-rocksdb = "0.10.0"
-fedimint-lnv2-client = "0.10.0"
-fedimint-lnv2-common = "0.10.0"
-fedimint-mint-client = "0.10.0"
-fedimint-wallet-client = "0.10.0"
-fedimint-client-module = "0.10.0"
-fedimint-meta-client = "0.10.0"
+fedimint-api-client = { git = "https://github.com/joschisan/fedimint", branch = "mintv2" }
+fedimint-bip39 = { git = "https://github.com/joschisan/fedimint", branch = "mintv2" }
+fedimint-core = { git = "https://github.com/joschisan/fedimint", branch = "mintv2" }
+fedimint-connectors = { git = "https://github.com/joschisan/fedimint", branch = "mintv2" }
+fedimint-client = { git = "https://github.com/joschisan/fedimint", branch = "mintv2" }
+fedimint-eventlog = { git = "https://github.com/joschisan/fedimint", branch = "mintv2" }
+fedimint-fountain = { git = "https://github.com/joschisan/fedimint", branch = "mintv2" }
+fedimint-rocksdb = { git = "https://github.com/joschisan/fedimint", branch = "mintv2" }
+fedimint-lnv2-client = { git = "https://github.com/joschisan/fedimint", branch = "mintv2" }
+fedimint-lnv2-common = { git = "https://github.com/joschisan/fedimint", branch = "mintv2" }
+fedimint-mint-client = { git = "https://github.com/joschisan/fedimint", branch = "mintv2" }
+fedimint-wallet-client = { git = "https://github.com/joschisan/fedimint", branch = "mintv2" }
+fedimint-client-module = { git = "https://github.com/joschisan/fedimint", branch = "mintv2" }
+fedimint-meta-client = { git = "https://github.com/joschisan/fedimint", branch = "mintv2" }
+fedimint-walletv2-client = { git = "https://github.com/joschisan/fedimint", branch = "mintv2" }
+fedimint-mintv2-client = { git = "https://github.com/joschisan/fedimint", branch = "mintv2" }
 bitcoin = "0.32.5"
 log = "0.4"
 flutter_rust_bridge = "=2.10.0"
