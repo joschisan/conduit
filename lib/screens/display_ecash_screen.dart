@@ -6,7 +6,7 @@ import 'package:conduit/widgets/amount_display_widget.dart';
 import 'package:conduit/widgets/qr_code_widget.dart';
 import 'package:conduit/drawers/cancel_ecash_drawer.dart';
 
-Stream<String> _createFrameStream(OobNotesEncoder encoder) async* {
+Stream<String> _createFrameStream(ECashEncoder encoder) async* {
   while (true) {
     yield await encoder.nextFragment();
     await Future.delayed(const Duration(milliseconds: 300));
@@ -15,8 +15,8 @@ Stream<String> _createFrameStream(OobNotesEncoder encoder) async* {
 
 class DisplayEcashScreen extends StatelessWidget {
   final ConduitClient client;
-  final OobNotesWrapper notes;
-  final OobNotesEncoder encoder;
+  final ECashWrapper notes;
+  final ECashEncoder encoder;
 
   const DisplayEcashScreen({
     super.key,

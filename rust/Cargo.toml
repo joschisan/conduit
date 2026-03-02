@@ -22,7 +22,9 @@ fedimint-wallet-client = { git = "https://github.com/joschisan/fedimint", branch
 fedimint-client-module = { git = "https://github.com/joschisan/fedimint", branch = "mintv2" }
 fedimint-meta-client = { git = "https://github.com/joschisan/fedimint", branch = "mintv2" }
 fedimint-walletv2-client = { git = "https://github.com/joschisan/fedimint", branch = "mintv2" }
+fedimint-walletv2-common = { git = "https://github.com/joschisan/fedimint", branch = "mintv2" }
 fedimint-mintv2-client = { git = "https://github.com/joschisan/fedimint", branch = "mintv2" }
+fedimint-mintv2-common = { git = "https://github.com/joschisan/fedimint", branch = "mintv2" }
 bitcoin = "0.32.5"
 log = "0.4"
 flutter_rust_bridge = "=2.10.0"

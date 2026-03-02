@@ -8,14 +8,14 @@ import 'package:conduit/utils/drawer_utils.dart';
 
 class EcashDrawer extends StatefulWidget {
   final ConduitClient client;
-  final OobNotesWrapper notes;
+  final ECashWrapper notes;
 
   const EcashDrawer({super.key, required this.client, required this.notes});
 
   static Future<bool?> show(
     BuildContext context, {
     required ConduitClient client,
-    required OobNotesWrapper notes,
+    required ECashWrapper notes,
   }) {
     return DrawerUtils.show<bool>(
       context: context,
