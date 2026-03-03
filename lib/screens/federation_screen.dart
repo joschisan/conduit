@@ -293,13 +293,19 @@ class _FederationScreenState extends State<FederationScreen> {
               children: [
                 _CircularActionButton(
                   icon: Icons.bolt,
+                  label: 'Lightning',
                   onTap: _onCreateInvoice,
                 ),
                 _CircularActionButton(
                   icon: Icons.currency_bitcoin,
+                  label: 'Onchain',
                   onTap: _onReceiveBitcoin,
                 ),
-                _CircularActionButton(icon: Icons.toll, onTap: _onSendEcash),
+                _CircularActionButton(
+                  icon: Icons.toll,
+                  label: 'eCash',
+                  onTap: _onSendEcash,
+                ),
               ],
             ),
             const SizedBox(height: 16),
@@ -323,27 +329,45 @@ class _FederationScreenState extends State<FederationScreen> {
 
 class _CircularActionButton extends StatelessWidget {
   final IconData icon;
+  final String label;
   final VoidCallback onTap;
 
-  const _CircularActionButton({required this.icon, required this.onTap});
+  const _CircularActionButton({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(32),
-      child: Container(
-        width: 64,
-        height: 64,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: Theme.of(context).colorScheme.primary,
-        ),
-        child: Icon(
-          icon,
-          size: 34,
-          color: Theme.of(context).colorScheme.onPrimary,
-        ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            child: Icon(
+              icon,
+              size: 34,
+              color: Theme.of(context).colorScheme.onPrimary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 14,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+          ),
+        ],
       ),
     );
   }
