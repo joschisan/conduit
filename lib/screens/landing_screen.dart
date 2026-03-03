@@ -103,11 +103,28 @@ class _LandingScreenState extends State<LandingScreen> {
                   ),
                 ),
               ),
-              Text(
-                'New to Conduit?',
-                style: TextStyle(color: Theme.of(context).colorScheme.primary),
+              GestureDetector(
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder:
+                          (context) => InputRecoveryPhraseScreen(
+                            db: widget.db,
+                            partialSeedPhrase: const [],
+                          ),
+                    ),
+                  );
+                },
+                child: Text(
+                  'Already have a wallet?',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 24),
               AsyncButton(
                 text: 'Generate New Wallet',
                 onPressed: () async {
@@ -124,26 +141,6 @@ class _LandingScreenState extends State<LandingScreen> {
                     MaterialPageRoute(
                       builder:
                           (context) => BaseScreen(clientFactory: clientFactory),
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: 24),
-              Text(
-                'Already have a wallet?',
-                style: TextStyle(color: Theme.of(context).colorScheme.primary),
-              ),
-              const SizedBox(height: 8),
-              AsyncButton(
-                text: 'Enter Recovery Phrase',
-                onPressed: () async {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder:
-                          (context) => InputRecoveryPhraseScreen(
-                            db: widget.db,
-                            partialSeedPhrase: const [],
-                          ),
                     ),
                   );
                 },
