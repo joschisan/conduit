@@ -24,7 +24,7 @@ class PaymentDetailsDrawer extends StatelessWidget {
 
   String _formatDateTime(int timestamp) {
     final dateTime = DateTime.fromMillisecondsSinceEpoch(timestamp);
-    return DateFormat('MMM dd, HH:mm:ss').format(dateTime);
+    return DateFormat('EEEE d MMMM, HH:mm').format(dateTime);
   }
 
   @override

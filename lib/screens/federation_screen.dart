@@ -345,7 +345,10 @@ class _CircularActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: onTap,
+      onTap: () {
+        HapticFeedback.mediumImpact();
+        onTap();
+      },
       borderRadius: BorderRadius.circular(32),
       child: Column(
         mainAxisSize: MainAxisSize.min,
