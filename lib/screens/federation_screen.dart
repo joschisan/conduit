@@ -5,7 +5,7 @@ import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/bridge_generated.dart/events.dart';
 import 'package:conduit/bridge_generated.dart/factory.dart';
 import 'package:conduit/bridge_generated.dart/lib.dart';
-import 'package:conduit/widgets/amount_display_widget.dart';
+import 'package:conduit/widgets/animated_balance_widget.dart';
 import 'package:conduit/widgets/payment_list_widget.dart';
 import 'package:conduit/screens/invoice_amount_screen.dart';
 import 'package:conduit/screens/ecash_amount_screen.dart';
@@ -284,7 +284,7 @@ class _FederationScreenState extends State<FederationScreen> {
                         ),
                       );
                     }
-                    return AmountDisplay(snapshot.data!);
+                    return AnimatedBalanceDisplay(snapshot.data!);
                   } else {
                     return const CircularProgressIndicator();
                   }
