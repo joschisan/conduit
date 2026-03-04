@@ -264,7 +264,6 @@ class _FederationScreenState extends State<FederationScreen> {
             const SizedBox(height: 64),
             GestureDetector(
               onTap: () {
-                HapticFeedback.lightImpact();
                 setState(() => _balanceHidden = !_balanceHidden);
               },
               child: StreamBuilder<int>(
@@ -346,7 +345,7 @@ class _CircularActionButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        HapticFeedback.mediumImpact();
+        HapticFeedback.lightImpact();
         onTap();
       },
       borderRadius: BorderRadius.circular(32),

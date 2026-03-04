@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
 class SettingsCard extends StatelessWidget {
   final IconData icon;
@@ -31,10 +30,7 @@ class SettingsCard extends StatelessWidget {
           color: Theme.of(context).colorScheme.primary,
         ),
         title: Text(title),
-        onTap: () {
-          HapticFeedback.lightImpact();
-          onTap();
-        },
+        onTap: onTap,
         onLongPress: onLongPress,
       ),
     );

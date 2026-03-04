@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:conduit/bridge_generated.dart/events.dart';
 import 'package:conduit/utils/payment_utils.dart';
-import 'package:flutter/services.dart';
 
 String _formatTime(DateTime dateTime) {
   final difference = DateTime.now().difference(dateTime);
@@ -50,9 +49,6 @@ class _PaymentCardState extends State<PaymentCard>
 
     if (widget.animate) {
       _controller.forward();
-      if (widget.event.success == true) {
-        HapticFeedback.heavyImpact();
-      }
     } else {
       _controller.value = 1.0; // Skip animation for existing items
     }
@@ -112,10 +108,7 @@ class _PaymentCardState extends State<PaymentCard>
         child: Card(
           margin: const EdgeInsets.symmetric(vertical: 4.0),
           child: ListTile(
-            onTap: () {
-              HapticFeedback.lightImpact();
-              widget.onTap();
-            },
+            onTap: widget.onTap,
             contentPadding: const EdgeInsets.symmetric(
               vertical: 8.0,
               horizontal: 16.0,

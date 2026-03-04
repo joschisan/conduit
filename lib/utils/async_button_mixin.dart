@@ -18,7 +18,7 @@ mixin AsyncButtonMixin<T extends StatefulWidget> on State<T> {
   }
 
   Future<void> handlePress() async {
-    HapticFeedback.mediumImpact();
+    HapticFeedback.lightImpact();
     _updateState(AsyncButtonState.loading);
 
     try {

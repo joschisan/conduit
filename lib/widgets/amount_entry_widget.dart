@@ -6,7 +6,6 @@ import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/utils/currency_utils.dart';
 import 'package:conduit/widgets/amount_display_widget.dart';
 import 'package:conduit/widgets/async_button_widget.dart';
-import 'package:flutter/services.dart';
 
 class AmountEntryWidget extends StatefulWidget {
   final ConduitClient client;
@@ -36,7 +35,6 @@ class _AmountEntryWidgetState extends State<AmountEntryWidget> {
   void _onKeyboardTap(String value) {
     if (_currentAmount.toString().length >= 8) return;
 
-    HapticFeedback.lightImpact();
     setState(() {
       _currentAmount = _currentAmount * 10 + int.parse(value);
     });
@@ -47,7 +45,6 @@ class _AmountEntryWidgetState extends State<AmountEntryWidget> {
 
   void _onBackspace() {
     if (_currentAmount > 0) {
-      HapticFeedback.lightImpact();
       setState(() {
         _currentAmount = _currentAmount ~/ 10;
       });
@@ -58,7 +55,6 @@ class _AmountEntryWidgetState extends State<AmountEntryWidget> {
   }
 
   void _onClear() {
-    HapticFeedback.lightImpact();
     setState(() {
       _currentAmount = 0;
     });
@@ -113,7 +109,6 @@ class _AmountEntryWidgetState extends State<AmountEntryWidget> {
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
             onTap: () {
-              HapticFeedback.lightImpact();
               setState(() {
                 _enterFiat = !_enterFiat;
               });

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:conduit/bridge_generated.dart/events.dart';
 import 'package:conduit/widgets/payment_card_widget.dart';
 import 'package:conduit/utils/notification_utils.dart';
@@ -65,8 +66,11 @@ class _PaymentListState extends State<PaymentList> {
     if (success == true) {
       if (incoming) {
         NotificationUtils.showReceive(context, amountSats, paymentType);
+      } else {
+        HapticFeedback.heavyImpact();
       }
     } else if (success == false) {
+      HapticFeedback.heavyImpact();
       if (incoming) {
         NotificationUtils.showError(context, 'Failed to receive payment');
       } else {
