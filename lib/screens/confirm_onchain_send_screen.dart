@@ -35,8 +35,7 @@ class _ConfirmOnchainSendScreenState extends State<ConfirmOnchainSendScreen> {
 
     if (!mounted) return;
 
-    Navigator.of(context)
-        .popUntil((route) => route.isFirst);
+    Navigator.of(context).popUntil((route) => route.isFirst);
   }
 
   @override
@@ -55,14 +54,9 @@ class _ConfirmOnchainSendScreenState extends State<ConfirmOnchainSendScreen> {
                 color: Theme.of(context).colorScheme.primary,
               ),
               const Spacer(),
-              AmountDisplay(
-                widget.amountSats,
-                fee: widget.feeSats,
-              ),
+              AmountDisplay(widget.amountSats, fee: widget.feeSats),
               const Spacer(flex: 2),
-              _AddressCard(
-                address: widget.address.toString(),
-              ),
+              _AddressCard(address: widget.address.toString()),
               const SizedBox(height: 16),
               AsyncButton(text: 'Confirm', onPressed: _handleConfirm),
             ],
@@ -96,19 +90,20 @@ class _AddressCard extends StatelessWidget {
           childAspectRatio: 2.0,
           mainAxisSpacing: 0,
           crossAxisSpacing: 0,
-          children: _chunks.map((chunk) {
-            return Align(
-              alignment: Alignment.centerLeft,
-              child: Text(
-                chunk,
-                style: TextStyle(
-                  fontSize: 16,
-                  fontFamily: 'monospace',
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
-              ),
-            );
-          }).toList(),
+          children:
+              _chunks.map((chunk) {
+                return Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    chunk,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontFamily: 'monospace',
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
+                );
+              }).toList(),
         ),
       ),
     );
