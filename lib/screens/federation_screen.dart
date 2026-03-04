@@ -20,6 +20,7 @@ import 'package:conduit/bridge_generated.dart/lnurl.dart';
 import 'package:conduit/utils/notification_utils.dart';
 import 'package:conduit/screens/display_contacts_screen.dart';
 import 'package:conduit/drawers/expiration_drawer.dart';
+import 'package:flutter/services.dart';
 
 class FederationScreen extends StatefulWidget {
   final ConduitClient client;
@@ -262,7 +263,10 @@ class _FederationScreenState extends State<FederationScreen> {
           children: [
             const SizedBox(height: 64),
             GestureDetector(
-              onTap: () => setState(() => _balanceHidden = !_balanceHidden),
+              onTap: () {
+                HapticFeedback.lightImpact();
+                setState(() => _balanceHidden = !_balanceHidden);
+              },
               child: StreamBuilder<int>(
                 stream: _balanceStream,
                 builder: (context, snapshot) {
