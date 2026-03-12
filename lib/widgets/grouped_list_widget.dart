@@ -6,7 +6,6 @@ class GroupedList<T> extends StatelessWidget {
   final List<T> items;
   final String Function(T) groupKey;
   final Widget Function(BuildContext, T) itemBuilder;
-  final EdgeInsets padding;
   final Widget? header;
 
   const GroupedList({
@@ -14,7 +13,6 @@ class GroupedList<T> extends StatelessWidget {
     required this.items,
     required this.groupKey,
     required this.itemBuilder,
-    this.padding = const EdgeInsets.all(16),
     this.header,
   });
 
@@ -23,7 +21,7 @@ class GroupedList<T> extends StatelessWidget {
     final offset = header != null ? 1 : 0;
 
     return ListView.builder(
-      padding: padding,
+      padding: const EdgeInsets.all(16).copyWith(bottom: 32),
       itemCount: items.length + offset,
       itemBuilder: (context, index) {
         if (index < offset) return header!;

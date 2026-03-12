@@ -169,7 +169,6 @@ class _DisplayContactsScreenState extends State<DisplayContactsScreen> {
                     ),
                   ),
                   items: filtered,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   groupKey: (contact) => contact.name[0].toUpperCase(),
                   itemBuilder:
                       (context, contact) => _ContactTile(

@@ -73,7 +73,6 @@ class _InputRecoveryPhraseScreenState extends State<InputRecoveryPhraseScreen> {
           child: SearchField(autofocus: true, onChanged: _updateSearch),
         ),
         items: subset,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
         groupKey: (word) => word[0].toUpperCase(),
         itemBuilder:
             (context, word) => ListTile(

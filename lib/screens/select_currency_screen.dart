@@ -38,7 +38,6 @@ class _SelectCurrencyScreenState extends State<SelectCurrencyScreen> {
             onChanged: (value) => setState(() => _query = value),
           ),
         ),
-        padding: const EdgeInsets.symmetric(horizontal: 16),
         items: _filtered,
         groupKey: (currency) => currency.code[0],
         itemBuilder:
