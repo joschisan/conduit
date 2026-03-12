@@ -197,7 +197,7 @@ class _ContactsScreenState extends State<ContactsScreen> with AsyncButtonMixin {
               child: TextField(
                 controller: _searchController,
                 decoration: InputDecoration(
-                  hintText: 'Search or enter lightning address...',
+                  hintText: 'Enter name or lightning address...',
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8),
                   ),
@@ -222,26 +222,32 @@ class _ContactsScreenState extends State<ContactsScreen> with AsyncButtonMixin {
             if (_contacts.isEmpty)
               Card(
                 margin: const EdgeInsets.symmetric(horizontal: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: BorderSide(
-                    color: Theme.of(context).colorScheme.primary,
-                    width: 2,
-                  ),
-                ),
-                child: ListTile(
-                  contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 16.0,
-                    vertical: 8.0,
-                  ),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  title: Text(
-                    'Create contacts by assigning a name to a Lightning Url or Address.',
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.people,
+                            size: 48,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Contacts',
+                            style: Theme.of(context).textTheme.titleLarge,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'To make recurring payments to the same recipient create a contact by assigning a name to their lightning url or address.',
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    ],
                   ),
                 ),
               ),

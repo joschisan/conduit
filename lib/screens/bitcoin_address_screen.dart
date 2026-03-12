@@ -26,8 +26,11 @@ class _BitcoinAddressScreenState extends State<BitcoinAddressScreen> {
   void initState() {
     super.initState();
     addresses = widget.addressesList;
-    // Start with the most recent address (index 0 after sorting)
     currentIndex = addresses.isEmpty ? 0 : addresses.length - 1;
+
+    if (addresses.isEmpty) {
+      _generateNewAddress();
+    }
   }
 
   void _previousAddress() {
@@ -47,10 +50,13 @@ class _BitcoinAddressScreenState extends State<BitcoinAddressScreen> {
   }
 
   void _showGenerateConfirmation() {
-    GenerateAddressDrawer.show(context, onConfirm: _generateNewAddress);
+    GenerateAddressDrawer.show(
+      context,
+      onConfirm: () => _generateNewAddress(notify: true),
+    );
   }
 
-  Future<void> _generateNewAddress() async {
+  Future<void> _generateNewAddress({bool notify = false}) async {
     try {
       await widget.client.onchainReceiveAddress();
       final newAddresses = await widget.client.onchainListAddresses();
@@ -59,6 +65,9 @@ class _BitcoinAddressScreenState extends State<BitcoinAddressScreen> {
         addresses = newAddresses;
         currentIndex = addresses.length - 1; // Show newest address
       });
+      if (notify && mounted) {
+        NotificationUtils.showSuccess(context, 'Generated onchain address');
+      }
     } catch (e) {
       if (!mounted) return;
       NotificationUtils.showError(context, 'Failed to generate address');
@@ -94,36 +103,9 @@ class _BitcoinAddressScreenState extends State<BitcoinAddressScreen> {
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child:
-              addresses.isEmpty ? _buildEmptyState() : _buildAddressContent(),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEmptyState() {
-    return Align(
-      alignment: Alignment.topCenter,
-      child: Card(
-        margin: EdgeInsets.zero,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: BorderSide(
-            color: Theme.of(context).colorScheme.primary,
-            width: 2,
-          ),
-        ),
-        child: ListTile(
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 16.0,
-            vertical: 8.0,
-          ),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-          title: Text(
-            'Tap the plus icon to generate your first onchain address.',
-            style: TextStyle(color: Theme.of(context).colorScheme.primary),
-          ),
+              addresses.isEmpty
+                  ? const Center(child: CircularProgressIndicator())
+                  : _buildAddressContent(),
         ),
       ),
     );

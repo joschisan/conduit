@@ -50,15 +50,7 @@ class _BaseScreenState extends State<BaseScreen> {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(
-      title: const Text('Conduit'),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.qr_code_scanner),
-          onPressed: _showScannerDrawer,
-        ),
-      ],
-    ),
+    appBar: AppBar(title: const Text('Conduit')),
     body: SafeArea(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -72,14 +64,16 @@ class _BaseScreenState extends State<BaseScreen> {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (showOnboarding) _buildOnboardingCard(),
                 Text('Settings', style: theme.textTheme.titleLarge),
                 const SizedBox(height: 8),
                 _buildSeedPhraseCard(),
                 const SizedBox(height: 4),
                 _buildCurrencyCard(),
                 const SizedBox(height: 24),
-                _buildFederationsContent(snapshot),
+                if (showOnboarding)
+                  _buildOnboardingCard()
+                else
+                  _buildFederationsContent(snapshot),
               ],
             );
           },
@@ -89,24 +83,46 @@ class _BaseScreenState extends State<BaseScreen> {
   );
 
   Widget _buildOnboardingCard() {
+    final theme = Theme.of(context);
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: BorderSide(
-          color: Theme.of(context).colorScheme.primary,
-          width: 2,
-        ),
-      ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16.0,
-          vertical: 8.0,
-        ),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        title: Text(
-          'Scan or paste an invite code to join your first federation.',
-          style: TextStyle(color: Theme.of(context).colorScheme.primary),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.account_balance_wallet,
+                  size: 48,
+                  color: theme.colorScheme.primary,
+                ),
+                const SizedBox(width: 8),
+                Text('Federations', style: theme.textTheme.titleLarge),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'A federation is a group of trusted guardians who collectively custody bitcoin for their community in a multisig wallet.'
+              '\n\n'
+              'The guardians cannot tell which payments belong to you or what balance you have.',
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodyMedium,
+            ),
+            const SizedBox(height: 16),
+            TextButton(
+              onPressed: _showScannerDrawer,
+              child: Text(
+                'Add Federation',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.primary,
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -158,6 +174,19 @@ class _BaseScreenState extends State<BaseScreen> {
             final federation = federations[index];
             return _buildFederationCard(federation);
           },
+        ),
+        Center(
+          child: TextButton(
+            onPressed: _showScannerDrawer,
+            child: Text(
+              'Add Federation',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: theme.colorScheme.primary,
+              ),
+            ),
+          ),
         ),
       ],
     );
