@@ -33,20 +33,29 @@ class _ContactTileState extends State<_ContactTile> with AsyncButtonMixin {
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        leading: Icon(
-          Icons.person,
-          size: 32,
-          color: Theme.of(context).colorScheme.primary,
-        ),
-        title: Text(widget.contact.name),
-        trailing: switch (buttonState) {
-          AsyncButtonState.loading => const SizedBox(
-            width: 28,
-            height: 28,
-            child: CircularProgressIndicator(strokeWidth: 2),
+        leading: switch (buttonState) {
+          AsyncButtonState.idle => Icon(
+            Icons.person,
+            size: 32,
+            color: Theme.of(context).colorScheme.primary,
           ),
-          AsyncButtonState.idle => const Icon(Icons.chevron_right, size: 32),
+          AsyncButtonState.loading => Stack(
+            alignment: Alignment.center,
+            children: [
+              Icon(
+                Icons.person,
+                size: 32,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+              const SizedBox(
+                width: 48,
+                height: 48,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ],
+          ),
         },
+        title: Text(widget.contact.name),
         onTap: switch (buttonState) {
           AsyncButtonState.idle => handlePress,
           AsyncButtonState.loading => null,

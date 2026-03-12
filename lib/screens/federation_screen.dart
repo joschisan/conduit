@@ -375,7 +375,6 @@ class _ExpirationWarningCard extends StatelessWidget {
                 style: TextStyle(color: Colors.amber[700]),
               ),
             ),
-            Icon(Icons.chevron_right, color: Colors.amber[700], size: 20),
           ],
         ),
       ),
