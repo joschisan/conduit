@@ -80,11 +80,10 @@ impl ConduitClient {
     }
 
     #[frb]
-    pub async fn fiat_to_sats(&self, amount_fiat_cents: i64) -> Result<i64, String> {
-        // cents -> currency -> BTC -> sats
+    pub async fn fiat_to_sats(&self, amount_fiat: f64) -> Result<i64, String> {
         fetch_exchange_rate(self.exchange_rate_cache.clone(), self.currency_code.clone())
             .await
-            .map(|r| (amount_fiat_cents as f64 / 100.0 / r * 100_000_000.0).round() as i64)
+            .map(|r| ((amount_fiat / r) * 100_000_000.0).round() as i64)
     }
 
     #[frb]

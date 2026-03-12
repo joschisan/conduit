@@ -1553,7 +1553,7 @@ fn wire__crate__client__ConduitClient_fiat_to_sats_impl(
             let api_that = <RustOpaqueMoi<
                 flutter_rust_bridge::for_generated::RustAutoOpaqueInner<ConduitClient>,
             >>::sse_decode(&mut deserializer);
-            let api_amount_fiat_cents = <i64>::sse_decode(&mut deserializer);
+            let api_amount_fiat = <f64>::sse_decode(&mut deserializer);
             deserializer.end();
             move |context| async move {
                 transform_result_sse::<_, String>(
@@ -1577,7 +1577,7 @@ fn wire__crate__client__ConduitClient_fiat_to_sats_impl(
                         let api_that_guard = api_that_guard.unwrap();
                         let output_ok = crate::client::ConduitClient::fiat_to_sats(
                             &*api_that_guard,
-                            api_amount_fiat_cents,
+                            api_amount_fiat,
                         )
                         .await?;
                         Ok(output_ok)
@@ -4230,6 +4230,13 @@ impl SseDecode for crate::events::ConduitUpdate {
     }
 }
 
+impl SseDecode for f64 {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        deserializer.cursor.read_f64::<NativeEndian>().unwrap()
+    }
+}
+
 impl SseDecode for i32 {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -5505,6 +5512,13 @@ impl SseEncode for crate::events::ConduitUpdate {
         <i64>::sse_encode(self.timestamp, serializer);
         <bool>::sse_encode(self.success, serializer);
         <Option<String>>::sse_encode(self.oob, serializer);
+    }
+}
+
+impl SseEncode for f64 {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        serializer.cursor.write_f64::<NativeEndian>(self).unwrap();
     }
 }
 

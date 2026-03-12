@@ -131,7 +131,7 @@ class _PaymentCardState extends State<PaymentCard>
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          '$sign $formattedAmount sats',
+                          '$sign $formattedAmount sat',
                           style: TextStyle(
                             color: Theme.of(context).colorScheme.onPrimary,
                             fontSize: 18,
@@ -141,7 +141,7 @@ class _PaymentCardState extends State<PaymentCard>
                       ),
                     )
                     : Text(
-                      '$sign $formattedAmount sats',
+                      '$sign $formattedAmount sat',
                       style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,

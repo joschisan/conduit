@@ -93,7 +93,7 @@ class NotificationUtils {
 
     _showNotification(
       context,
-      'Received ${NumberFormat('#,###').format(amountSat)} sats',
+      'Received ${NumberFormat('#,###').format(amountSat)} sat',
       PaymentTypeUtils.getIcon(paymentType),
       Theme.of(context).colorScheme.primary,
       _defaultNotificationDuration,

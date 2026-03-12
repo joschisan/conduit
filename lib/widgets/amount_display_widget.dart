@@ -28,7 +28,7 @@ class AmountDisplay extends StatelessWidget {
                 ),
               ),
               TextSpan(
-                text: ' sats',
+                text: ' sat',
                 style: TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -41,7 +41,7 @@ class AmountDisplay extends StatelessWidget {
         if (fee != null) ...[
           const SizedBox(height: 8),
           Text(
-            'Fee: ${NumberFormat('#,###').format(fee)} sats',
+            'Fee: ${NumberFormat('#,###').format(fee)} sat',
             style: TextStyle(
               fontSize: 16,
               color: textColor.withValues(alpha: 0.7),
