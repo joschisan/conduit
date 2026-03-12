@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:conduit/bridge_generated.dart/lib.dart';
 import 'package:conduit/screens/confirm_recovery_phrase_screen.dart';
+import 'package:conduit/utils/styles.dart';
+import 'package:conduit/widgets/grouped_list_widget.dart';
+import 'package:conduit/widgets/search_field_widget.dart';
 
 class InputRecoveryPhraseScreen extends StatefulWidget {
   final DatabaseWrapper db;
@@ -25,7 +28,10 @@ class _InputRecoveryPhraseScreenState extends State<InputRecoveryPhraseScreen> {
 
   void _updateSearch(String query) {
     setState(() {
-      subset = wordList().where((word) => word.startsWith(query)).toList();
+      subset =
+          wordList()
+              .where((word) => word.contains(query.toLowerCase()))
+              .toList();
     });
   }
 
@@ -63,58 +69,28 @@ class _InputRecoveryPhraseScreenState extends State<InputRecoveryPhraseScreen> {
       appBar: AppBar(title: Text('Enter Word $currentWordNumber of 12')),
       body: Column(
         children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: TextField(
-              autofocus: true,
-              decoration: InputDecoration(
-                hintText: 'Enter Word...',
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              onChanged: _updateSearch,
-            ),
-          ),
+          SearchField(autofocus: true, onChanged: _updateSearch),
           Expanded(
-            child: ListView.builder(
+            child: GroupedList<String>(
+              items: subset,
               padding: const EdgeInsets.symmetric(horizontal: 16),
-              itemCount: subset.length,
-              itemBuilder: (context, index) {
-                final word = subset[index];
-                return Card(
-                  margin: const EdgeInsets.symmetric(vertical: 4),
-                  child: ListTile(
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16.0,
-                      vertical: 4.0,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+              groupKey: (word) => word[0].toUpperCase(),
+              itemBuilder:
+                  (context, word) => ListTile(
+                    contentPadding: listTilePadding,
                     leading: SizedBox(
-                      width: 40,
+                      width: 28,
                       child: Text(
                         '$currentWordNumber',
                         textAlign: TextAlign.center,
-                        style: TextStyle(
+                        style: largeStyle.copyWith(
                           color: Theme.of(context).colorScheme.primary,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 32,
                         ),
                       ),
                     ),
-                    title: Text(
-                      word,
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
+                    title: Text(word, style: mediumStyle),
                     onTap: () => _selectWord(word),
                   ),
-                );
-              },
             ),
           ),
         ],

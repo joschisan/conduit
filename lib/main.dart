@@ -1,5 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:conduit/utils/styles.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
@@ -57,7 +59,11 @@ class ConduitApp extends StatelessWidget {
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
           useMaterial3: true,
-          appBarTheme: const AppBarTheme(centerTitle: true),
+          fontFamily: GoogleFonts.dmSans().fontFamily,
+          appBarTheme: const AppBarTheme(
+            centerTitle: true,
+            titleTextStyle: mediumStyle,
+          ),
         ),
         darkTheme: ThemeData(
           colorScheme: ColorScheme.fromSeed(
@@ -65,7 +71,11 @@ class ConduitApp extends StatelessWidget {
             brightness: Brightness.dark,
           ),
           useMaterial3: true,
-          appBarTheme: const AppBarTheme(centerTitle: true),
+          fontFamily: GoogleFonts.dmSans().fontFamily,
+          appBarTheme: const AppBarTheme(
+            centerTitle: true,
+            titleTextStyle: mediumStyle,
+          ),
         ),
         themeMode: ThemeMode.dark,
         home: home,

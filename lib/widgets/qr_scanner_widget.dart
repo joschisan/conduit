@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:conduit/utils/styles.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:conduit/utils/notification_utils.dart';
 
@@ -66,11 +67,11 @@ class _QrScannerWidgetState extends State<QrScannerWidget> {
                 ),
               ),
               Positioned(
-                top: 16,
-                right: 16,
+                top: 8,
+                right: 8,
                 child: IconButton(
                   onPressed: _handleClipboardPaste,
-                  icon: const Icon(Icons.paste, color: Colors.white, size: 36),
+                  icon: const Icon(Icons.paste, size: smallIconSize),
                 ),
               ),
             ],

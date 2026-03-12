@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:conduit/utils/styles.dart';
 import 'package:conduit/bridge_generated.dart/lib.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/widgets/amount_display_widget.dart';
@@ -50,7 +51,7 @@ class _ConfirmOnchainSendScreenState extends State<ConfirmOnchainSendScreen> {
               const Spacer(),
               Icon(
                 Icons.currency_bitcoin,
-                size: 64,
+                size: heroIconSize,
                 color: Theme.of(context).colorScheme.primary,
               ),
               const Spacer(),
@@ -79,8 +80,11 @@ class _AddressCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: EdgeInsets.zero,
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: Theme.of(context).colorScheme.outlineVariant),
+        borderRadius: borderRadiusLarge,
+      ),
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: GridView.count(
@@ -96,11 +100,7 @@ class _AddressCard extends StatelessWidget {
                   alignment: Alignment.centerLeft,
                   child: Text(
                     chunk,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontFamily: 'monospace',
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
+                    style: mediumStyle.copyWith(fontFamily: 'monospace'),
                   ),
                 );
               }).toList(),

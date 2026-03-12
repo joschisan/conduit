@@ -101,11 +101,27 @@ impl ConduitClient {
     }
 
     #[frb]
-    pub async fn subscribe_connection_status(&self, sink: StreamSink<Vec<bool>>) {
+    pub async fn subscribe_connection_status(&self, sink: StreamSink<Vec<(String, bool)>>) {
+        let names: Vec<String> = self
+            .client
+            .config()
+            .await
+            .global
+            .api_endpoints
+            .iter()
+            .map(|(_, peer)| peer.name.clone())
+            .collect();
+
         let mut stream = self.client.connection_status_stream();
 
         while let Some(status_map) = stream.next().await {
-            if sink.add(status_map.into_values().collect()).is_err() {
+            let statuses: Vec<(String, bool)> = names
+                .iter()
+                .zip(status_map.into_values())
+                .map(|(name, status)| (name.clone(), status))
+                .collect();
+
+            if sink.add(statuses).is_err() {
                 break;
             }
         }
@@ -357,19 +373,34 @@ impl ConduitClient {
     }
 
     #[frb]
-    pub async fn subscribe_event_log(&self, sink: StreamSink<ConduitEvent>) {
-        let mut position = EventLogId::LOG_START;
-
-        let history = self
-            .db
+    pub async fn get_payment_history(&self) -> Vec<ConduitEvent> {
+        self.db
             .begin_transaction_nc()
             .await
             .find_by_prefix(&EventLogEntryPrefix(self.federation_id))
             .await
+            .filter_map(|(_, entry)| async move { parse_event_log_entry(&entry) })
+            .collect::<Vec<ConduitEvent>>()
+            .await
+    }
+
+    #[frb]
+    pub async fn subscribe_event_log(&self, sink: StreamSink<ConduitEvent>) {
+        let mut position = EventLogId::LOG_START;
+
+        let mut recent = self
+            .db
+            .begin_transaction_nc()
+            .await
+            .find_by_prefix_sorted_descending(&EventLogEntryPrefix(self.federation_id))
+            .await
+            .take(10)
             .collect::<Vec<_>>()
             .await;
 
-        for (key, entry) in history {
+        recent.reverse();
+
+        for (key, entry) in recent {
             if let Some(event) = parse_event_log_entry(&entry) {
                 if sink.add(event).is_err() {
                     return;

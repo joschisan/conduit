@@ -51,7 +51,8 @@ class ConfirmRecoveryPhraseScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Expanded(child: RecoveryPhraseGrid(words: seedPhrase)),
+              RecoveryPhraseGrid(words: seedPhrase),
+              const Spacer(),
               AsyncButton(
                 text: 'Confirm',
                 onPressed: () => _recoverWallet(context),

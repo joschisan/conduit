@@ -6,10 +6,13 @@ import 'package:conduit/screens/federation_screen.dart';
 import 'package:conduit/screens/display_recovery_phrase_screen.dart';
 import 'package:conduit/screens/select_currency_screen.dart';
 import 'package:conduit/utils/notification_utils.dart';
+import 'package:conduit/utils/styles.dart';
 import 'package:conduit/utils/auth_utils.dart';
 import 'package:conduit/drawers/invite_scanner_drawer.dart';
 import 'package:conduit/drawers/leave_federation_drawer.dart';
 import 'package:conduit/drawers/recovery_drawer.dart';
+import 'package:conduit/widgets/bordered_list_widget.dart';
+import 'package:conduit/widgets/onboarding_card_widget.dart';
 import 'package:conduit/widgets/settings_card_widget.dart';
 
 class BaseScreen extends StatefulWidget {
@@ -60,15 +63,17 @@ class _BaseScreenState extends State<BaseScreen> {
             final federations = snapshot.data ?? [];
             final showOnboarding = snapshot.hasData && federations.isEmpty;
 
-            final theme = Theme.of(context);
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Settings', style: theme.textTheme.titleLarge),
+                Padding(
+                  padding: const EdgeInsets.only(left: 8),
+                  child: Text('Settings', style: mediumStyle),
+                ),
                 const SizedBox(height: 8),
-                _buildSeedPhraseCard(),
-                const SizedBox(height: 4),
-                _buildCurrencyCard(),
+                BorderedList.column(
+                  children: [_buildSeedPhraseCard(), _buildCurrencyCard()],
+                ),
                 const SizedBox(height: 24),
                 if (showOnboarding)
                   _buildOnboardingCard()
@@ -83,48 +88,15 @@ class _BaseScreenState extends State<BaseScreen> {
   );
 
   Widget _buildOnboardingCard() {
-    final theme = Theme.of(context);
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(
-                  Icons.account_balance_wallet,
-                  size: 48,
-                  color: theme.colorScheme.primary,
-                ),
-                const SizedBox(width: 8),
-                Text('Federations', style: theme.textTheme.titleLarge),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Text(
-              'A federation is a group of trusted guardians who collectively custody bitcoin for their community in a multisig wallet.'
-              '\n\n'
-              'The guardians cannot tell which payments belong to you or what balance you have.',
-              textAlign: TextAlign.center,
-              style: theme.textTheme.bodyMedium,
-            ),
-            const SizedBox(height: 16),
-            TextButton(
-              onPressed: _showScannerDrawer,
-              child: Text(
-                'Add Federation',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: theme.colorScheme.primary,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+    return OnboardingCard(
+      icon: Icons.account_balance_wallet,
+      title: 'Federations',
+      description:
+          'A federation is a group of trusted guardians who collectively custody bitcoin for their community in a multisig wallet.'
+          '\n\n'
+          'The guardians cannot tell which payments belong to you or what balance you have.',
+      actionText: 'Add Federation',
+      onAction: _showScannerDrawer,
     );
   }
 
@@ -151,7 +123,7 @@ class _BaseScreenState extends State<BaseScreen> {
     return Center(
       child: Text(
         'Error loading federations',
-        style: TextStyle(color: Theme.of(context).colorScheme.error),
+        style: smallStyle.copyWith(color: Theme.of(context).colorScheme.error),
       ),
     );
   }
@@ -161,14 +133,17 @@ class _BaseScreenState extends State<BaseScreen> {
       return const SizedBox.shrink();
     }
 
-    final theme = Theme.of(context);
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Federations', style: theme.textTheme.titleLarge),
+        Padding(
+          padding: const EdgeInsets.only(left: 8),
+          child: Text('Federations', style: mediumStyle),
+        ),
         const SizedBox(height: 8),
-        ListView.builder(
+        BorderedList(
           shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
           itemCount: federations.length,
           itemBuilder: (context, index) {
             final federation = federations[index];
@@ -180,10 +155,8 @@ class _BaseScreenState extends State<BaseScreen> {
             onPressed: _showScannerDrawer,
             child: Text(
               'Add Federation',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: theme.colorScheme.primary,
+              style: mediumStyle.copyWith(
+                color: Theme.of(context).colorScheme.primary,
               ),
             ),
           ),

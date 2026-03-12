@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:conduit/utils/styles.dart';
 import 'package:conduit/widgets/recovery_phrase_grid_widget.dart';
 
 class DisplayRecoveryPhraseScreen extends StatelessWidget {
@@ -18,21 +19,17 @@ class DisplayRecoveryPhraseScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Expanded(flex: 3, child: RecoveryPhraseGrid(words: seedPhrase)),
+              RecoveryPhraseGrid(words: seedPhrase),
               Expanded(
                 child: Center(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 32.0),
                     child: Text(
                       'Your recovery phrase is the only way to restore your wallet '
-                      'if you lose access to this device. Write it down and store '
-                      'it in a safe place.',
+                      'if you lose access to this device. Store it safely.',
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: theme.colorScheme.onSurface.withValues(
-                          alpha: 0.7,
-                        ),
+                      style: smallStyle.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
                       ),
                     ),
                   ),

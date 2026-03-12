@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
+import 'package:conduit/utils/styles.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/bridge_generated.dart/factory.dart';
 import 'package:conduit/bridge_generated.dart/lnurl.dart';
 import 'package:conduit/widgets/amount_entry_widget.dart';
-import 'package:conduit/drawers/edit_contact_drawer.dart';
+import 'package:conduit/screens/contact_name_entry_screen.dart';
 import 'package:conduit/utils/auth_utils.dart';
 
 class LnurlAmountScreen extends StatefulWidget {
@@ -48,10 +49,14 @@ class _LnurlAmountScreenState extends State<LnurlAmountScreen> {
   }
 
   Future<void> _handleSaveContact() async {
-    final name = await EditContactDrawer.show(
-      context,
-      clientFactory: widget.clientFactory,
-      lnurl: widget.lnurl,
+    final name = await Navigator.of(context).push<String>(
+      MaterialPageRoute(
+        builder:
+            (_) => ContactNameEntryScreen(
+              clientFactory: widget.clientFactory,
+              lnurl: widget.lnurl,
+            ),
+      ),
     );
 
     if (mounted && name != null) {
@@ -72,11 +77,14 @@ class _LnurlAmountScreenState extends State<LnurlAmountScreen> {
         actions: [
           if (_contactName == null)
             IconButton(
-              icon: const Icon(Icons.person_add),
+              icon: const Icon(Icons.person_add, size: smallIconSize),
               onPressed: _handleSaveContact,
             )
           else
-            IconButton(icon: const Icon(Icons.share), onPressed: _handleShare),
+            IconButton(
+              icon: const Icon(Icons.share, size: smallIconSize),
+              onPressed: _handleShare,
+            ),
         ],
       ),
       body: SafeArea(

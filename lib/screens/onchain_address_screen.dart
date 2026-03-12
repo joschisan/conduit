@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:conduit/utils/styles.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/widgets/qr_code_widget.dart';
 import 'package:conduit/drawers/generate_onchain_address_drawer.dart';
@@ -90,11 +91,11 @@ class _OnchainAddressScreenState extends State<OnchainAddressScreen> {
         actions: [
           if (addresses.isNotEmpty)
             IconButton(
-              icon: const Icon(Icons.refresh),
+              icon: const Icon(Icons.refresh, size: smallIconSize),
               onPressed: _recheckAddress,
             ),
           IconButton(
-            icon: const Icon(Icons.add),
+            icon: const Icon(Icons.add, size: smallIconSize),
             onPressed: _showGenerateConfirmation,
           ),
         ],
@@ -128,7 +129,7 @@ class _OnchainAddressScreenState extends State<OnchainAddressScreen> {
                 child: Center(
                   child: Icon(
                     Icons.currency_bitcoin,
-                    size: 64,
+                    size: heroIconSize,
                     color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
@@ -140,16 +141,10 @@ class _OnchainAddressScreenState extends State<OnchainAddressScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.arrow_back_ios, size: 20),
+                    icon: const Icon(Icons.arrow_back, size: smallIconSize),
                     onPressed: hasPrevious ? _previousAddress : null,
                   ),
-                  Text(
-                    '$currentPosition',
-                    style: const TextStyle(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+                  Text('$currentPosition', style: largeStyle),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 14),
                     child: Container(
@@ -160,15 +155,12 @@ class _OnchainAddressScreenState extends State<OnchainAddressScreen> {
                   ),
                   Text(
                     '$totalAddresses',
-                    style: TextStyle(
-                      fontSize: 20,
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.onSurface.withValues(alpha: 0.6),
+                    style: mediumStyle.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.arrow_forward_ios, size: 20),
+                    icon: const Icon(Icons.arrow_forward, size: smallIconSize),
                     onPressed: hasNext ? _nextAddress : null,
                   ),
                 ],
@@ -179,11 +171,8 @@ class _OnchainAddressScreenState extends State<OnchainAddressScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 32.0),
                     child: Text(
                       'Confirmed onchain payments may take a few hours to appear. A reused address must be manually checked for payments.',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.onSurface.withValues(alpha: 0.7),
+                      style: smallStyle.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
                       textAlign: TextAlign.center,
                     ),

@@ -1,60 +1,68 @@
 import 'package:flutter/material.dart';
-import '../bridge_generated.dart/factory.dart';
-import '../drawers/confirm_currency_drawer.dart';
-import '../utils/currency_utils.dart';
+import 'package:conduit/bridge_generated.dart/factory.dart';
+import 'package:conduit/drawers/confirm_currency_drawer.dart';
+import 'package:conduit/utils/currency_utils.dart';
+import 'package:conduit/utils/styles.dart';
+import 'package:conduit/widgets/grouped_list_widget.dart';
+import 'package:conduit/widgets/search_field_widget.dart';
 
-class SelectCurrencyScreen extends StatelessWidget {
+class SelectCurrencyScreen extends StatefulWidget {
   final ConduitClientFactory clientFactory;
 
   const SelectCurrencyScreen({super.key, required this.clientFactory});
 
   @override
+  State<SelectCurrencyScreen> createState() => _SelectCurrencyScreenState();
+}
+
+class _SelectCurrencyScreenState extends State<SelectCurrencyScreen> {
+  String _query = '';
+
+  List<FiatCurrency> get _filtered =>
+      fiatCurrencies
+          .where(
+            (c) =>
+                c.code.toLowerCase().contains(_query.toLowerCase()) ||
+                c.name.toLowerCase().contains(_query.toLowerCase()),
+          )
+          .toList();
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Select Currency')),
-      body: SafeArea(
-        child: ListView.builder(
-          padding: const EdgeInsets.all(16),
-          itemCount: fiatCurrencies.length,
-          itemBuilder: (context, index) {
-            final currency = fiatCurrencies[index];
-            return Card(
-              margin: const EdgeInsets.symmetric(vertical: 4),
-              child: ListTile(
-                contentPadding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                leading: SizedBox(
-                  width: 56,
-                  child: Text(
-                    currency.code,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.primary,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 22,
+      body: Column(
+        children: [
+          SearchField(onChanged: (value) => setState(() => _query = value)),
+          Expanded(
+            child: GroupedList<FiatCurrency>(
+              items: _filtered,
+              groupKey: (currency) => currency.code[0],
+              itemBuilder:
+                  (context, currency) => ListTile(
+                    contentPadding: listTilePadding,
+                    leading: SizedBox(
+                      width: 64,
+                      child: Text(
+                        currency.code,
+                        textAlign: TextAlign.center,
+                        style: largeStyle.copyWith(
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                      ),
                     ),
+                    title: Text(currency.name, style: mediumStyle),
+                    onTap: () {
+                      ConfirmCurrencyDrawer.show(
+                        context,
+                        currency: currency,
+                        clientFactory: widget.clientFactory,
+                      );
+                    },
                   ),
-                ),
-                title: Text(
-                  currency.name,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                onTap: () {
-                  ConfirmCurrencyDrawer.show(
-                    context,
-                    currency: currency,
-                    clientFactory: clientFactory,
-                  );
-                },
-              ),
-            );
-          },
-        ),
+            ),
+          ),
+        ],
       ),
     );
   }

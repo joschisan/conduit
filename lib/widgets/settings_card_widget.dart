@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:conduit/utils/styles.dart';
 
 class SettingsCard extends StatelessWidget {
   final IconData icon;
@@ -16,23 +17,16 @@ class SettingsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16.0,
-          vertical: 8.0,
-        ),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        leading: Icon(
-          icon,
-          size: 32,
-          color: Theme.of(context).colorScheme.primary,
-        ),
-        title: Text(title),
-        onTap: onTap,
-        onLongPress: onLongPress,
+    return ListTile(
+      contentPadding: listTilePadding,
+      leading: Icon(
+        icon,
+        size: mediumIconSize,
+        color: Theme.of(context).colorScheme.primary,
       ),
+      title: Text(title, style: mediumStyle),
+      onTap: onTap,
+      onLongPress: onLongPress,
     );
   }
 }

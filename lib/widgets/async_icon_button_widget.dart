@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:conduit/utils/async_button_mixin.dart';
+import 'package:conduit/utils/styles.dart';
 
 class AsyncIconButton extends StatefulWidget {
   final IconData icon;
@@ -28,17 +29,8 @@ class _AsyncIconButtonState extends State<AsyncIconButton>
         AsyncButtonState.loading => null,
       },
       icon: switch (buttonState) {
-        AsyncButtonState.loading => SizedBox(
-          width: 20,
-          height: 20,
-          child: CircularProgressIndicator(
-            strokeWidth: 2,
-            valueColor: AlwaysStoppedAnimation<Color>(
-              Theme.of(context).colorScheme.primary,
-            ),
-          ),
-        ),
-        AsyncButtonState.idle => Icon(widget.icon),
+        AsyncButtonState.loading => buildSmallSpinner(context),
+        AsyncButtonState.idle => Icon(widget.icon, size: smallIconSize),
       },
     );
   }

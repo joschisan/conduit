@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:conduit/bridge_generated.dart/lib.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/widgets/drawer_shell_widget.dart';
-import 'package:conduit/widgets/amount_card_widget.dart';
+import 'package:conduit/widgets/amount_display_widget.dart';
+import 'package:conduit/widgets/primary_card_widget.dart';
 import 'package:conduit/widgets/async_button_widget.dart';
 import 'package:conduit/utils/auth_utils.dart';
 import 'package:conduit/utils/drawer_utils.dart';
@@ -49,7 +50,7 @@ class _LightningInvoiceDrawerState extends State<LightningInvoiceDrawer> {
       icon: Icons.bolt,
       title: 'Lightning Invoice',
       children: [
-        AmountCard(amountSats: widget.invoice.amountSats()),
+        PrimaryCard(child: AmountDisplay(widget.invoice.amountSats())),
         const SizedBox(height: 16),
         AsyncButton(text: 'Confirm', onPressed: _handleConfirm),
       ],

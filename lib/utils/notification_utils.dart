@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'package:conduit/bridge_generated.dart/events.dart';
 import 'package:conduit/utils/payment_utils.dart';
+import 'package:conduit/utils/styles.dart';
 
 class NotificationUtils {
   static const _defaultNotificationDuration = Duration(milliseconds: 1500);
@@ -16,7 +17,7 @@ class NotificationUtils {
     Duration duration, {
     bool showSpinner = false,
   }) {
-    Widget iconWidget = Icon(icon, size: 32, color: iconColor);
+    Widget iconWidget = Icon(icon, size: mediumIconSize, color: iconColor);
 
     if (showSpinner) {
       iconWidget = Stack(
@@ -54,16 +55,7 @@ class NotificationUtils {
               children: [
                 iconWidget,
                 const SizedBox(width: 16),
-                Expanded(
-                  child: Text(
-                    message,
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: Theme.of(overlayContext).colorScheme.onSurface,
-                    ),
-                  ),
-                ),
+                Expanded(child: Text(message, style: mediumStyle)),
               ],
             ),
           ),

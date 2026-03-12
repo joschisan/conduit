@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:conduit/utils/styles.dart';
 import 'package:conduit/bridge_generated.dart/lib.dart';
 import 'package:conduit/bridge_generated.dart/factory.dart';
 import 'package:conduit/screens/federation_screen.dart';
@@ -70,6 +71,7 @@ class ExpirationDrawer extends StatelessWidget {
         Text(
           'This federation will expire on $formattedDate, please migrate your funds before this date.',
           textAlign: TextAlign.center,
+          style: smallStyle,
         ),
 
         if (successor != null) ...[

@@ -6,19 +6,22 @@ import 'package:conduit/bridge_generated.dart/events.dart';
 import 'package:conduit/bridge_generated.dart/factory.dart';
 import 'package:conduit/bridge_generated.dart/lib.dart';
 import 'package:conduit/widgets/animated_balance_widget.dart';
-import 'package:conduit/widgets/payment_list_widget.dart';
+import 'package:conduit/widgets/recent_payments_widget.dart';
 import 'package:conduit/screens/invoice_amount_screen.dart';
 import 'package:conduit/screens/ecash_amount_screen.dart';
 import 'package:conduit/screens/onchain_address_screen.dart';
 import 'package:conduit/drawers/scanner_drawer.dart';
 import 'package:conduit/drawers/payment_details_drawer.dart';
+import 'package:conduit/screens/connection_status_screen.dart';
+import 'package:conduit/bridge_generated.dart/lnurl.dart';
 import 'package:conduit/drawers/ecash_drawer.dart';
 import 'package:conduit/drawers/lightning_invoice_drawer.dart';
 import 'package:conduit/drawers/lnurl_drawer.dart';
 import 'package:conduit/drawers/onchain_address_drawer.dart';
-import 'package:conduit/bridge_generated.dart/lnurl.dart';
 import 'package:conduit/utils/notification_utils.dart';
+import 'package:conduit/utils/styles.dart';
 import 'package:conduit/screens/display_contacts_screen.dart';
+import 'package:conduit/screens/lightning_address_entry_screen.dart';
 import 'package:conduit/drawers/expiration_drawer.dart';
 import 'package:flutter/services.dart';
 
@@ -39,13 +42,12 @@ class FederationScreen extends StatefulWidget {
 class _FederationScreenState extends State<FederationScreen> {
   late final Stream<ConduitEvent> _eventStream;
   late final Stream<int> _balanceStream;
-  late final Stream<List<bool>> _connectionStream;
+  late final Stream<List<(String, bool)>> _connectionStream;
   late final AppLinks _appLinks;
   StreamSubscription<Uri>? _linkSubscription;
   bool _balanceHidden = true;
   int? _expirationDate;
   InviteCodeWrapper? _expirationSuccessor;
-
   @override
   void initState() {
     super.initState();
@@ -176,6 +178,18 @@ class _FederationScreenState extends State<FederationScreen> {
     }
   }
 
+  void _onLightningAddress() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder:
+            (_) => LightningAddressEntryScreen(
+              client: widget.client,
+              clientFactory: widget.clientFactory,
+            ),
+      ),
+    );
+  }
+
   void _onContacts() {
     Navigator.of(context).push(
       MaterialPageRoute(
@@ -217,42 +231,62 @@ class _FederationScreenState extends State<FederationScreen> {
       appBar: AppBar(
         automaticallyImplyLeading: false,
         leading: IconButton(
-          icon: const Icon(Icons.settings),
+          icon: const Icon(Icons.settings, size: smallIconSize),
           onPressed: () => Navigator.of(context).pop(),
         ),
-        title: StreamBuilder<List<bool>>(
+        title: StreamBuilder<List<(String, bool)>>(
           stream: _connectionStream,
           builder: (context, snapshot) {
             if (!snapshot.hasData) {
               return const SizedBox.shrink();
             }
-            return Row(
-              mainAxisSize: MainAxisSize.min,
-              spacing: 16,
-              children:
-                  snapshot.data!.map((connected) {
-                    return Container(
-                      width: 10,
-                      height: 10,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color:
-                            connected
-                                ? Theme.of(context).colorScheme.primary
-                                : Theme.of(
-                                  context,
-                                ).colorScheme.primary.withValues(alpha: 0.3),
+            final statuses = snapshot.data!;
+            final connected = statuses.where((s) => s.$2).length;
+            final fraction = connected / statuses.length;
+            final color = Theme.of(context).colorScheme.primary;
+            return InkWell(
+              borderRadius: BorderRadius.circular(8),
+              onTap:
+                  () => Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder:
+                          (_) => ConnectionStatusScreen(client: widget.client),
+                    ),
+                  ),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: TweenAnimationBuilder<double>(
+                  tween: Tween(end: fraction),
+                  duration: const Duration(milliseconds: 250),
+                  curve: Curves.easeInOut,
+                  builder: (context, value, _) {
+                    return ClipRRect(
+                      borderRadius: BorderRadius.circular(2),
+                      child: LinearProgressIndicator(
+                        value: value,
+                        minHeight: 4,
+                        color: color,
+                        backgroundColor: color.withValues(alpha: 0.3),
                       ),
                     );
-                  }).toList(),
+                  },
+                ),
+              ),
             );
           },
         ),
         centerTitle: false,
         actions: [
-          IconButton(icon: const Icon(Icons.people), onPressed: _onContacts),
           IconButton(
-            icon: const Icon(Icons.qr_code_scanner),
+            icon: const Icon(Icons.alternate_email, size: smallIconSize),
+            onPressed: _onLightningAddress,
+          ),
+          IconButton(
+            icon: const Icon(Icons.people, size: smallIconSize),
+            onPressed: _onContacts,
+          ),
+          IconButton(
+            icon: const Icon(Icons.qr_code_scanner, size: smallIconSize),
             onPressed: _onScan,
           ),
         ],
@@ -261,7 +295,7 @@ class _FederationScreenState extends State<FederationScreen> {
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            const SizedBox(height: 64),
+            const SizedBox(height: 48),
             GestureDetector(
               onTap: () {
                 setState(() => _balanceHidden = !_balanceHidden);
@@ -271,16 +305,8 @@ class _FederationScreenState extends State<FederationScreen> {
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
                     if (_balanceHidden) {
-                      final textColor = Theme.of(context).colorScheme.onSurface;
-                      return RichText(
-                        text: TextSpan(
-                          text: '* * * *',
-                          style: TextStyle(
-                            fontSize: 42,
-                            fontWeight: FontWeight.bold,
-                            color: textColor,
-                          ),
-                        ),
+                      return Text.rich(
+                        TextSpan(text: '* * * *', style: heroStyle),
                       );
                     }
                     return AnimatedBalanceDisplay(snapshot.data!);
@@ -290,7 +316,7 @@ class _FederationScreenState extends State<FederationScreen> {
                 },
               ),
             ),
-            const SizedBox(height: 64),
+            const SizedBox(height: 48),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -317,11 +343,11 @@ class _FederationScreenState extends State<FederationScreen> {
                 padding: const EdgeInsets.only(bottom: 12),
                 child: _ExpirationWarningCard(onTap: _showExpirationDrawer),
               ),
-            Expanded(
-              child: PaymentList(
-                stream: _eventStream,
-                onTransactionTap: _showEventDetails,
-              ),
+            RecentPayments(
+              client: widget.client,
+              stream: _eventStream,
+              maxItems: 5,
+              onTransactionTap: _showEventDetails,
             ),
           ],
         ),
@@ -361,18 +387,12 @@ class _CircularActionButton extends StatelessWidget {
             ),
             child: Icon(
               icon,
-              size: 34,
+              size: mediumIconSize,
               color: Theme.of(context).colorScheme.onPrimary,
             ),
           ),
           const SizedBox(height: 8),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 14,
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
-          ),
+          Text(label, style: smallStyle),
         ],
       ),
     );
@@ -392,17 +412,17 @@ class _ExpirationWarningCard extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
           color: Colors.amber.withValues(alpha: 0.15),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: borderRadiusLarge,
           border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
         ),
         child: Row(
           children: [
-            Icon(Icons.bedtime, color: Colors.amber[700], size: 20),
+            Icon(Icons.bedtime, color: Colors.amber[700], size: smallIconSize),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
                 'Federation Expiry',
-                style: TextStyle(color: Colors.amber[700]),
+                style: mediumStyle.copyWith(color: Colors.amber[700]),
               ),
             ),
           ],

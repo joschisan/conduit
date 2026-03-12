@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:conduit/utils/styles.dart';
 import 'package:conduit/utils/async_button_mixin.dart';
 
 class AsyncButton extends StatefulWidget {
@@ -28,21 +29,11 @@ class _AsyncButtonState extends State<AsyncButton> with AsyncButtonMixin {
           backgroundColor: Theme.of(context).colorScheme.primary,
           foregroundColor: Theme.of(context).colorScheme.onPrimary,
           padding: const EdgeInsets.symmetric(vertical: 16),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          shape: RoundedRectangleBorder(borderRadius: borderRadiusLarge),
         ),
         child: switch (buttonState) {
-          AsyncButtonState.loading => const SizedBox(
-            width: 20,
-            height: 20,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-            ),
-          ),
-          AsyncButtonState.idle => Text(
-            widget.text,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
+          AsyncButtonState.loading => buildSmallSpinner(context),
+          AsyncButtonState.idle => Text(widget.text, style: mediumStyle),
         },
       ),
     );

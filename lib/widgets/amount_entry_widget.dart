@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:conduit/utils/styles.dart';
 import 'package:intl/intl.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/utils/currency_utils.dart';
@@ -123,37 +124,18 @@ class _AmountEntryWidgetState extends State<AmountEntryWidget> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   if (_enterFiat)
-                    RichText(
+                    Text.rich(
                       textAlign: TextAlign.center,
-                      text: TextSpan(
-                        text: _formatFiatAmount(),
-                        style: TextStyle(
-                          fontSize: 42,
-                          fontWeight: FontWeight.bold,
-                          color: Theme.of(context).colorScheme.onSurface,
-                        ),
-                      ),
+                      TextSpan(text: _formatFiatAmount(), style: heroStyle),
                     )
                   else
                     AmountDisplay(_currentAmount),
                   const SizedBox(height: 8),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.currency_exchange,
-                        size: 22,
-                        color: Colors.grey.withValues(alpha: 0.8),
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        _enterFiat ? _currency.name : 'Bitcoin',
-                        style: TextStyle(
-                          fontSize: 18,
-                          color: Colors.grey.withValues(alpha: 0.8),
-                        ),
-                      ),
-                    ],
+                  Text(
+                    _enterFiat ? _currency.name : 'Bitcoin',
+                    style: mediumStyle.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
                   ),
                 ],
               ),
@@ -190,7 +172,7 @@ class _AmountEntryWidgetState extends State<AmountEntryWidget> {
               _buildNumberButton('9'),
               _buildActionButton(Icons.clear, _onClear),
               _buildNumberButton('0'),
-              _buildActionButton(Icons.backspace_outlined, _onBackspace),
+              _buildActionButton(Icons.arrow_back, _onBackspace),
             ],
           ),
         ),
@@ -201,20 +183,11 @@ class _AmountEntryWidgetState extends State<AmountEntryWidget> {
   Widget _buildNumberButton(String number) {
     return Material(
       color: Colors.transparent,
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: borderRadiusLarge,
       child: InkWell(
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: borderRadiusLarge,
         onTap: () => _onKeyboardTap(number),
-        child: Center(
-          child: Text(
-            number,
-            style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
-          ),
-        ),
+        child: Center(child: Text(number, style: largeStyle)),
       ),
     );
   }
@@ -222,17 +195,11 @@ class _AmountEntryWidgetState extends State<AmountEntryWidget> {
   Widget _buildActionButton(IconData icon, VoidCallback onTap) {
     return Material(
       color: Colors.transparent,
-      borderRadius: BorderRadius.circular(8),
+      borderRadius: borderRadiusLarge,
       child: InkWell(
-        borderRadius: BorderRadius.circular(8),
+        borderRadius: borderRadiusLarge,
         onTap: onTap,
-        child: Center(
-          child: Icon(
-            icon,
-            size: 28,
-            color: Theme.of(context).colorScheme.onSurface,
-          ),
-        ),
+        child: Center(child: Icon(icon, size: smallIconSize)),
       ),
     );
   }

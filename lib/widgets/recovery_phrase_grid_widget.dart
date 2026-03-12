@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:conduit/utils/styles.dart';
+import 'package:conduit/widgets/bordered_list_widget.dart';
 
 class RecoveryPhraseGrid extends StatelessWidget {
   final List<String> words;
@@ -8,55 +10,47 @@ class RecoveryPhraseGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-
+    final borderColor = theme.colorScheme.outlineVariant;
     final half = words.length ~/ 2;
 
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(child: _buildColumn(theme, words.sublist(0, half), 0)),
-        const SizedBox(width: 16),
-        Expanded(child: _buildColumn(theme, words.sublist(half), half)),
-      ],
+    return BorderedList.decorateItem(
+      context: context,
+      isFirst: true,
+      isLast: true,
+      child: Table(
+        border: TableBorder.symmetric(
+          inside: BorderSide(color: borderColor, width: 1),
+        ),
+        children: [
+          for (int i = 0; i < half; i++)
+            TableRow(
+              children: [
+                _buildCell(theme, i, words[i]),
+                _buildCell(theme, half + i, words[half + i]),
+              ],
+            ),
+        ],
+      ),
     );
   }
 
-  Widget _buildColumn(ThemeData theme, List<String> columnWords, int offset) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        for (int i = 0; i < columnWords.length; i++)
-          Card(
-            margin: const EdgeInsets.symmetric(vertical: 4),
-            child: ListTile(
-              contentPadding: const EdgeInsets.symmetric(
-                horizontal: 16.0,
-                vertical: 4.0,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-              leading: SizedBox(
-                width: 40,
-                child: Text(
-                  '${offset + i + 1}',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    color: theme.colorScheme.primary,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 32,
-                  ),
-                ),
-              ),
-              title: Text(
-                columnWords[i],
-                style: theme.textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
+  Widget _buildCell(ThemeData theme, int index, String word) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 28,
+            child: Text(
+              '${index + 1}',
+              textAlign: TextAlign.center,
+              style: largeStyle.copyWith(color: theme.colorScheme.primary),
             ),
           ),
-      ],
+          const SizedBox(width: 8),
+          Text(word, style: mediumStyle),
+        ],
+      ),
     );
   }
 }

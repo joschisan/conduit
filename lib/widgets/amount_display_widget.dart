@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:conduit/utils/styles.dart';
 import 'package:intl/intl.dart';
 
 class AmountDisplay extends StatelessWidget {
@@ -10,31 +11,16 @@ class AmountDisplay extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final displayAmount = NumberFormat('#,###').format(amount);
-    final textColor = Theme.of(context).colorScheme.onSurface;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        RichText(
+        Text.rich(
           textAlign: TextAlign.center,
-          text: TextSpan(
+          TextSpan(
             children: [
-              TextSpan(
-                text: displayAmount,
-                style: TextStyle(
-                  fontSize: 42,
-                  fontWeight: FontWeight.bold,
-                  color: textColor,
-                ),
-              ),
-              TextSpan(
-                text: ' sat',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                  color: textColor,
-                ),
-              ),
+              TextSpan(text: displayAmount, style: heroStyle),
+              TextSpan(text: ' sat', style: largeStyle),
             ],
           ),
         ),
@@ -42,9 +28,7 @@ class AmountDisplay extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             '${NumberFormat('#,###').format(fee)} sat',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
+            style: largeStyle.copyWith(
               color: Theme.of(context).colorScheme.primary,
             ),
           ),

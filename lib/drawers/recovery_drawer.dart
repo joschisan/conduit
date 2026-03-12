@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:conduit/utils/styles.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/bridge_generated.dart/factory.dart';
 import 'package:conduit/widgets/drawer_shell_widget.dart';
@@ -53,7 +54,7 @@ class _RecoveryDrawerState extends State<RecoveryDrawer> {
 
       Navigator.of(context).pop(); // Close drawer
 
-      Navigator.of(context).pushReplacement(
+      Navigator.of(context).push(
         MaterialPageRoute(
           builder:
               (_) => FederationScreen(
@@ -95,7 +96,7 @@ class _RecoveryDrawerState extends State<RecoveryDrawer> {
         Text(
           'Keep this drawer open to progress the recovery.\nThis may take a few minutes.',
           textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.bodyMedium,
+          style: smallStyle,
         ),
       ],
     );
@@ -105,20 +106,20 @@ class _RecoveryDrawerState extends State<RecoveryDrawer> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Icon(Icons.error, size: 64, color: Theme.of(context).colorScheme.error),
+        Icon(
+          Icons.error,
+          size: heroIconSize,
+          color: Theme.of(context).colorScheme.error,
+        ),
         const SizedBox(height: 24),
         Text(
           'Recovery failed',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+          style: mediumStyle.copyWith(
             color: Theme.of(context).colorScheme.error,
           ),
         ),
         const SizedBox(height: 8),
-        Text(
-          error,
-          textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.bodyMedium,
-        ),
+        Text(error, textAlign: TextAlign.center, style: smallStyle),
       ],
     );
   }

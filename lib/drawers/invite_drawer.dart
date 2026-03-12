@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:conduit/utils/styles.dart';
 import 'package:conduit/bridge_generated.dart/lib.dart';
 import 'package:conduit/widgets/drawer_shell_widget.dart';
 import 'package:conduit/widgets/async_button_widget.dart';
@@ -46,19 +47,18 @@ class InviteDrawer extends StatelessWidget {
       icon: Icons.account_balance_wallet,
       title: 'Federation Invite',
       children: [
+        AsyncButton(text: 'Join', onPressed: () => onJoin(invite)),
+        const SizedBox(height: 24),
         GestureDetector(
           onTap: () => _showRecoverDrawer(context),
           child: Text(
             'Already used this federation before?',
-            style: TextStyle(
-              fontSize: 16,
+            style: mediumStyle.copyWith(
               color: Theme.of(context).colorScheme.primary,
             ),
             textAlign: TextAlign.center,
           ),
         ),
-        const SizedBox(height: 24),
-        AsyncButton(text: 'Join', onPressed: () => onJoin(invite)),
       ],
     );
   }
@@ -91,19 +91,18 @@ class _RecoverDrawer extends StatelessWidget {
       icon: Icons.account_balance_wallet,
       title: 'Federation Invite',
       children: [
+        AsyncButton(text: 'Recover', onPressed: () => onRecover(invite)),
+        const SizedBox(height: 24),
         GestureDetector(
           onTap: () => _showJoinDrawer(context),
           child: Text(
             'New to this federation?',
-            style: TextStyle(
-              fontSize: 16,
+            style: mediumStyle.copyWith(
               color: Theme.of(context).colorScheme.primary,
             ),
             textAlign: TextAlign.center,
           ),
         ),
-        const SizedBox(height: 24),
-        AsyncButton(text: 'Recover', onPressed: () => onRecover(invite)),
       ],
     );
   }

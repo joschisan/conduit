@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:conduit/utils/styles.dart';
 import 'package:conduit/screens/input_recovery_phrase_screen.dart';
 import 'package:conduit/screens/base_screen.dart';
 import 'package:conduit/bridge_generated.dart/lib.dart';
@@ -71,60 +72,22 @@ class _LandingScreenState extends State<LandingScreen> {
                               children: [
                                 Icon(
                                   icon,
-                                  size: 64,
+                                  size: heroIconSize,
                                   color: Theme.of(context).colorScheme.primary,
                                 ),
                                 const SizedBox(width: 16),
-                                Text(
-                                  name,
-                                  style: TextStyle(
-                                    fontSize: 42,
-                                    fontWeight: FontWeight.bold,
-                                    color:
-                                        Theme.of(context).colorScheme.onSurface,
-                                  ),
-                                ),
+                                Text(name, style: heroStyle),
                               ],
                             );
                           },
                         ),
                       ),
                       const SizedBox(height: 16),
-                      Text(
-                        'Powered by Fedimint',
-                        style: TextStyle(
-                          fontSize: 18,
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.onSurface.withValues(alpha: 0.7),
-                        ),
-                      ),
+                      Text('Powered by Fedimint', style: mediumStyle),
                     ],
                   ),
                 ),
               ),
-              GestureDetector(
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder:
-                          (context) => InputRecoveryPhraseScreen(
-                            db: widget.db,
-                            partialSeedPhrase: const [],
-                          ),
-                    ),
-                  );
-                },
-                child: Text(
-                  'Already have a wallet?',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
-              const SizedBox(height: 24),
               AsyncButton(
                 text: 'Generate New Wallet',
                 onPressed: () async {
@@ -144,6 +107,27 @@ class _LandingScreenState extends State<LandingScreen> {
                     ),
                   );
                 },
+              ),
+              const SizedBox(height: 24),
+              GestureDetector(
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder:
+                          (context) => InputRecoveryPhraseScreen(
+                            db: widget.db,
+                            partialSeedPhrase: const [],
+                          ),
+                    ),
+                  );
+                },
+                child: Text(
+                  'Already have a wallet?',
+                  style: mediumStyle.copyWith(
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
               ),
             ],
           ),
