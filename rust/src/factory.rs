@@ -1,23 +1,5 @@
 use std::sync::Arc;
 
-use fedimint_bip39::Bip39RootSecretStrategy;
-use fedimint_client::module_init::ClientModuleInitRegistry;
-use fedimint_client::secret::RootSecretStrategy;
-use fedimint_client::{Client, ClientBuilder, ClientHandleArc, ModuleKind, RootSecret};
-use fedimint_connectors::ConnectorRegistry;
-use fedimint_core::base32::{encode_prefixed, FEDIMINT_PREFIX};
-use fedimint_core::config::{ClientConfig, FederationId};
-use fedimint_core::db::{Database, IDatabaseTransactionOpsCore, IDatabaseTransactionOpsCoreTyped};
-use fedimint_core::invite_code::InviteCode;
-use fedimint_core::BitcoinHash;
-use fedimint_lnv2_client::LightningClientInit;
-use fedimint_lnv2_common::KIND as LIGHTNING_KIND;
-use fedimint_mint_client::{MintClientInit, KIND as MINT_KIND};
-use fedimint_wallet_client::{WalletClientInit, KIND as WALLET_KIND};
-use flutter_rust_bridge::frb;
-use futures_util::StreamExt;
-use tokio::sync::Mutex;
-
 use crate::client::ConduitClient;
 use crate::db::{
     ClientConfigKey, ClientConfigPrefix, ContactKey, ContactPrefix, DbKeyPrefix,
@@ -25,6 +7,23 @@ use crate::db::{
 };
 use crate::lnurl::LnurlWrapper;
 use crate::{DatabaseWrapper, InviteCodeWrapper, MnemonicWrapper};
+use fedimint_bip39::Bip39RootSecretStrategy;
+use fedimint_client::module_init::ClientModuleInitRegistry;
+use fedimint_client::secret::RootSecretStrategy;
+use fedimint_client::{Client, ClientBuilder, ClientHandleArc, ModuleKind, RootSecret};
+use fedimint_connectors::ConnectorRegistry;
+use fedimint_core::BitcoinHash;
+use fedimint_core::base32::{FEDIMINT_PREFIX, encode_prefixed};
+use fedimint_core::config::{ClientConfig, FederationId};
+use fedimint_core::db::{Database, IDatabaseTransactionOpsCore, IDatabaseTransactionOpsCoreTyped};
+use fedimint_core::invite_code::InviteCode;
+use fedimint_lnv2_client::LightningClientInit;
+use fedimint_lnv2_common::KIND as LIGHTNING_KIND;
+use fedimint_mint_client::{KIND as MINT_KIND, MintClientInit};
+use fedimint_wallet_client::{KIND as WALLET_KIND, WalletClientInit};
+use flutter_rust_bridge::frb;
+use futures_util::StreamExt;
+use tokio::sync::Mutex;
 
 #[frb]
 pub struct ConduitClientFactory {
@@ -92,7 +91,7 @@ impl ConduitContact {
 fn ensure_module(config: &ClientConfig, kind: &ModuleKind) -> Result<(), String> {
     match config.modules.values().any(|module| module.kind() == kind) {
         true => Ok(()),
-        false => Err(format!("{} module is not present", kind)),
+        false => Err(format!("Module {} is not present", kind)),
     }
 }
 

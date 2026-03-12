@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:conduit/bridge_generated.dart/lib.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
-import 'package:conduit/widgets/drawer_shell.dart';
-import 'package:conduit/widgets/amount_card.dart';
-import 'package:conduit/widgets/async_action_button.dart';
+import 'package:conduit/widgets/drawer_shell_widget.dart';
+import 'package:conduit/widgets/amount_card_widget.dart';
+import 'package:conduit/widgets/async_button_widget.dart';
 import 'package:conduit/utils/auth_utils.dart';
 import 'package:conduit/utils/drawer_utils.dart';
 
-class LightningPaymentDrawer extends StatefulWidget {
+class LightningInvoiceDrawer extends StatefulWidget {
   final ConduitClient client;
   final Bolt11InvoiceWrapper invoice;
 
-  const LightningPaymentDrawer({
+  const LightningInvoiceDrawer({
     super.key,
     required this.client,
     required this.invoice,
@@ -24,15 +24,15 @@ class LightningPaymentDrawer extends StatefulWidget {
   }) {
     return DrawerUtils.show<bool>(
       context: context,
-      child: LightningPaymentDrawer(client: client, invoice: invoice),
+      child: LightningInvoiceDrawer(client: client, invoice: invoice),
     );
   }
 
   @override
-  State<LightningPaymentDrawer> createState() => _LightningPaymentDrawerState();
+  State<LightningInvoiceDrawer> createState() => _LightningInvoiceDrawerState();
 }
 
-class _LightningPaymentDrawerState extends State<LightningPaymentDrawer> {
+class _LightningInvoiceDrawerState extends State<LightningInvoiceDrawer> {
   Future<void> _handleConfirm() async {
     await requireBiometricAuth(context);
 
@@ -51,7 +51,7 @@ class _LightningPaymentDrawerState extends State<LightningPaymentDrawer> {
       children: [
         AmountCard(amountSats: widget.invoice.amountSats()),
         const SizedBox(height: 16),
-        AsyncActionButton(text: 'Confirm', onPressed: _handleConfirm),
+        AsyncButton(text: 'Confirm', onPressed: _handleConfirm),
       ],
     );
   }

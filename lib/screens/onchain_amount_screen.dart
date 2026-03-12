@@ -4,22 +4,21 @@ import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/widgets/amount_entry_widget.dart';
 import 'package:conduit/utils/auth_utils.dart';
 
-class BitcoinSendAmountScreen extends StatefulWidget {
+class OnchainAmountScreen extends StatefulWidget {
   final ConduitClient client;
   final BitcoinAddressWrapper address;
 
-  const BitcoinSendAmountScreen({
+  const OnchainAmountScreen({
     super.key,
     required this.client,
     required this.address,
   });
 
   @override
-  State<BitcoinSendAmountScreen> createState() =>
-      _BitcoinSendAmountScreenState();
+  State<OnchainAmountScreen> createState() => _OnchainAmountScreenState();
 }
 
-class _BitcoinSendAmountScreenState extends State<BitcoinSendAmountScreen> {
+class _OnchainAmountScreenState extends State<OnchainAmountScreen> {
   Future<int>? _feeFuture;
 
   void _onAmountChanged(int currentAmount) {

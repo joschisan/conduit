@@ -1,13 +1,6 @@
-use std::str::FromStr;
-
-use flutter_rust_bridge::frb;
-use lightning_invoice::Bolt11Invoice;
-use lnurl_pay::{LightningAddress, LnUrl};
-use regex::Regex;
-use serde::Deserialize;
-use url::Url;
-
 use crate::Bolt11InvoiceWrapper;
+use flutter_rust_bridge::frb;
+use regex::Regex;
 
 #[frb]
 pub struct LnurlWrapper(pub(crate) String);
@@ -15,7 +8,7 @@ pub struct LnurlWrapper(pub(crate) String);
 impl LnurlWrapper {
     #[frb(sync)]
     pub fn encode(&self) -> String {
-        LnUrl::new(&self.0).encode().expect("Failed to encode lnurl")
+        fedimint_lnurl::encode_lnurl(&self.0)
     }
 }
 
@@ -52,12 +45,16 @@ const MERCHANT_PATTERNS: &[&str] = &[
 
 #[frb(sync)]
 pub fn parse_lnurl(request: &str) -> Option<LnurlWrapper> {
+    if let Some(stripped) = request.strip_prefix("lightning:") {
+        return parse_lnurl(stripped);
+    }
+
     if let Some(stripped) = request.strip_prefix("lnurl:") {
         return parse_lnurl(stripped);
     }
 
     // Try to parse as URL and extract LNURL from query parameters
-    if let Ok(url) = Url::parse(&request.to_lowercase()) {
+    if let Ok(url) = url::Url::parse(&request.to_lowercase()) {
         for (key, value) in url.query_pairs() {
             if key == "lightning" || key == "lnurl" {
                 if let Some(result) = parse_lnurl(&value) {
@@ -67,12 +64,12 @@ pub fn parse_lnurl(request: &str) -> Option<LnurlWrapper> {
         }
     }
 
-    if let Ok(lnurl) = LnUrl::from_str(request) {
-        return Some(LnurlWrapper(lnurl.endpoint()));
+    if let Some(url) = fedimint_lnurl::parse_lnurl(request) {
+        return Some(LnurlWrapper(url));
     }
 
-    if let Ok(lightning_address) = LightningAddress::from_str(request) {
-        return Some(LnurlWrapper(lightning_address.endpoint()));
+    if let Some(url) = fedimint_lnurl::parse_address(request) {
+        return Some(LnurlWrapper(url));
     }
 
     // Check if input matches MoneyBadger merchant pattern
@@ -82,80 +79,40 @@ pub fn parse_lnurl(request: &str) -> Option<LnurlWrapper> {
     {
         let address = format!("{}@cryptoqr.net", strict_uri_encode(request));
 
-        return LightningAddress::from_str(&address)
-            .ok()
-            .map(|addr| LnurlWrapper(addr.endpoint()));
+        return fedimint_lnurl::parse_address(&address).map(LnurlWrapper);
     }
 
     None
 }
 
-#[frb]
-pub struct LnurlPayInfo {
-    pub callback: String,
-    pub min_sats: i64,
-    pub max_sats: i64,
-}
+#[frb(opaque)]
+pub struct PayResponseWrapper(fedimint_lnurl::PayResponse);
 
-#[derive(Deserialize)]
-struct LnUrlPayResponse {
-    callback: String,
-    #[serde(alias = "minSendable")]
-    min_sendable: i64,
-    #[serde(alias = "maxSendable")]
-    max_sendable: i64,
-}
-
-#[derive(Deserialize)]
-struct LnUrlPayInvoiceResponse {
-    pr: Bolt11Invoice,
-}
-
-#[frb]
-pub async fn lnurl_fetch_limits(lnurl: &LnurlWrapper) -> Result<LnurlPayInfo, String> {
-    let response = reqwest::get(&lnurl.0)
-        .await
-        .map_err(|_| "Failed to fetch LNURL".to_string())?
-        .json::<LnUrlPayResponse>()
-        .await
-        .map_err(|_| "Failed to parse LNURL response".to_string())?;
-
-    if response.min_sendable > response.max_sendable {
-        return Err("Invalid LNURL: min_sendable > max_sendable".to_string());
+impl PayResponseWrapper {
+    #[frb(sync, getter)]
+    pub fn min_sats(&self) -> i64 {
+        self.0.min_sendable as i64 / 1000
     }
 
-    Ok(LnurlPayInfo {
-        callback: response.callback,
-        min_sats: response.min_sendable / 1000,
-        max_sats: response.max_sendable / 1000,
-    })
+    #[frb(sync, getter)]
+    pub fn max_sats(&self) -> i64 {
+        self.0.max_sendable as i64 / 1000
+    }
+}
+
+#[frb]
+pub async fn lnurl_fetch_limits(lnurl: &LnurlWrapper) -> Result<PayResponseWrapper, String> {
+    fedimint_lnurl::request(&lnurl.0)
+        .await
+        .map(PayResponseWrapper)
 }
 
 #[frb]
 pub async fn lnurl_resolve(
-    pay_info: &LnurlPayInfo,
+    pay_response: &PayResponseWrapper,
     amount_sats: i64,
 ) -> Result<Bolt11InvoiceWrapper, String> {
-    if amount_sats < pay_info.min_sats {
-        return Err(format!("Minimum amount is {} sats", pay_info.min_sats));
-    }
-
-    if amount_sats > pay_info.max_sats {
-        return Err(format!("Maximum amount is {} sats", pay_info.max_sats));
-    }
-
-    let callback_url = format!("{}?amount={}", pay_info.callback, amount_sats * 1000);
-
-    let response = reqwest::get(callback_url)
+    fedimint_lnurl::get_invoice(&pay_response.0, amount_sats as u64 * 1000)
         .await
-        .map_err(|_| "Failed to fetch LNURL callback".to_string())?
-        .json::<LnUrlPayInvoiceResponse>()
-        .await
-        .map_err(|_| "Failed to parse LNURL callback response".to_string())?;
-
-    if response.pr.amount_milli_satoshis() != Some((amount_sats * 1000) as u64) {
-        return Err("Invoice response amount mismatch".to_string());
-    }
-
-    Ok(Bolt11InvoiceWrapper(response.pr))
+        .map(|response| Bolt11InvoiceWrapper(response.pr))
 }

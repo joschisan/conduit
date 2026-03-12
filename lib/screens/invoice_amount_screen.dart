@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/widgets/amount_entry_widget.dart';
-import 'package:conduit/widgets/async_text_button.dart';
+import 'package:conduit/widgets/async_text_button_widget.dart';
 import 'package:conduit/screens/display_invoice_screen.dart';
 import 'package:conduit/screens/display_lnurl_screen.dart';
 
-class LightningReceiveAmountScreen extends StatelessWidget {
+class InvoiceAmountScreen extends StatelessWidget {
   final ConduitClient client;
 
-  const LightningReceiveAmountScreen({super.key, required this.client});
+  const InvoiceAmountScreen({super.key, required this.client});
 
   Future<void> _handleLnurlTap(BuildContext context) async {
     final lnurl = await client.lnurl();

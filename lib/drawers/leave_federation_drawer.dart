@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:conduit/bridge_generated.dart/factory.dart';
-import 'package:conduit/widgets/drawer_shell.dart';
-import 'package:conduit/widgets/async_action_button.dart';
+import 'package:conduit/widgets/drawer_shell_widget.dart';
+import 'package:conduit/widgets/async_button_widget.dart';
 import 'package:conduit/utils/drawer_utils.dart';
 
 class LeaveFederationDrawer extends StatefulWidget {
@@ -52,7 +52,7 @@ class _LeaveFederationDrawerState extends State<LeaveFederationDrawer> {
       icon: Icons.exit_to_app,
       title: 'Leave ${widget.federation.name}?',
       children: [
-        AsyncActionButton(text: 'Confirm', onPressed: _handleLeaveFederation),
+        AsyncButton(text: 'Confirm', onPressed: _handleLeaveFederation),
       ],
     );
   }

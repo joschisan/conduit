@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:conduit/bridge_generated.dart/lib.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/bridge_generated.dart/fountain.dart';
-import 'package:conduit/widgets/amount_display.dart';
+import 'package:conduit/widgets/amount_display_widget.dart';
 import 'package:conduit/widgets/qr_code_widget.dart';
 import 'package:conduit/drawers/cancel_ecash_drawer.dart';
 
@@ -36,7 +36,7 @@ class DisplayEcashScreen extends StatelessWidget {
         title: const Text('eCash'),
         actions: [
           IconButton(
-            icon: const Icon(Icons.close),
+            icon: const Icon(Icons.cancel),
             onPressed: () => _showCancelDrawer(context),
           ),
         ],
@@ -80,7 +80,7 @@ class DisplayEcashScreen extends StatelessWidget {
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 32.0),
                     child: Text(
-                      'Any member of this federation can claim the funds by scanning this eCash token. The token cannot be linked to you.',
+                      'Any member of this federation can claim these funds by scanning this ecash token. The token cannot be linked to you.',
                       style: TextStyle(
                         fontSize: 14,
                         color: Theme.of(

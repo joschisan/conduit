@@ -1,4 +1,4 @@
-use fedimint_core::base32::{decode_prefixed, encode_prefixed, FEDIMINT_PREFIX};
+use fedimint_core::base32::{FEDIMINT_PREFIX, decode_prefixed, encode_prefixed};
 use fedimint_fountain::{FountainDecoder, FountainEncoder};
 use fedimint_mint_client::OOBNotes;
 use flutter_rust_bridge::frb;

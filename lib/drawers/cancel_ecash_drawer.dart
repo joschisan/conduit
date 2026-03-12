@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:conduit/bridge_generated.dart/lib.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
-import 'package:conduit/widgets/drawer_shell.dart';
-import 'package:conduit/widgets/async_action_button.dart';
+import 'package:conduit/widgets/drawer_shell_widget.dart';
+import 'package:conduit/widgets/async_button_widget.dart';
 import 'package:conduit/utils/drawer_utils.dart';
 
 class CancelEcashDrawer extends StatelessWidget {
@@ -38,13 +38,10 @@ class CancelEcashDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DrawerShell(
-      icon: Icons.close,
+      icon: Icons.cancel,
       title: 'Cancel Payment?',
       children: [
-        AsyncActionButton(
-          text: 'Confirm',
-          onPressed: () => _handleConfirm(context),
-        ),
+        AsyncButton(text: 'Confirm', onPressed: () => _handleConfirm(context)),
       ],
     );
   }

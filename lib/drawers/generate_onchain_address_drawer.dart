@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:conduit/widgets/drawer_shell.dart';
-import 'package:conduit/widgets/async_action_button.dart';
+import 'package:conduit/widgets/drawer_shell_widget.dart';
+import 'package:conduit/widgets/async_button_widget.dart';
 import 'package:conduit/utils/drawer_utils.dart';
 
-class GenerateAddressDrawer extends StatelessWidget {
+class GenerateOnchainAddressDrawer extends StatelessWidget {
   final VoidCallback onConfirm;
 
-  const GenerateAddressDrawer({super.key, required this.onConfirm});
+  const GenerateOnchainAddressDrawer({super.key, required this.onConfirm});
 
   static Future<void> show(
     BuildContext context, {
@@ -14,7 +14,7 @@ class GenerateAddressDrawer extends StatelessWidget {
   }) {
     return DrawerUtils.show(
       context: context,
-      child: GenerateAddressDrawer(onConfirm: onConfirm),
+      child: GenerateOnchainAddressDrawer(onConfirm: onConfirm),
     );
   }
 
@@ -27,9 +27,9 @@ class GenerateAddressDrawer extends StatelessWidget {
   Widget build(BuildContext context) {
     return DrawerShell(
       icon: Icons.add,
-      title: 'Generate onchain address?',
+      title: 'Generate Onchain Address?',
       children: [
-        AsyncActionButton(
+        AsyncButton(
           text: 'Confirm',
           onPressed: () async => _handleConfirm(context),
         ),

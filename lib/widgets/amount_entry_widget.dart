@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:currency_picker/currency_picker.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
-import 'package:conduit/widgets/amount_display.dart';
-import 'package:conduit/widgets/async_action_button.dart';
+import 'package:conduit/widgets/amount_display_widget.dart';
+import 'package:conduit/widgets/async_button_widget.dart';
 
 class AmountEntryWidget extends StatefulWidget {
   final ConduitClient client;
@@ -157,7 +157,7 @@ class _AmountEntryWidgetState extends State<AmountEntryWidget> {
         // Confirm button
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: AsyncActionButton(text: 'Confirm', onPressed: _handleConfirm),
+          child: AsyncButton(text: 'Confirm', onPressed: _handleConfirm),
         ),
 
         // Custom number pad

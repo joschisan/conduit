@@ -1,10 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:conduit/screens/input_seed_screen.dart';
+import 'package:conduit/screens/input_recovery_phrase_screen.dart';
 import 'package:conduit/screens/base_screen.dart';
 import 'package:conduit/bridge_generated.dart/lib.dart';
 import 'package:conduit/bridge_generated.dart/factory.dart';
-import 'package:conduit/widgets/async_action_button.dart';
+import 'package:conduit/widgets/async_button_widget.dart';
 
 const _variants = [
   (Icons.bolt, 'Lightning'),
@@ -108,7 +108,7 @@ class _LandingScreenState extends State<LandingScreen> {
                 style: TextStyle(color: Theme.of(context).colorScheme.primary),
               ),
               const SizedBox(height: 8),
-              AsyncActionButton(
+              AsyncButton(
                 text: 'Generate New Wallet',
                 onPressed: () async {
                   final mnemonic = await generateMnemonic();
@@ -134,13 +134,13 @@ class _LandingScreenState extends State<LandingScreen> {
                 style: TextStyle(color: Theme.of(context).colorScheme.primary),
               ),
               const SizedBox(height: 8),
-              AsyncActionButton(
+              AsyncButton(
                 text: 'Enter Recovery Phrase',
                 onPressed: () async {
                   Navigator.of(context).push(
                     MaterialPageRoute(
                       builder:
-                          (context) => InputSeedScreen(
+                          (context) => InputRecoveryPhraseScreen(
                             db: widget.db,
                             partialSeedPhrase: const [],
                           ),

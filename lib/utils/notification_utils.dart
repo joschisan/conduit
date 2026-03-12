@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:overlay_support/overlay_support.dart';
 import 'package:conduit/bridge_generated.dart/events.dart';
-import 'package:conduit/utils/payment_type_utils.dart';
+import 'package:conduit/utils/payment_utils.dart';
 
 class NotificationUtils {
   static const _defaultNotificationDuration = Duration(milliseconds: 1500);
@@ -93,23 +93,7 @@ class NotificationUtils {
 
     _showNotification(
       context,
-      'You received ${NumberFormat('#,###').format(amountSat)} sats.',
-      PaymentTypeUtils.getIcon(paymentType),
-      Theme.of(context).colorScheme.primary,
-      _defaultNotificationDuration,
-    );
-  }
-
-  static void showSend(
-    BuildContext context,
-    int amountSat,
-    PaymentType paymentType,
-  ) {
-    HapticFeedback.heavyImpact();
-
-    _showNotification(
-      context,
-      'You sent ${NumberFormat('#,###').format(amountSat)} sats.',
+      'Received ${NumberFormat('#,###').format(amountSat)} sats',
       PaymentTypeUtils.getIcon(paymentType),
       Theme.of(context).colorScheme.primary,
       _defaultNotificationDuration,

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:conduit/widgets/amount_display.dart';
+import 'package:conduit/widgets/amount_display_widget.dart';
 
 class AmountCard extends StatelessWidget {
   final int amountSats;

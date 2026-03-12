@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:conduit/bridge_generated.dart/lib.dart';
-import 'package:conduit/widgets/drawer_shell.dart';
-import 'package:conduit/widgets/async_action_button.dart';
+import 'package:conduit/widgets/drawer_shell_widget.dart';
+import 'package:conduit/widgets/async_button_widget.dart';
 import 'package:conduit/utils/drawer_utils.dart';
 
-class InviteConfirmationDrawer extends StatelessWidget {
+class InviteDrawer extends StatelessWidget {
   final InviteCodeWrapper invite;
   final Future<void> Function(InviteCodeWrapper) onJoin;
   final Future<void> Function(InviteCodeWrapper) onRecover;
 
-  const InviteConfirmationDrawer({
+  const InviteDrawer({
     super.key,
     required this.invite,
     required this.onJoin,
@@ -24,11 +24,7 @@ class InviteConfirmationDrawer extends StatelessWidget {
   }) {
     return DrawerUtils.show(
       context: context,
-      child: InviteConfirmationDrawer(
-        invite: invite,
-        onJoin: onJoin,
-        onRecover: onRecover,
-      ),
+      child: InviteDrawer(invite: invite, onJoin: onJoin, onRecover: onRecover),
     );
   }
 
@@ -44,14 +40,14 @@ class InviteConfirmationDrawer extends StatelessWidget {
           style: TextStyle(color: theme.colorScheme.primary),
         ),
         const SizedBox(height: 8),
-        AsyncActionButton(text: 'Join', onPressed: () => onJoin(invite)),
+        AsyncButton(text: 'Join', onPressed: () => onJoin(invite)),
         const SizedBox(height: 24),
         Text(
           'Already used this federation before?',
           style: TextStyle(color: theme.colorScheme.primary),
         ),
         const SizedBox(height: 8),
-        AsyncActionButton(text: 'Recover', onPressed: () => onRecover(invite)),
+        AsyncButton(text: 'Recover', onPressed: () => onRecover(invite)),
       ],
     );
   }

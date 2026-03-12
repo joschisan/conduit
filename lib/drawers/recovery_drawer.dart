@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/bridge_generated.dart/factory.dart';
-import 'package:conduit/widgets/drawer_shell.dart';
+import 'package:conduit/widgets/drawer_shell_widget.dart';
 import 'package:conduit/utils/drawer_utils.dart';
 import 'package:conduit/screens/federation_screen.dart';
 
@@ -74,7 +74,7 @@ class _RecoveryDrawerState extends State<RecoveryDrawer> {
 
         return DrawerShell(
           icon: Icons.refresh,
-          title: 'Recovering funds...',
+          title: 'Recovering Funds...',
           children: [
             if (hasError)
               _buildErrorContent(snapshot.error.toString())

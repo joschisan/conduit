@@ -3,14 +3,14 @@ import 'package:conduit/bridge_generated.dart/lib.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/bridge_generated.dart/factory.dart';
 import 'package:conduit/screens/federation_screen.dart';
-import 'package:conduit/screens/display_seed_screen.dart';
-import 'package:conduit/screens/currency_selection_screen.dart';
+import 'package:conduit/screens/display_recovery_phrase_screen.dart';
+import 'package:conduit/screens/select_currency_screen.dart';
 import 'package:conduit/utils/notification_utils.dart';
 import 'package:conduit/utils/auth_utils.dart';
 import 'package:conduit/drawers/invite_scanner_drawer.dart';
 import 'package:conduit/drawers/leave_federation_drawer.dart';
 import 'package:conduit/drawers/recovery_drawer.dart';
-import 'package:conduit/widgets/settings_card.dart';
+import 'package:conduit/widgets/settings_card_widget.dart';
 
 class BaseScreen extends StatefulWidget {
   final ConduitClientFactory clientFactory;
@@ -306,7 +306,7 @@ class _BaseScreenState extends State<BaseScreen> {
     await Navigator.of(context).push(
       MaterialPageRoute(
         builder:
-            (_) => CurrencySelectionScreen(clientFactory: widget.clientFactory),
+            (_) => SelectCurrencyScreen(clientFactory: widget.clientFactory),
       ),
     );
   }
@@ -323,7 +323,7 @@ class _BaseScreenState extends State<BaseScreen> {
 
       Navigator.of(context).push(
         MaterialPageRoute(
-          builder: (_) => DisplaySeedScreen(seedPhrase: seedPhrase),
+          builder: (_) => DisplayRecoveryPhraseScreen(seedPhrase: seedPhrase),
         ),
       );
     } catch (e) {

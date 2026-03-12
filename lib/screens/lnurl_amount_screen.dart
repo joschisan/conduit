@@ -4,36 +4,35 @@ import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/bridge_generated.dart/factory.dart';
 import 'package:conduit/bridge_generated.dart/lnurl.dart';
 import 'package:conduit/widgets/amount_entry_widget.dart';
-import 'package:conduit/drawers/contact_drawer.dart';
+import 'package:conduit/drawers/edit_contact_drawer.dart';
 import 'package:conduit/utils/auth_utils.dart';
 
-class LnurlPaymentAmountScreen extends StatefulWidget {
+class LnurlAmountScreen extends StatefulWidget {
   final ConduitClient client;
   final ConduitClientFactory clientFactory;
   final LnurlWrapper lnurl;
-  final LnurlPayInfo payInfo;
+  final PayResponseWrapper payResponse;
   final String? contactName;
 
-  const LnurlPaymentAmountScreen({
+  const LnurlAmountScreen({
     super.key,
     required this.client,
     required this.clientFactory,
     required this.lnurl,
-    required this.payInfo,
+    required this.payResponse,
     this.contactName,
   });
 
   @override
-  State<LnurlPaymentAmountScreen> createState() =>
-      _LnurlPaymentAmountScreenState();
+  State<LnurlAmountScreen> createState() => _LnurlAmountScreenState();
 }
 
-class _LnurlPaymentAmountScreenState extends State<LnurlPaymentAmountScreen> {
+class _LnurlAmountScreenState extends State<LnurlAmountScreen> {
   late String? _contactName = widget.contactName;
 
   Future<void> _handleConfirm(int amountSats) async {
     final invoice = await lnurlResolve(
-      payInfo: widget.payInfo,
+      payResponse: widget.payResponse,
       amountSats: amountSats,
     );
 
@@ -49,7 +48,7 @@ class _LnurlPaymentAmountScreenState extends State<LnurlPaymentAmountScreen> {
   }
 
   Future<void> _handleSaveContact() async {
-    final name = await ContactDrawer.show(
+    final name = await EditContactDrawer.show(
       context,
       clientFactory: widget.clientFactory,
       lnurl: widget.lnurl,

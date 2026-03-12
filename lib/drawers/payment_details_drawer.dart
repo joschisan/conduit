@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:intl/intl.dart';
 import 'package:conduit/bridge_generated.dart/events.dart';
-import 'package:conduit/widgets/drawer_shell.dart';
-import 'package:conduit/widgets/amount_card.dart';
-import 'package:conduit/utils/payment_type_utils.dart';
+import 'package:conduit/widgets/drawer_shell_widget.dart';
+import 'package:conduit/widgets/amount_card_widget.dart';
+import 'package:conduit/utils/payment_utils.dart';
 import 'package:conduit/utils/drawer_utils.dart';
 
-class EventDetailsDrawer extends StatelessWidget {
+class PaymentDetailsDrawer extends StatelessWidget {
   final ConduitPayment event;
 
-  const EventDetailsDrawer({super.key, required this.event});
+  const PaymentDetailsDrawer({super.key, required this.event});
 
   static Future<void> show(
     BuildContext context, {
@@ -18,7 +18,7 @@ class EventDetailsDrawer extends StatelessWidget {
   }) {
     return DrawerUtils.show(
       context: context,
-      child: EventDetailsDrawer(event: event),
+      child: PaymentDetailsDrawer(event: event),
     );
   }
 
