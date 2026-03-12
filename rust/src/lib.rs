@@ -72,6 +72,7 @@ pub async fn open_database(db_path: &str) -> DatabaseWrapper {
 }
 
 #[frb]
+#[derive(Clone)]
 pub struct InviteCodeWrapper(pub(crate) InviteCode);
 
 #[frb(sync)]

@@ -19,6 +19,7 @@ import 'package:conduit/drawers/onchain_address_drawer.dart';
 import 'package:conduit/bridge_generated.dart/lnurl.dart';
 import 'package:conduit/utils/notification_utils.dart';
 import 'package:conduit/screens/display_contacts_screen.dart';
+import 'package:conduit/drawers/expiration_drawer.dart';
 
 class FederationScreen extends StatefulWidget {
   final ConduitClient client;
@@ -41,6 +42,8 @@ class _FederationScreenState extends State<FederationScreen> {
   late final AppLinks _appLinks;
   StreamSubscription<Uri>? _linkSubscription;
   bool _balanceHidden = true;
+  int? _expirationDate;
+  InviteCodeWrapper? _expirationSuccessor;
 
   @override
   void initState() {
@@ -50,6 +53,21 @@ class _FederationScreenState extends State<FederationScreen> {
     _connectionStream = widget.client.subscribeConnectionStatus();
     _initDeepLinks();
     _backupToFederation();
+    _fetchExpirationStatus();
+  }
+
+  Future<void> _fetchExpirationStatus() async {
+    final date = await widget.client.expirationDate();
+    if (date == null || !mounted) return;
+
+    final successor = await widget.client.expirationSuccessor();
+
+    if (!mounted) return;
+
+    setState(() {
+      _expirationDate = date;
+      _expirationSuccessor = successor;
+    });
   }
 
   Future<void> _backupToFederation() async {
@@ -169,6 +187,17 @@ class _FederationScreenState extends State<FederationScreen> {
     );
   }
 
+  void _showExpirationDrawer() {
+    if (_expirationDate case final date?) {
+      ExpirationDrawer.show(
+        context,
+        clientFactory: widget.clientFactory,
+        date: date,
+        successor: _expirationSuccessor,
+      );
+    }
+  }
+
   void _onScan() {
     ScannerDrawer.show(
       context,
@@ -274,6 +303,11 @@ class _FederationScreenState extends State<FederationScreen> {
               ],
             ),
             const SizedBox(height: 16),
+            if (_expirationDate != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: _ExpirationWarningCard(onTap: _showExpirationDrawer),
+              ),
             Expanded(
               child: PaymentList(
                 stream: _eventStream,
@@ -309,6 +343,40 @@ class _CircularActionButton extends StatelessWidget {
           icon,
           size: 34,
           color: Theme.of(context).colorScheme.onPrimary,
+        ),
+      ),
+    );
+  }
+}
+
+class _ExpirationWarningCard extends StatelessWidget {
+  final VoidCallback onTap;
+
+  const _ExpirationWarningCard({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        decoration: BoxDecoration(
+          color: Colors.amber.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.bedtime, color: Colors.amber[700], size: 20),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                'Federation Expiry',
+                style: TextStyle(color: Colors.amber[700]),
+              ),
+            ),
+            Icon(Icons.chevron_right, color: Colors.amber[700], size: 20),
+          ],
         ),
       ),
     );

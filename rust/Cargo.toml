@@ -1,30 +1,32 @@
 [package]
 name = "conduit"
-version = "0.2.3"
+version = "0.2.4"
 edition = "2024"
 
 [lints.rust]
 unexpected_cfgs = { level = "allow", check-cfg = ['cfg(frb_expand)'] }
 
 [dependencies]
-fedimint-api-client = "=0.10.0"
-fedimint-bip39 = "=0.10.0"
-fedimint-core = "=0.10.0"
-fedimint-connectors = "=0.10.0"
-fedimint-client = "=0.10.0"
-fedimint-eventlog = "=0.10.0"
-fedimint-fountain = "=0.10.0"
-fedimint-rocksdb = "=0.10.0"
-fedimint-lnv2-client = "=0.10.0"
-fedimint-lnv2-common = "=0.10.0"
-fedimint-mint-client = "=0.10.0"
-fedimint-wallet-client = "=0.10.0"
+fedimint-api-client = "0.10.0"
+fedimint-bip39 = "0.10.0"
+fedimint-core = "0.10.0"
+fedimint-connectors = "0.10.0"
+fedimint-client = "0.10.0"
+fedimint-eventlog = "0.10.0"
+fedimint-fountain = "0.10.0"
+fedimint-rocksdb = "0.10.0"
+fedimint-lnv2-client = "0.10.0"
+fedimint-lnv2-common = "0.10.0"
+fedimint-mint-client = "0.10.0"
+fedimint-wallet-client = "0.10.0"
+fedimint-client-module = "0.10.0"
+fedimint-meta-client = "0.10.0"
 bitcoin = "0.32.5"
 log = "0.4"
 flutter_rust_bridge = "=2.10.0"
 futures-util = "0.3.30"
 lightning-invoice = { version = "0.33.2", features = ["std"] }
-fedimint-lnurl = { git = "https://github.com/joschisan/fedimint", branch = "fix-lnurl" }
+fedimint-lnurl = { git = "https://github.com/fedimint/fedimint" }
 # Pin versions to avoid netwatch/socket2 incompatibility in fedimint 0.9.0
 reqwest = { version = "=0.12.22", features = ["rustls-tls", "json"], default-features = false }
 serde = { version = "1.0.219", features = ["derive"] }
