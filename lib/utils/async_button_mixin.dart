@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../utils/notification_utils.dart';
+import 'package:flutter/services.dart';
 
 enum AsyncButtonState { idle, loading }
 
@@ -17,6 +18,7 @@ mixin AsyncButtonMixin<T extends StatefulWidget> on State<T> {
   }
 
   Future<void> handlePress() async {
+    HapticFeedback.lightImpact();
     _updateState(AsyncButtonState.loading);
 
     try {

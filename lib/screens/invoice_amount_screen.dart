@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/widgets/amount_entry_widget.dart';
-import 'package:conduit/widgets/async_text_button_widget.dart';
+import 'package:conduit/widgets/async_icon_button_widget.dart';
 import 'package:conduit/screens/display_invoice_screen.dart';
 import 'package:conduit/screens/display_lnurl_screen.dart';
 
@@ -39,8 +39,8 @@ class InvoiceAmountScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Lightning'),
         actions: [
-          AsyncTextButton(
-            text: 'LNURL',
+          AsyncIconButton(
+            icon: Icons.bolt,
             onPressed: () => _handleLnurlTap(context),
           ),
         ],

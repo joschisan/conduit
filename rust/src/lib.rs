@@ -132,6 +132,13 @@ pub fn parse_bolt11_invoice(invoice: &str) -> Option<Bolt11InvoiceWrapper> {
 #[frb]
 pub struct BitcoinAddressWrapper(pub(crate) bitcoin::Address<NetworkUnchecked>);
 
+impl BitcoinAddressWrapper {
+    #[frb(sync)]
+    pub fn to_string(&self) -> String {
+        self.0.clone().assume_checked().to_string()
+    }
+}
+
 #[frb(sync)]
 pub fn parse_bitcoin_address(address: &str) -> Option<BitcoinAddressWrapper> {
     if let Some(stripped) = address.strip_prefix("bitcoin:") {

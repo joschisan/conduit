@@ -5,7 +5,7 @@ import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/bridge_generated.dart/events.dart';
 import 'package:conduit/bridge_generated.dart/factory.dart';
 import 'package:conduit/bridge_generated.dart/lib.dart';
-import 'package:conduit/widgets/amount_display_widget.dart';
+import 'package:conduit/widgets/animated_balance_widget.dart';
 import 'package:conduit/widgets/payment_list_widget.dart';
 import 'package:conduit/screens/invoice_amount_screen.dart';
 import 'package:conduit/screens/ecash_amount_screen.dart';
@@ -20,6 +20,7 @@ import 'package:conduit/bridge_generated.dart/lnurl.dart';
 import 'package:conduit/utils/notification_utils.dart';
 import 'package:conduit/screens/display_contacts_screen.dart';
 import 'package:conduit/drawers/expiration_drawer.dart';
+import 'package:flutter/services.dart';
 
 class FederationScreen extends StatefulWidget {
   final ConduitClient client;
@@ -262,7 +263,9 @@ class _FederationScreenState extends State<FederationScreen> {
           children: [
             const SizedBox(height: 64),
             GestureDetector(
-              onTap: () => setState(() => _balanceHidden = !_balanceHidden),
+              onTap: () {
+                setState(() => _balanceHidden = !_balanceHidden);
+              },
               child: StreamBuilder<int>(
                 stream: _balanceStream,
                 builder: (context, snapshot) {
@@ -280,7 +283,7 @@ class _FederationScreenState extends State<FederationScreen> {
                         ),
                       );
                     }
-                    return AmountDisplay(snapshot.data!);
+                    return AnimatedBalanceDisplay(snapshot.data!);
                   } else {
                     return const CircularProgressIndicator();
                   }
@@ -293,13 +296,19 @@ class _FederationScreenState extends State<FederationScreen> {
               children: [
                 _CircularActionButton(
                   icon: Icons.bolt,
+                  label: 'Lightning',
                   onTap: _onCreateInvoice,
                 ),
                 _CircularActionButton(
                   icon: Icons.currency_bitcoin,
+                  label: 'Onchain',
                   onTap: _onReceiveBitcoin,
                 ),
-                _CircularActionButton(icon: Icons.toll, onTap: _onSendEcash),
+                _CircularActionButton(
+                  icon: Icons.toll,
+                  label: 'eCash',
+                  onTap: _onSendEcash,
+                ),
               ],
             ),
             const SizedBox(height: 16),
@@ -323,27 +332,48 @@ class _FederationScreenState extends State<FederationScreen> {
 
 class _CircularActionButton extends StatelessWidget {
   final IconData icon;
+  final String label;
   final VoidCallback onTap;
 
-  const _CircularActionButton({required this.icon, required this.onTap});
+  const _CircularActionButton({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: onTap,
+      onTap: () {
+        HapticFeedback.lightImpact();
+        onTap();
+      },
       borderRadius: BorderRadius.circular(32),
-      child: Container(
-        width: 64,
-        height: 64,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: Theme.of(context).colorScheme.primary,
-        ),
-        child: Icon(
-          icon,
-          size: 34,
-          color: Theme.of(context).colorScheme.onPrimary,
-        ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            child: Icon(
+              icon,
+              size: 34,
+              color: Theme.of(context).colorScheme.onPrimary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 14,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+          ),
+        ],
       ),
     );
   }

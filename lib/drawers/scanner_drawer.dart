@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:conduit/bridge_generated.dart/lib.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/bridge_generated.dart/factory.dart';
@@ -85,6 +86,7 @@ class _ScannerDrawerState extends State<ScannerDrawer> {
     for (final (result, showDrawer) in parsers) {
       if (result != null) {
         _isScanning = false;
+        HapticFeedback.mediumImpact();
         Navigator.of(context).pop();
         showDrawer(result);
         return;

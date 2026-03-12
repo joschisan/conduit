@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:conduit/bridge_generated.dart/lib.dart';
 import 'package:conduit/bridge_generated.dart/factory.dart';
 import 'package:conduit/utils/notification_utils.dart';
@@ -48,6 +49,7 @@ class _InviteScannerDrawerState extends State<InviteScannerDrawer> {
 
     if (inviteCode != null) {
       _isScanning = false;
+      HapticFeedback.mediumImpact();
       Navigator.of(context).pop();
 
       InviteDrawer.show(
