@@ -22,28 +22,25 @@ class SearchField extends StatelessWidget {
       ),
     );
 
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: TextField(
-        controller: controller,
-        autofocus: autofocus,
-        style: mediumStyle,
-        decoration: InputDecoration(
-          hintText: 'Search',
-          hintStyle: mediumStyle,
-          prefixIcon: Padding(
-            padding: const EdgeInsets.only(left: 8),
-            child: Icon(
-              Icons.search,
-              size: mediumIconSize,
-              color: Theme.of(context).colorScheme.primary,
-            ),
+    return TextField(
+      controller: controller,
+      autofocus: autofocus,
+      style: mediumStyle,
+      decoration: InputDecoration(
+        hintText: 'Search',
+        hintStyle: mediumStyle,
+        prefixIcon: Padding(
+          padding: const EdgeInsets.only(left: 8),
+          child: Icon(
+            Icons.search,
+            size: mediumIconSize,
+            color: Theme.of(context).colorScheme.primary,
           ),
-          border: inputBorder,
-          enabledBorder: inputBorder,
         ),
-        onChanged: onChanged,
+        border: inputBorder,
+        enabledBorder: inputBorder,
       ),
+      onChanged: onChanged,
     );
   }
 }

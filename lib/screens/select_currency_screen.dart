@@ -31,38 +31,38 @@ class _SelectCurrencyScreenState extends State<SelectCurrencyScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Select Currency')),
-      body: Column(
-        children: [
-          SearchField(onChanged: (value) => setState(() => _query = value)),
-          Expanded(
-            child: GroupedList<FiatCurrency>(
-              items: _filtered,
-              groupKey: (currency) => currency.code[0],
-              itemBuilder:
-                  (context, currency) => ListTile(
-                    contentPadding: listTilePadding,
-                    leading: SizedBox(
-                      width: 64,
-                      child: Text(
-                        currency.code,
-                        textAlign: TextAlign.center,
-                        style: largeStyle.copyWith(
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                      ),
-                    ),
-                    title: Text(currency.name, style: mediumStyle),
-                    onTap: () {
-                      ConfirmCurrencyDrawer.show(
-                        context,
-                        currency: currency,
-                        clientFactory: widget.clientFactory,
-                      );
-                    },
-                  ),
-            ),
+      body: GroupedList<FiatCurrency>(
+        header: Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: SearchField(
+            onChanged: (value) => setState(() => _query = value),
           ),
-        ],
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        items: _filtered,
+        groupKey: (currency) => currency.code[0],
+        itemBuilder:
+            (context, currency) => ListTile(
+              contentPadding: listTilePadding,
+              leading: SizedBox(
+                width: 64,
+                child: Text(
+                  currency.code,
+                  textAlign: TextAlign.center,
+                  style: largeStyle.copyWith(
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
+              ),
+              title: Text(currency.name, style: mediumStyle),
+              onTap: () {
+                ConfirmCurrencyDrawer.show(
+                  context,
+                  currency: currency,
+                  clientFactory: widget.clientFactory,
+                );
+              },
+            ),
       ),
     );
   }
