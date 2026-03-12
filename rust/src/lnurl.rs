@@ -12,6 +12,13 @@ use crate::Bolt11InvoiceWrapper;
 #[frb]
 pub struct LnurlWrapper(pub(crate) String);
 
+impl LnurlWrapper {
+    #[frb(sync)]
+    pub fn encode(&self) -> String {
+        LnUrl::new(&self.0).encode().expect("Failed to encode lnurl")
+    }
+}
+
 /// Strict URI encode adhering to RFC 3986
 fn strict_uri_encode(input: &str) -> String {
     input

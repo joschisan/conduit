@@ -69,7 +69,7 @@ class _BitcoinAddressScreenState extends State<BitcoinAddressScreen> {
     final tweakIdx = addresses[currentIndex].$1;
     await widget.client.onchainRecheckAddress(tweakIdx: tweakIdx);
     if (!mounted) return;
-    NotificationUtils.showSuccess(context, 'Address rechecked');
+    NotificationUtils.showSuccess(context, 'Checking Address for payments...');
   }
 
   @override
@@ -144,57 +144,59 @@ class _BitcoinAddressScreenState extends State<BitcoinAddressScreen> {
             children: [
               Expanded(
                 child: Center(
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.currency_bitcoin,
-                        size: 64,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.arrow_back_ios, size: 20),
-                        onPressed: hasPrevious ? _previousAddress : null,
-                      ),
-                      Text(
-                        '$currentPosition',
-                        style: const TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 14),
-                        child: Container(
-                          width: 1,
-                          height: 24,
-                          color: Theme.of(context).dividerColor,
-                        ),
-                      ),
-                      Text(
-                        '$totalAddresses',
-                        style: TextStyle(
-                          fontSize: 20,
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.onSurface.withValues(alpha: 0.6),
-                        ),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.arrow_forward_ios, size: 20),
-                        onPressed: hasNext ? _nextAddress : null,
-                      ),
-                    ],
+                  child: Icon(
+                    Icons.currency_bitcoin,
+                    size: 64,
+                    color: Theme.of(context).colorScheme.primary,
                   ),
                 ),
               ),
               QrCodeWidget(data: currentAddress),
+              const SizedBox(height: 16),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back_ios, size: 20),
+                    onPressed: hasPrevious ? _previousAddress : null,
+                  ),
+                  Text(
+                    '$currentPosition',
+                    style: const TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                    child: Container(
+                      width: 1,
+                      height: 24,
+                      color: Theme.of(context).dividerColor,
+                    ),
+                  ),
+                  Text(
+                    '$totalAddresses',
+                    style: TextStyle(
+                      fontSize: 20,
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.onSurface.withValues(alpha: 0.6),
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.arrow_forward_ios, size: 20),
+                    onPressed: hasNext ? _nextAddress : null,
+                  ),
+                ],
+              ),
               Expanded(
                 child: Center(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 32.0),
                     child: Text(
-                      'Incoming onchain payments may take another hour or two after confirmation to show up in your balance. If you reuse an address you need to manually recheck it.',
+                      'Confirmed onchain payments may take two hours to appear. A reused address must be manually checked for payments.',
                       style: TextStyle(
                         fontSize: 14,
                         color: Theme.of(
