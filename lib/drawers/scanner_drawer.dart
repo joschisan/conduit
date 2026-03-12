@@ -10,7 +10,6 @@ import 'package:conduit/drawers/lightning_payment_drawer.dart';
 import 'package:conduit/drawers/ecash_receive_drawer.dart';
 import 'package:conduit/drawers/lnurl_prompt_drawer.dart';
 import 'package:conduit/drawers/bitcoin_address_prompt_drawer.dart';
-import 'package:conduit/screens/contacts_screen.dart';
 
 class ScannerDrawer extends StatefulWidget {
   final ConduitClient client;
@@ -99,24 +98,8 @@ class _ScannerDrawerState extends State<ScannerDrawer> {
     }
   }
 
-  void _openContacts() {
-    Navigator.of(context).pop();
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder:
-            (_) => ContactsScreen(
-              client: widget.client,
-              clientFactory: widget.clientFactory,
-            ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    return QrScannerWidget(
-      onScan: _processInput,
-      onContactsPressed: _openContacts,
-    );
+    return QrScannerWidget(onScan: _processInput);
   }
 }

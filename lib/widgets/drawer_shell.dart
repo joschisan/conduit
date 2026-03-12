@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:conduit/widgets/icon_badge.dart';
 
 class DrawerShell extends StatelessWidget {
   final IconData icon;
@@ -33,7 +32,11 @@ class DrawerShell extends StatelessWidget {
                 // Header
                 Row(
                   children: [
-                    IconBadge(icon: icon, iconSize: 32),
+                    Icon(
+                      icon,
+                      size: 48,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
                     const SizedBox(width: 16),
                     Expanded(
                       child: Text(title, style: const TextStyle(fontSize: 18)),

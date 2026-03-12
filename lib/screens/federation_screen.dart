@@ -10,7 +10,6 @@ import 'package:conduit/widgets/event_transactions_list.dart';
 import 'package:conduit/screens/lightning_receive_amount_screen.dart';
 import 'package:conduit/screens/ecash_send_amount_screen.dart';
 import 'package:conduit/screens/bitcoin_address_screen.dart';
-import 'package:conduit/screens/settings_screen.dart';
 import 'package:conduit/drawers/scanner_drawer.dart';
 import 'package:conduit/drawers/event_details_drawer.dart';
 import 'package:conduit/drawers/ecash_receive_drawer.dart';
@@ -19,22 +18,23 @@ import 'package:conduit/drawers/lnurl_prompt_drawer.dart';
 import 'package:conduit/drawers/bitcoin_address_prompt_drawer.dart';
 import 'package:conduit/bridge_generated.dart/lnurl.dart';
 import 'package:conduit/utils/notification_utils.dart';
+import 'package:conduit/screens/contacts_screen.dart';
 
-class HomeScreen extends StatefulWidget {
+class FederationScreen extends StatefulWidget {
   final ConduitClient client;
   final ConduitClientFactory clientFactory;
 
-  const HomeScreen({
+  const FederationScreen({
     super.key,
     required this.client,
     required this.clientFactory,
   });
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  State<FederationScreen> createState() => _FederationScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _FederationScreenState extends State<FederationScreen> {
   late final Stream<ConduitEvent> _eventStream;
   late final Stream<int> _balanceStream;
   late final Stream<List<bool>> _connectionStream;
@@ -49,6 +49,17 @@ class _HomeScreenState extends State<HomeScreen> {
     _balanceStream = widget.client.subscribeBalance();
     _connectionStream = widget.client.subscribeConnectionStatus();
     _initDeepLinks();
+    _backupToFederation();
+  }
+
+  Future<void> _backupToFederation() async {
+    try {
+      await widget.client.backupToFederation();
+    } catch (e) {
+      if (mounted) {
+        NotificationUtils.showError(context, 'Backup failed');
+      }
+    }
   }
 
   @override
@@ -153,6 +164,18 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  void _onContacts() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder:
+            (_) => ContactsScreen(
+              client: widget.client,
+              clientFactory: widget.clientFactory,
+            ),
+      ),
+    );
+  }
+
   void _onScan() {
     ScannerDrawer.show(
       context,
@@ -172,14 +195,7 @@ class _HomeScreenState extends State<HomeScreen> {
         automaticallyImplyLeading: false,
         leading: IconButton(
           icon: const Icon(Icons.settings),
-          onPressed: () {
-            Navigator.of(context).pushReplacement(
-              MaterialPageRoute(
-                builder:
-                    (_) => SettingsScreen(clientFactory: widget.clientFactory),
-              ),
-            );
-          },
+          onPressed: () => Navigator.of(context).pop(),
         ),
         title: StreamBuilder<List<bool>>(
           stream: _connectionStream,
@@ -209,8 +225,9 @@ class _HomeScreenState extends State<HomeScreen> {
             );
           },
         ),
-        centerTitle: true,
+        centerTitle: false,
         actions: [
+          IconButton(icon: const Icon(Icons.people), onPressed: _onContacts),
           IconButton(
             icon: const Icon(Icons.qr_code_scanner),
             onPressed: _onScan,

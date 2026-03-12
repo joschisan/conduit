@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:conduit/bridge_generated.dart/lib.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/bridge_generated.dart/factory.dart';
-import 'package:conduit/screens/home_screen.dart';
+import 'package:conduit/screens/federation_screen.dart';
 import 'package:conduit/screens/display_seed_screen.dart';
 import 'package:conduit/screens/currency_selection_screen.dart';
 import 'package:conduit/utils/notification_utils.dart';
@@ -12,22 +12,34 @@ import 'package:conduit/drawers/leave_federation_drawer.dart';
 import 'package:conduit/drawers/recovery_drawer.dart';
 import 'package:conduit/widgets/settings_card.dart';
 
-class SettingsScreen extends StatefulWidget {
+class BaseScreen extends StatefulWidget {
   final ConduitClientFactory clientFactory;
+  final ConduitClient? initialClient;
 
-  const SettingsScreen({super.key, required this.clientFactory});
+  const BaseScreen({
+    super.key,
+    required this.clientFactory,
+    this.initialClient,
+  });
 
   @override
-  State<SettingsScreen> createState() => _SettingsScreenState();
+  State<BaseScreen> createState() => _BaseScreenState();
 }
 
-class _SettingsScreenState extends State<SettingsScreen> {
+class _BaseScreenState extends State<BaseScreen> {
   late Future<List<FederationInfo>> _federationsFuture;
 
   @override
   void initState() {
     super.initState();
+
     _refreshFederations();
+
+    if (widget.initialClient != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _navigateToClientScreen(widget.initialClient!);
+      });
+    }
   }
 
   void _refreshFederations() {
@@ -39,7 +51,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(
-      title: const Text('Settings'),
+      title: const Text('Conduit'),
       actions: [
         IconButton(
           icon: const Icon(Icons.qr_code_scanner),
@@ -50,35 +62,69 @@ class _SettingsScreenState extends State<SettingsScreen> {
     body: SafeArea(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            _buildSeedPhraseCard(),
-            const SizedBox(height: 4),
-            _buildCurrencyCard(),
-            const Spacer(),
-            _buildFederationsList(),
-          ],
+        child: FutureBuilder<List<FederationInfo>>(
+          future: _federationsFuture,
+          builder: (context, snapshot) {
+            final federations = snapshot.data ?? [];
+            final showOnboarding = snapshot.hasData && federations.isEmpty;
+
+            final theme = Theme.of(context);
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (showOnboarding) _buildOnboardingCard(),
+                Text('Settings', style: theme.textTheme.titleLarge),
+                const SizedBox(height: 8),
+                _buildSeedPhraseCard(),
+                const SizedBox(height: 4),
+                _buildCurrencyCard(),
+                const SizedBox(height: 24),
+                _buildFederationsContent(snapshot),
+              ],
+            );
+          },
         ),
       ),
     ),
   );
 
-  Widget _buildFederationsList() {
-    return FutureBuilder<List<FederationInfo>>(
-      future: _federationsFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return _buildLoadingState();
-        }
-
-        if (snapshot.hasError) {
-          return _buildErrorState();
-        }
-
-        final federations = snapshot.data ?? [];
-        return _buildFederationsListView(federations);
-      },
+  Widget _buildOnboardingCard() {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(
+          color: Theme.of(context).colorScheme.primary,
+          width: 2,
+        ),
+      ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16.0,
+          vertical: 8.0,
+        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        title: Text(
+          'Scan or paste an invite code to join your first federation.',
+          style: TextStyle(color: Theme.of(context).colorScheme.primary),
+        ),
+      ),
     );
+  }
+
+  Widget _buildFederationsContent(
+    AsyncSnapshot<List<FederationInfo>> snapshot,
+  ) {
+    if (snapshot.connectionState == ConnectionState.waiting) {
+      return _buildLoadingState();
+    }
+
+    if (snapshot.hasError) {
+      return _buildErrorState();
+    }
+
+    final federations = snapshot.data ?? [];
+    return _buildFederationsListView(federations);
   }
 
   Widget _buildLoadingState() {
@@ -95,13 +141,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildFederationsListView(List<FederationInfo> federations) {
-    return ListView.builder(
-      shrinkWrap: true,
-      itemCount: federations.length,
-      itemBuilder: (context, index) {
-        final federation = federations[index];
-        return _buildFederationCard(federation);
-      },
+    if (federations.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final theme = Theme.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Federations', style: theme.textTheme.titleLarge),
+        const SizedBox(height: 8),
+        ListView.builder(
+          shrinkWrap: true,
+          itemCount: federations.length,
+          itemBuilder: (context, index) {
+            final federation = federations[index];
+            return _buildFederationCard(federation);
+          },
+        ),
+      ],
     );
   }
 
@@ -124,10 +182,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
         clientFactory: widget.clientFactory,
       );
     } else {
-      Navigator.of(context).pushReplacement(
+      Navigator.of(context).push(
         MaterialPageRoute(
           builder:
-              (_) => HomeScreen(
+              (_) => FederationScreen(
                 client: client,
                 clientFactory: widget.clientFactory,
               ),
@@ -163,14 +221,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget _buildSeedPhraseCard() {
     return SettingsCard(
       icon: Icons.key,
-      title: 'Seed Phrase',
+      title: 'Recovery Phrase',
       onTap: _handleSeedPhraseTap,
     );
   }
 
   Widget _buildCurrencyCard() {
     return SettingsCard(
-      icon: Icons.attach_money,
+      icon: Icons.currency_exchange,
       title: 'Select Currency',
       onTap: _handleCurrencyTap,
     );

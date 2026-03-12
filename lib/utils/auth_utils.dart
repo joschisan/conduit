@@ -15,10 +15,6 @@ Future<void> requireBiometricAuth(BuildContext context) async {
   // Biometrics available, require authentication
   final didAuthenticate = await auth.authenticate(
     localizedReason: 'Please authenticate to continue',
-    options: const AuthenticationOptions(
-      stickyAuth: false,
-      biometricOnly: false,
-    ),
   );
 
   if (!didAuthenticate) {

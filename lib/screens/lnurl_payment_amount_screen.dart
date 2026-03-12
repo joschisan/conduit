@@ -65,7 +65,7 @@ class _LnurlPaymentAmountScreenState extends State<LnurlPaymentAmountScreen> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        title: _contactName != null ? Text(_contactName!) : null,
+        title: Text(_contactName ?? 'Lightning'),
         actions: [
           IconButton(
             icon: const Icon(Icons.person),

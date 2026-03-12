@@ -4,7 +4,6 @@ import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/bridge_generated.dart/fountain.dart';
 import 'package:conduit/widgets/amount_display.dart';
 import 'package:conduit/widgets/qr_code_widget.dart';
-import 'package:conduit/widgets/icon_badge.dart';
 import 'package:conduit/drawers/cancel_ecash_drawer.dart';
 
 Stream<String> _createFrameStream(OobNotesEncoder encoder) async* {
@@ -34,6 +33,7 @@ class DisplayEcashScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        title: const Text('eCash'),
         actions: [
           IconButton(
             icon: const Icon(Icons.close),
@@ -47,8 +47,21 @@ class DisplayEcashScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const Expanded(
-                child: Center(child: IconBadge(icon: Icons.toll, iconSize: 48)),
+              Expanded(
+                child: Center(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(
+                        Icons.toll,
+                        size: 64,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                      const SizedBox(width: 16),
+                      AmountDisplay(notes.amountSats()),
+                    ],
+                  ),
+                ),
               ),
               StreamBuilder<String>(
                 stream: _createFrameStream(encoder),
@@ -62,7 +75,23 @@ class DisplayEcashScreen extends StatelessWidget {
                   );
                 },
               ),
-              Expanded(child: Center(child: AmountDisplay(notes.amountSats()))),
+              Expanded(
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                    child: Text(
+                      'Any member of this federation can claim the funds by scanning this eCash token. The token cannot be linked to you.',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.onSurface.withValues(alpha: 0.7),
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+              ),
             ],
           ),
         ),

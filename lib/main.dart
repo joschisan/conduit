@@ -6,9 +6,8 @@ import 'package:flutter_rust_bridge/flutter_rust_bridge_for_generated.dart';
 import 'package:conduit/bridge_generated.dart/frb_generated.dart';
 import 'package:conduit/bridge_generated.dart/lib.dart';
 import 'package:conduit/bridge_generated.dart/factory.dart';
-import 'package:conduit/screens/wallet_choice_screen.dart';
-import 'package:conduit/screens/settings_screen.dart';
-import 'package:conduit/screens/home_screen.dart';
+import 'package:conduit/screens/landing_screen.dart';
+import 'package:conduit/screens/base_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -29,19 +28,18 @@ void main() async {
   final clientFactory = await ConduitClientFactory.tryLoad(db: db);
 
   if (clientFactory != null) {
-    final client = await clientFactory.loadSelected();
+    final initialClient = await clientFactory.loadSelected();
 
-    if (client != null) {
-      runApp(
-        ConduitApp(
-          home: HomeScreen(client: client, clientFactory: clientFactory),
+    runApp(
+      ConduitApp(
+        home: BaseScreen(
+          clientFactory: clientFactory,
+          initialClient: initialClient,
         ),
-      );
-    } else {
-      runApp(ConduitApp(home: SettingsScreen(clientFactory: clientFactory)));
-    }
+      ),
+    );
   } else {
-    runApp(ConduitApp(home: WalletChoiceScreen(db: db)));
+    runApp(ConduitApp(home: LandingScreen(db: db)));
   }
 }
 
@@ -59,6 +57,7 @@ class ConduitApp extends StatelessWidget {
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
           useMaterial3: true,
+          appBarTheme: const AppBarTheme(centerTitle: true),
         ),
         darkTheme: ThemeData(
           colorScheme: ColorScheme.fromSeed(
@@ -66,6 +65,7 @@ class ConduitApp extends StatelessWidget {
             brightness: Brightness.dark,
           ),
           useMaterial3: true,
+          appBarTheme: const AppBarTheme(centerTitle: true),
         ),
         themeMode: ThemeMode.dark,
         home: home,

@@ -1,5 +1,5 @@
 PODS:
-  - app_links (6.4.1):
+  - app_links (7.0.0):
     - Flutter
   - conduit (0.1.0)
   - Flutter (1.0.0)
@@ -36,10 +36,10 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/path_provider_foundation/darwin"
 
 SPEC CHECKSUMS:
-  app_links: 3dbc685f76b1693c66a6d9dd1e9ab6f73d97dc0a
+  app_links: a754cbec3c255bd4bbb4d236ecc06f28cd9a7ce8
   conduit: b249c56dd9040778d8fbd79873c9807513adea06
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
-  local_auth_darwin: d2e8c53ef0c4f43c646462e3415432c4dab3ae19
+  local_auth_darwin: c3ee6cce0a8d56be34c8ccb66ba31f7f180aaebb
   mobile_scanner: 9157936403f5a0644ca3779a38ff8404c5434a93
   path_provider_foundation: 080d55be775b7414fd5a5ef3ac137b97b097e564
 

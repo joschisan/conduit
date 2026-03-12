@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:conduit/widgets/qr_code_widget.dart';
-import 'package:conduit/widgets/icon_badge.dart';
 
 // Pure UI composition
 Widget _buildLnurlContent(BuildContext context, String lnurl) => Column(
   crossAxisAlignment: CrossAxisAlignment.center,
   children: [
-    const Expanded(
-      child: Center(child: IconBadge(icon: Icons.bolt, iconSize: 48)),
+    Expanded(
+      child: Center(
+        child: Icon(
+          Icons.bolt,
+          size: 64,
+          color: Theme.of(context).colorScheme.primary,
+        ),
+      ),
     ),
     QrCodeWidget(data: lnurl),
     Expanded(
@@ -15,7 +20,7 @@ Widget _buildLnurlContent(BuildContext context, String lnurl) => Column(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 32.0),
           child: Text(
-            'This is a reusable payment code. You can use it to connect a point of sale that is compatible with LNURL Verify.',
+            'This is a reusable payment code. You can use it to connect a point of sale that is compatible with Lightning Url Verify.',
             style: TextStyle(
               fontSize: 14,
               color: Theme.of(
@@ -37,7 +42,7 @@ class DisplayLnurlScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(),
+    appBar: AppBar(title: const Text('Lightning Url')),
     body: SafeArea(
       child: Padding(
         padding: const EdgeInsets.all(16.0),

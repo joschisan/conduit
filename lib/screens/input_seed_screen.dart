@@ -57,7 +57,7 @@ class _InputSeedScreenState extends State<InputSeedScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Enter word $currentWordNumber of 12')),
+      appBar: AppBar(title: Text('Enter Word $currentWordNumber of 12')),
       body: Column(
         children: [
           Padding(
@@ -65,7 +65,7 @@ class _InputSeedScreenState extends State<InputSeedScreen> {
             child: TextField(
               autofocus: true,
               decoration: InputDecoration(
-                hintText: 'Search for word...',
+                hintText: 'Enter Word...',
                 prefixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
@@ -76,12 +76,41 @@ class _InputSeedScreenState extends State<InputSeedScreen> {
           ),
           Expanded(
             child: ListView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               itemCount: subset.length,
               itemBuilder: (context, index) {
                 final word = subset[index];
-                return ListTile(
-                  title: Text(word),
-                  onTap: () => _selectWord(word),
+                return Card(
+                  margin: const EdgeInsets.symmetric(vertical: 4),
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 16.0,
+                      vertical: 4.0,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    leading: SizedBox(
+                      width: 40,
+                      child: Text(
+                        '$currentWordNumber',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.primary,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 32,
+                        ),
+                      ),
+                    ),
+                    title: Text(
+                      word,
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    trailing: const Icon(Icons.chevron_right),
+                    onTap: () => _selectWord(word),
+                  ),
                 );
               },
             ),

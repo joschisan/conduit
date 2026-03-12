@@ -32,7 +32,7 @@ class EcashSendAmountScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(title: const Text('eCash')),
       body: SafeArea(
         child: AmountEntryWidget(
           client: client,

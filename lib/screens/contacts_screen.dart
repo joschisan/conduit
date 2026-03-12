@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/bridge_generated.dart/factory.dart';
 import 'package:conduit/bridge_generated.dart/lnurl.dart';
-import 'package:conduit/widgets/icon_badge.dart';
 import 'package:conduit/widgets/async_button_mixin.dart';
 import 'package:conduit/screens/lnurl_payment_amount_screen.dart';
 import 'package:conduit/drawers/lightning_payment_drawer.dart';
@@ -34,7 +33,11 @@ class _ContactTileState extends State<_ContactTile> with AsyncButtonMixin {
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        leading: IconBadge(icon: Icons.person, iconSize: 24),
+        leading: Icon(
+          Icons.person,
+          size: 32,
+          color: Theme.of(context).colorScheme.primary,
+        ),
         title: Text(widget.contact.name),
         trailing: switch (buttonState) {
           AsyncButtonState.loading => const SizedBox(
@@ -147,6 +150,8 @@ class _ContactsScreenState extends State<ContactsScreen> with AsyncButtonMixin {
 
     final contactName = await widget.clientFactory.getContactName(lnurl: lnurl);
 
+    if (!mounted) return;
+
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
         builder:
@@ -206,20 +211,47 @@ class _ContactsScreenState extends State<ContactsScreen> with AsyncButtonMixin {
                 onChanged: (value) => setState(() => _query = value),
               ),
             ),
-            Expanded(
-              child: ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                itemCount: filtered.length,
-                itemBuilder: (context, index) {
-                  final contact = filtered[index];
-                  return _ContactTile(
-                    contact: contact,
-                    onTap: () => _handleContactTap(contact),
-                    onLongPress: () => _handleDeleteContact(contact),
-                  );
-                },
+            if (_contacts.isEmpty)
+              Card(
+                margin: const EdgeInsets.symmetric(horizontal: 16),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: BorderSide(
+                    color: Theme.of(context).colorScheme.primary,
+                    width: 2,
+                  ),
+                ),
+                child: ListTile(
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16.0,
+                    vertical: 8.0,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  title: Text(
+                    'Create contacts by assigning a name to a Lightning Url or Address.',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                ),
               ),
-            ),
+            if (_contacts.isNotEmpty)
+              Expanded(
+                child: ListView.builder(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: filtered.length,
+                  itemBuilder: (context, index) {
+                    final contact = filtered[index];
+                    return _ContactTile(
+                      contact: contact,
+                      onTap: () => _handleContactTap(contact),
+                      onLongPress: () => _handleDeleteContact(contact),
+                    );
+                  },
+                ),
+              ),
           ],
         ),
       ),

@@ -31,7 +31,7 @@ class BitcoinAddressPromptDrawer extends StatelessWidget {
   Widget build(BuildContext context) {
     return DrawerShell(
       icon: Icons.currency_bitcoin,
-      title: 'Bitcoin Address Detected',
+      title: 'Onchain Address Detected',
       children: [
         const SizedBox(height: 8),
         AsyncActionButton(

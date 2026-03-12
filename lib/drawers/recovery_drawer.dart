@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/bridge_generated.dart/factory.dart';
 import 'package:conduit/widgets/drawer_shell.dart';
-import 'package:conduit/widgets/icon_badge.dart';
 import 'package:conduit/utils/drawer_utils.dart';
-import 'package:conduit/screens/home_screen.dart';
+import 'package:conduit/screens/federation_screen.dart';
 
 class RecoveryDrawer extends StatefulWidget {
   final ConduitClient client;
@@ -33,17 +32,20 @@ class RecoveryDrawer extends StatefulWidget {
 
 class _RecoveryDrawerState extends State<RecoveryDrawer> {
   late final Future<void> _recoveryFuture;
-  late final Stream<ConduitRecoveryProgress> _progressStream;
 
   @override
   void initState() {
     super.initState();
-    _progressStream = widget.client.subscribeRecoveryProgress();
     _recoveryFuture = _performRecovery();
   }
 
   Future<void> _performRecovery() async {
     await widget.client.waitForAllRecoveries();
+
+    // Reload the client to get a fresh instance after recovery
+    final newClient = await widget.clientFactory.load(
+      federationId: widget.client.federationId(),
+    );
 
     // Defer navigation until after the current frame completes
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -54,8 +56,8 @@ class _RecoveryDrawerState extends State<RecoveryDrawer> {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
           builder:
-              (_) => HomeScreen(
-                client: widget.client,
+              (_) => FederationScreen(
+                client: newClient!,
                 clientFactory: widget.clientFactory,
               ),
         ),
@@ -85,64 +87,17 @@ class _RecoveryDrawerState extends State<RecoveryDrawer> {
   }
 
   Widget _buildRecoveringContent() {
-    return StreamBuilder<ConduitRecoveryProgress>(
-      stream: _progressStream,
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
-          return CircularProgressIndicator(
-            color: Theme.of(context).colorScheme.primary,
-          );
-        }
-
-        final progress =
-            snapshot.data!.complete == snapshot.data!.total
-                ? 1.0
-                : snapshot.data!.complete / snapshot.data!.total;
-
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Module ID ${snapshot.data!.moduleId}',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              width: 80,
-              height: 80,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  SizedBox(
-                    width: 80,
-                    height: 80,
-                    child: CircularProgressIndicator(
-                      value: progress,
-                      strokeWidth: 6,
-                      color: Theme.of(context).colorScheme.primary,
-                      backgroundColor:
-                          Theme.of(context).colorScheme.surfaceContainerHighest,
-                    ),
-                  ),
-                  Text(
-                    '${(progress * 100).toInt()}%',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'Keep this drawer open to progress the recovery.',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-          ],
-        );
-      },
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        CircularProgressIndicator(color: Theme.of(context).colorScheme.primary),
+        const SizedBox(height: 24),
+        Text(
+          'Keep this drawer open to progress the recovery.\nThis may take a few minutes.',
+          textAlign: TextAlign.center,
+          style: Theme.of(context).textTheme.bodyMedium,
+        ),
+      ],
     );
   }
 
@@ -150,11 +105,7 @@ class _RecoveryDrawerState extends State<RecoveryDrawer> {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        IconBadge(
-          icon: Icons.error_outline,
-          iconSize: 48,
-          color: Theme.of(context).colorScheme.error,
-        ),
+        Icon(Icons.error, size: 64, color: Theme.of(context).colorScheme.error),
         const SizedBox(height: 24),
         Text(
           'Recovery failed',

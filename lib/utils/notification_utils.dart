@@ -16,7 +16,7 @@ class NotificationUtils {
     Duration duration, {
     bool showSpinner = false,
   }) {
-    Widget iconWidget = Icon(icon, size: 26, color: iconColor);
+    Widget iconWidget = Icon(icon, size: 32, color: iconColor);
 
     if (showSpinner) {
       iconWidget = Stack(
@@ -115,6 +115,16 @@ class NotificationUtils {
       'You sent ${NumberFormat('#,###').format(amountSat)} sats.',
       PaymentTypeUtils.getIcon(paymentType),
       Theme.of(context).colorScheme.primary,
+      _defaultNotificationDuration,
+    );
+  }
+
+  static void showSuccess(BuildContext context, String message) {
+    _showNotification(
+      context,
+      message,
+      Icons.check_circle,
+      Colors.green,
       _defaultNotificationDuration,
     );
   }
