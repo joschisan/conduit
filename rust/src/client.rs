@@ -394,7 +394,7 @@ impl ConduitClient {
             .await
             .find_by_prefix_sorted_descending(&EventLogEntryPrefix(self.federation_id))
             .await
-            .take(10)
+            .take(50)
             .collect::<Vec<_>>()
             .await;
 
