@@ -95,7 +95,7 @@ class _BaseScreenState extends State<BaseScreen> {
           'A federation is a group of trusted guardians who collectively custody bitcoin for their community in a multisig wallet.'
           '\n\n'
           'The guardians cannot tell which payments belong to you or what balance you have.',
-      actionText: 'Add Federation',
+      actionText: 'Join Federation',
       onAction: _showScannerDrawer,
     );
   }
@@ -154,7 +154,7 @@ class _BaseScreenState extends State<BaseScreen> {
           child: TextButton(
             onPressed: _showScannerDrawer,
             child: Text(
-              'Add Federation',
+              'Join Federation',
               style: mediumStyle.copyWith(
                 color: Theme.of(context).colorScheme.primary,
               ),
