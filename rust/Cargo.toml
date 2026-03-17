@@ -7,20 +7,24 @@ edition = "2024"
 unexpected_cfgs = { level = "allow", check-cfg = ['cfg(frb_expand)'] }
 
 [dependencies]
-fedimint-api-client = "0.10.0"
-fedimint-bip39 = "0.10.0"
-fedimint-core = "0.10.0"
-fedimint-connectors = "0.10.0"
-fedimint-client = "0.10.0"
-fedimint-eventlog = "0.10.0"
-fedimint-fountain = "0.10.0"
-fedimint-rocksdb = "0.10.0"
-fedimint-lnv2-client = "0.10.0"
-fedimint-lnv2-common = "0.10.0"
-fedimint-mint-client = "0.10.0"
-fedimint-wallet-client = "0.10.0"
-fedimint-client-module = "0.10.0"
-fedimint-meta-client = "0.10.0"
+fedimint-api-client = { git = "https://github.com/fedimint/fedimint" }
+fedimint-bip39 = { git = "https://github.com/fedimint/fedimint" }
+fedimint-core = { git = "https://github.com/fedimint/fedimint" }
+fedimint-connectors = { git = "https://github.com/fedimint/fedimint" }
+fedimint-client = { git = "https://github.com/fedimint/fedimint" }
+fedimint-eventlog = { git = "https://github.com/fedimint/fedimint" }
+fedimint-fountain = { git = "https://github.com/fedimint/fedimint" }
+fedimint-rocksdb = { git = "https://github.com/fedimint/fedimint" }
+fedimint-lnv2-client = { git = "https://github.com/fedimint/fedimint" }
+fedimint-lnv2-common = { git = "https://github.com/fedimint/fedimint" }
+fedimint-mint-client = { git = "https://github.com/fedimint/fedimint" }
+fedimint-wallet-client = { git = "https://github.com/fedimint/fedimint" }
+fedimint-client-module = { git = "https://github.com/fedimint/fedimint" }
+fedimint-meta-client = { git = "https://github.com/fedimint/fedimint" }
+fedimint-walletv2-client = { git = "https://github.com/fedimint/fedimint" }
+fedimint-walletv2-common = { git = "https://github.com/fedimint/fedimint" }
+fedimint-mintv2-client = { git = "https://github.com/fedimint/fedimint" }
+fedimint-mintv2-common = { git = "https://github.com/fedimint/fedimint" }
 bitcoin = "0.32.5"
 log = "0.4"
 flutter_rust_bridge = "=2.10.0"
