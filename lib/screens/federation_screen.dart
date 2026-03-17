@@ -11,6 +11,7 @@ import 'package:conduit/widgets/recent_payments_widget.dart';
 import 'package:conduit/screens/invoice_amount_screen.dart';
 import 'package:conduit/screens/ecash_amount_screen.dart';
 import 'package:conduit/screens/onchain_address_screen.dart';
+import 'package:conduit/screens/wallet_v2_receive_screen.dart';
 import 'package:conduit/drawers/scanner_drawer.dart';
 import 'package:conduit/drawers/payment_details_drawer.dart';
 import 'package:conduit/screens/connection_status_screen.dart';
@@ -103,7 +104,7 @@ class _FederationScreenState extends State<FederationScreen> {
         ),
       ),
       (
-        parseOobNotes(notes: input),
+        parseEcash(notes: input),
         (dynamic result) =>
             EcashDrawer.show(context, client: widget.client, notes: result),
       ),
@@ -152,24 +153,39 @@ class _FederationScreenState extends State<FederationScreen> {
 
   void _onReceiveBitcoin() async {
     try {
-      final addressesList = await widget.client.onchainListAddresses();
-      // Addresses already sorted ascending by Rust (oldest first, newest last)
+      final v2Address = await widget.client.walletV2Receive();
 
       if (!mounted) return;
 
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder:
-              (context) => OnchainAddressScreen(
-                client: widget.client,
-                addressesList: addressesList,
-              ),
-        ),
-      );
+      if (v2Address != null) {
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder:
+                (_) => WalletV2ReceiveScreen(
+                  address: v2Address,
+                  client: widget.client,
+                ),
+          ),
+        );
+      } else {
+        // Addresses already sorted ascending by Rust (oldest first, newest last)
+        final addressesList = await widget.client.onchainListAddresses();
+
+        if (!mounted) return;
+
+        Navigator.of(context).push(
+          MaterialPageRoute(
+            builder:
+                (context) => OnchainAddressScreen(
+                  client: widget.client,
+                  addressesList: addressesList,
+                ),
+          ),
+        );
+      }
     } catch (e) {
       if (!mounted) return;
-
-      NotificationUtils.showError(context, 'Failed to load addresses');
+      NotificationUtils.showError(context, 'Failed to load address');
     }
   }
 

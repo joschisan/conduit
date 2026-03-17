@@ -38,7 +38,7 @@ class ScannerDrawer extends StatefulWidget {
 }
 
 class _ScannerDrawerState extends State<ScannerDrawer> {
-  final _decoder = OobNotesDecoder();
+  final _decoder = ECashDecoder();
   bool _isScanning = true;
 
   void _processInput(String input) {
@@ -55,7 +55,7 @@ class _ScannerDrawerState extends State<ScannerDrawer> {
         ),
       ),
       (
-        parseOobNotes(notes: input),
+        parseEcash(notes: input),
         (dynamic result) =>
             EcashDrawer.show(context, client: widget.client, notes: result),
       ),

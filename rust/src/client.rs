@@ -3,13 +3,16 @@ use fedimint_core::Amount;
 use fedimint_core::config::FederationId;
 use fedimint_core::db::{Database, IDatabaseTransactionOpsCoreTyped};
 use fedimint_core::module::AmountUnit;
+use fedimint_core::module::serde_json;
 use fedimint_core::util::SafeUrl;
 use fedimint_eventlog::EventLogId;
 use fedimint_lnv2_client::LightningClientModule;
 use fedimint_lnv2_common::Bolt11InvoiceDescription;
 use fedimint_mint_client::MintClientModule;
+use fedimint_mintv2_client::MintClientModule as MintV2ClientModule;
 use fedimint_wallet_client::client_db::TweakIdx;
 use fedimint_wallet_client::{WalletClientModule, WalletOperationMeta, WalletOperationMetaVariant};
+use fedimint_walletv2_client::WalletClientModule as WalletV2ClientModule;
 use flutter_rust_bridge::frb;
 use futures_util::StreamExt;
 
@@ -22,13 +25,22 @@ use crate::events::{
 };
 use crate::exchange::{ExchangeRateCache, fetch_exchange_rate};
 use crate::frb_generated::StreamSink;
-use crate::{BitcoinAddressWrapper, Bolt11InvoiceWrapper, InviteCodeWrapper, OOBNotesWrapper};
+use crate::{
+    BitcoinAddressWrapper, Bolt11InvoiceWrapper, ECashWrapper, EcashToken, InviteCodeWrapper,
+};
 
 #[frb]
 pub struct ConduitRecoveryProgress {
     pub module_id: i64,
     pub complete: i64,
     pub total: i64,
+}
+
+#[frb]
+pub struct FederationStats {
+    pub total_value_sat: i64,
+    pub block_count: i64,
+    pub feerate: Option<i64>,
 }
 
 #[frb]
@@ -181,28 +193,46 @@ impl ConduitClient {
     }
 
     #[frb]
-    pub async fn ecash_send(&self, amount_sat: i64) -> Result<OOBNotesWrapper, String> {
-        self.client
-            .get_first_module::<MintClientModule>()
-            .unwrap()
-            .send_oob_notes(Amount::from_sats(amount_sat as u64), ())
-            .await
-            .map(OOBNotesWrapper)
-            .map_err(|e| e.to_string())
-    }
+    pub async fn ecash_send(&self, amount_sat: i64) -> Result<ECashWrapper, String> {
+        let amount = Amount::from_sats(amount_sat as u64);
 
-    #[frb]
-    pub async fn ecash_receive(&self, notes: &OOBNotesWrapper) -> Result<OperationId, String> {
-        if self.client.federation_id().to_prefix() != notes.0.federation_id_prefix() {
-            return Err("eCash is from a different federation".to_string());
+        if let Ok(module) = self.client.get_first_module::<MintV2ClientModule>() {
+            return module
+                .send(amount, serde_json::Value::Null)
+                .await
+                .map(|ecash| ECashWrapper(EcashToken::V2(ecash)))
+                .map_err(|e| e.to_string());
         }
 
         self.client
             .get_first_module::<MintClientModule>()
             .unwrap()
-            .reissue_external_notes(notes.0.clone(), ())
+            .send_oob_notes(amount, ())
             .await
+            .map(|notes| ECashWrapper(EcashToken::V1(notes)))
             .map_err(|e| e.to_string())
+    }
+
+    #[frb]
+    pub async fn ecash_receive(&self, notes: &ECashWrapper) -> Result<(), String> {
+        match &notes.0 {
+            EcashToken::V2(ecash) => self
+                .client
+                .get_first_module::<MintV2ClientModule>()
+                .map_err(|e| e.to_string())?
+                .receive(ecash.clone(), serde_json::Value::Null)
+                .await
+                .map(|_| ())
+                .map_err(|e| e.to_string()),
+            EcashToken::V1(oob) => self
+                .client
+                .get_first_module::<MintClientModule>()
+                .map_err(|e| e.to_string())?
+                .reissue_external_notes(oob.clone(), ())
+                .await
+                .map(|_| ())
+                .map_err(|e| e.to_string()),
+        }
     }
 
     #[frb]
@@ -237,7 +267,7 @@ impl ConduitClient {
 
     #[frb]
     pub async fn lnurl(&self) -> Result<String, String> {
-        let recurringd = SafeUrl::parse("https://recurringdv2.fedimint.org").unwrap();
+        let recurringd = SafeUrl::parse("https://lnurl.fedimint.org").unwrap();
 
         self.client
             .get_first_module::<LightningClientModule>()
@@ -253,6 +283,14 @@ impl ConduitClient {
         address: &BitcoinAddressWrapper,
         amount_sats: i64,
     ) -> Result<i64, String> {
+        if let Ok(module) = self.client.get_first_module::<WalletV2ClientModule>() {
+            return module
+                .send_fee()
+                .await
+                .map(|fee| fee.to_sat() as i64)
+                .map_err(|e| e.to_string());
+        }
+
         let wallet_module = self
             .client
             .get_first_module::<WalletClientModule>()
@@ -279,7 +317,17 @@ impl ConduitClient {
         &self,
         address: &BitcoinAddressWrapper,
         amount_sats: i64,
-    ) -> Result<OperationId, String> {
+    ) -> Result<(), String> {
+        let amount = bitcoin::Amount::from_sat(amount_sats as u64);
+
+        if let Ok(module) = self.client.get_first_module::<WalletV2ClientModule>() {
+            return module
+                .send(address.0.clone(), amount, None)
+                .await
+                .map(|_| ())
+                .map_err(|e| e.to_string());
+        }
+
         let wallet_module = self
             .client
             .get_first_module::<WalletClientModule>()
@@ -291,8 +339,6 @@ impl ConduitClient {
             .require_network(wallet_module.get_network())
             .map_err(|e| e.to_string())?;
 
-        let amount = bitcoin::Amount::from_sat(amount_sats as u64);
-
         let fees = wallet_module
             .get_withdraw_fees(&address_checked, amount)
             .await
@@ -301,6 +347,7 @@ impl ConduitClient {
         wallet_module
             .withdraw(&address_checked, amount, fees, ())
             .await
+            .map(|_| ())
             .map_err(|e| e.to_string())
     }
 
@@ -372,6 +419,29 @@ impl ConduitClient {
             .map_err(|e| e.to_string())?;
 
         Ok(())
+    }
+
+    #[frb]
+    pub async fn wallet_v2_receive(&self) -> Option<String> {
+        let address = self
+            .client
+            .get_first_module::<WalletV2ClientModule>()
+            .ok()?
+            .receive()
+            .await;
+
+        Some(address.to_string())
+    }
+
+    #[frb]
+    pub async fn federation_stats(&self) -> Option<FederationStats> {
+        let module = self.client.get_first_module::<WalletV2ClientModule>().ok()?;
+
+        Some(FederationStats {
+            total_value_sat: module.total_value().await.ok()?.to_sat() as i64,
+            block_count: module.block_count().await.ok()? as i64,
+            feerate: module.feerate().await.ok().flatten().map(|f| f as i64),
+        })
     }
 
     #[frb]

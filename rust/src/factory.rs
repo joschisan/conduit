@@ -23,7 +23,11 @@ use fedimint_lnv2_client::LightningClientInit;
 use fedimint_lnv2_common::KIND as LIGHTNING_KIND;
 use fedimint_meta_client::{MetaClientInit, MetaModuleMetaSourceWithFallback};
 use fedimint_mint_client::{KIND as MINT_KIND, MintClientInit};
+use fedimint_mintv2_client::MintClientInit as MintV2ClientInit;
 use fedimint_wallet_client::{KIND as WALLET_KIND, WalletClientInit};
+use fedimint_walletv2_client::WalletClientInit as WalletV2ClientInit;
+use fedimint_mintv2_common::KIND as MINTV2_KIND;
+use fedimint_walletv2_common::KIND as WALLETV2_KIND;
 use flutter_rust_bridge::frb;
 use futures_util::StreamExt;
 use tokio::sync::Mutex;
@@ -91,6 +95,16 @@ impl ConduitContact {
     }
 }
 
+fn ensure_one_of(config: &ClientConfig, a: &ModuleKind, b: &ModuleKind) -> Result<(), String> {
+    let has_a = config.modules.values().any(|m| m.kind() == a);
+    let has_b = config.modules.values().any(|m| m.kind() == b);
+    match (has_a, has_b) {
+        (true, false) | (false, true) => Ok(()),
+        (true, true) => Err(format!("Both {a} and {b} present")),
+        (false, false) => Err(format!("Neither {a} nor {b} present")),
+    }
+}
+
 fn ensure_module(config: &ClientConfig, kind: &ModuleKind) -> Result<(), String> {
     match config.modules.values().any(|module| module.kind() == kind) {
         true => Ok(()),
@@ -136,8 +150,10 @@ impl ConduitClientFactory {
         let mut modules = ClientModuleInitRegistry::new();
 
         modules.attach(MintClientInit);
+        modules.attach(MintV2ClientInit);
         modules.attach(LightningClientInit::default());
         modules.attach(WalletClientInit::default());
+        modules.attach(WalletV2ClientInit);
         modules.attach(MetaClientInit);
 
         let meta_source: MetaModuleMetaSourceWithFallback<LegacyMetaSource> = Default::default();
@@ -191,10 +207,8 @@ impl ConduitClientFactory {
             .map_err(|e| e.to_string())?;
 
         ensure_module(&preview.config(), &LIGHTNING_KIND)?;
-
-        ensure_module(&preview.config(), &MINT_KIND)?;
-
-        ensure_module(&preview.config(), &WALLET_KIND)?;
+        ensure_one_of(&preview.config(), &MINT_KIND, &MINTV2_KIND)?;
+        ensure_one_of(&preview.config(), &WALLET_KIND, &WALLETV2_KIND)?;
 
         let federation_id = invite.0.federation_id();
 
@@ -222,10 +236,8 @@ impl ConduitClientFactory {
             .map_err(|e| e.to_string())?;
 
         ensure_module(&preview.config(), &LIGHTNING_KIND)?;
-
-        ensure_module(&preview.config(), &MINT_KIND)?;
-
-        ensure_module(&preview.config(), &WALLET_KIND)?;
+        ensure_one_of(&preview.config(), &MINT_KIND, &MINTV2_KIND)?;
+        ensure_one_of(&preview.config(), &WALLET_KIND, &WALLETV2_KIND)?;
 
         let federation_id = invite.0.federation_id();
 
