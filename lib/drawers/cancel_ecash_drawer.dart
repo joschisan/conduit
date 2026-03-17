@@ -8,7 +8,7 @@ import 'package:conduit/utils/drawer_utils.dart';
 
 class CancelEcashDrawer extends StatelessWidget {
   final ConduitClient client;
-  final OobNotesWrapper notes;
+  final ECashWrapper notes;
 
   const CancelEcashDrawer({
     super.key,
@@ -19,7 +19,7 @@ class CancelEcashDrawer extends StatelessWidget {
   static Future<void> show(
     BuildContext context, {
     required ConduitClient client,
-    required OobNotesWrapper notes,
+    required ECashWrapper notes,
   }) {
     return DrawerUtils.show(
       context: context,
