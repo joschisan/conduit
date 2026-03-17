@@ -23,7 +23,7 @@ class EcashAmountScreen extends StatelessWidget {
             (_) => DisplayEcashScreen(
               client: client,
               notes: notes,
-              encoder: OobNotesEncoder(notes: notes),
+              encoder: ECashEncoder(notes: notes),
             ),
       ),
     );

@@ -13,10 +13,12 @@ use std::str::FromStr;
 
 use bitcoin::address::NetworkUnchecked;
 use fedimint_bip39::{Language, Mnemonic};
+use fedimint_core::base32::decode_prefixed;
 use fedimint_core::base32::{FEDIMINT_PREFIX, encode_prefixed};
 use fedimint_core::db::Database;
 use fedimint_core::invite_code::InviteCode;
 use fedimint_mint_client::OOBNotes;
+use fedimint_mintv2_client::ECash;
 use fedimint_rocksdb::RocksDb;
 use flutter_rust_bridge::frb;
 use lightning_invoice::Bolt11Invoice;
@@ -30,7 +32,7 @@ pub use client::{ConduitClient, ConduitRecoveryProgress};
 pub use currency::{FiatCurrency, find_fiat_currency, list_fiat_currencies};
 pub use events::{ConduitPayment, PaymentNotification, PaymentType, RecentPaymentsUpdate};
 pub use factory::{ConduitClientFactory, ConduitContact, FederationInfo};
-pub use fountain::{OOBNotesDecoder, OOBNotesEncoder};
+pub use fountain::{ECashDecoder, ECashEncoder};
 pub use lnurl::{LnurlWrapper, PayResponseWrapper, lnurl_fetch_limits, lnurl_resolve, parse_lnurl};
 
 #[frb(sync)]
@@ -82,28 +84,47 @@ pub fn parse_invite_code(invite: &str) -> Option<InviteCodeWrapper> {
     InviteCode::from_str(invite).ok().map(InviteCodeWrapper)
 }
 
-#[frb]
-pub struct OOBNotesWrapper(pub(crate) OOBNotes);
+pub(crate) enum EcashToken {
+    V1(OOBNotes),
+    V2(ECash),
+}
 
-impl OOBNotesWrapper {
+#[frb(opaque)]
+pub struct ECashWrapper(pub(crate) EcashToken);
+
+impl ECashWrapper {
     #[frb(sync)]
     pub fn amount_sats(&self) -> i64 {
-        self.0.total_amount().msats as i64 / 1000
+        match &self.0 {
+            EcashToken::V1(notes) => notes.total_amount().msats as i64 / 1000,
+            EcashToken::V2(ecash) => ecash.amount().msats as i64 / 1000,
+        }
     }
 
     #[frb(sync)]
     pub fn to_string(&self) -> String {
-        encode_prefixed(FEDIMINT_PREFIX, &self.0)
+        match &self.0 {
+            EcashToken::V1(notes) => encode_prefixed(FEDIMINT_PREFIX, notes),
+            EcashToken::V2(ecash) => encode_prefixed(FEDIMINT_PREFIX, ecash),
+        }
     }
 }
 
 #[frb(sync)]
-pub fn parse_oob_notes(notes: &str) -> Option<OOBNotesWrapper> {
+pub fn parse_ecash(notes: &str) -> Option<ECashWrapper> {
     if let Some(stripped) = notes.strip_prefix("fedimint:") {
-        return parse_oob_notes(stripped);
+        return parse_ecash(stripped);
     }
 
-    OOBNotes::from_str(notes).ok().map(OOBNotesWrapper)
+    if let Ok(v1) = OOBNotes::from_str(notes) {
+        return Some(ECashWrapper(EcashToken::V1(v1)));
+    }
+
+    if let Ok(v2) = decode_prefixed::<ECash>(FEDIMINT_PREFIX, notes) {
+        return Some(ECashWrapper(EcashToken::V2(v2)));
+    }
+
+    None
 }
 
 #[frb]
