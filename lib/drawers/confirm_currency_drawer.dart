@@ -3,7 +3,7 @@ import 'package:conduit/bridge_generated.dart/factory.dart';
 import 'package:conduit/widgets/drawer_shell_widget.dart';
 import 'package:conduit/widgets/async_button_widget.dart';
 import 'package:conduit/utils/drawer_utils.dart';
-import 'package:conduit/utils/currency_utils.dart';
+import 'package:conduit/bridge_generated.dart/currency.dart';
 
 class ConfirmCurrencyDrawer extends StatefulWidget {
   final FiatCurrency currency;

@@ -98,6 +98,11 @@ impl PayResponseWrapper {
     pub fn max_sats(&self) -> i64 {
         self.0.max_sendable as i64 / 1000
     }
+
+    #[frb(sync)]
+    pub fn is_fixed_amount(&self) -> bool {
+        self.0.min_sendable == self.0.max_sendable
+    }
 }
 
 #[frb]

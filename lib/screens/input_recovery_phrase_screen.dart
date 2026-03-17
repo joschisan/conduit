@@ -67,33 +67,29 @@ class _InputRecoveryPhraseScreenState extends State<InputRecoveryPhraseScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('Enter Word $currentWordNumber of 12')),
-      body: Column(
-        children: [
-          SearchField(autofocus: true, onChanged: _updateSearch),
-          Expanded(
-            child: GroupedList<String>(
-              items: subset,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              groupKey: (word) => word[0].toUpperCase(),
-              itemBuilder:
-                  (context, word) => ListTile(
-                    contentPadding: listTilePadding,
-                    leading: SizedBox(
-                      width: 28,
-                      child: Text(
-                        '$currentWordNumber',
-                        textAlign: TextAlign.center,
-                        style: largeStyle.copyWith(
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                      ),
-                    ),
-                    title: Text(word, style: mediumStyle),
-                    onTap: () => _selectWord(word),
+      body: GroupedList<String>(
+        header: Padding(
+          padding: const EdgeInsets.only(bottom: 8),
+          child: SearchField(autofocus: true, onChanged: _updateSearch),
+        ),
+        items: subset,
+        groupKey: (word) => word[0].toUpperCase(),
+        itemBuilder:
+            (context, word) => ListTile(
+              contentPadding: listTilePadding,
+              leading: SizedBox(
+                width: 28,
+                child: Text(
+                  '$currentWordNumber',
+                  textAlign: TextAlign.center,
+                  style: largeStyle.copyWith(
+                    color: Theme.of(context).colorScheme.primary,
                   ),
+                ),
+              ),
+              title: Text(word, style: mediumStyle),
+              onTap: () => _selectWord(word),
             ),
-          ),
-        ],
       ),
     );
   }

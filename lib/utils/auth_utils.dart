@@ -13,11 +13,15 @@ Future<void> requireBiometricAuth(BuildContext context) async {
   }
 
   // Biometrics available, require authentication
-  final didAuthenticate = await auth.authenticate(
-    localizedReason: 'Please authenticate to continue',
-  );
+  try {
+    final didAuthenticate = await auth.authenticate(
+      localizedReason: 'Please authenticate to continue',
+    );
 
-  if (!didAuthenticate) {
-    throw 'Authentication required';
+    if (!didAuthenticate) {
+      throw 'Failed to authenticate';
+    }
+  } catch (e) {
+    throw 'Failed to authenticate';
   }
 }

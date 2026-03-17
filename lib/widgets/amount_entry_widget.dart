@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:conduit/utils/styles.dart';
 import 'package:intl/intl.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
-import 'package:conduit/utils/currency_utils.dart';
+import 'package:conduit/bridge_generated.dart/currency.dart';
 import 'package:conduit/widgets/amount_display_widget.dart';
 import 'package:conduit/widgets/async_button_widget.dart';
 
@@ -29,8 +29,7 @@ class _AmountEntryWidgetState extends State<AmountEntryWidget> {
   bool _enterFiat = false;
 
   FiatCurrency get _currency {
-    final currencyCode = widget.client.currencyCode();
-    return fiatCurrencies.firstWhere((c) => c.code == currencyCode);
+    return findFiatCurrency(code: widget.client.currencyCode())!;
   }
 
   void _onKeyboardTap(String value) {
@@ -149,32 +148,31 @@ class _AmountEntryWidgetState extends State<AmountEntryWidget> {
           child: AsyncButton(text: 'Confirm', onPressed: _handleConfirm),
         ),
 
+        const SizedBox(height: 16),
+
         // Custom number pad
-        Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: GridView.count(
-            crossAxisCount: 3,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            padding: EdgeInsets.zero,
-            mainAxisSpacing: 8,
-            crossAxisSpacing: 8,
-            childAspectRatio: 2.0,
-            children: [
-              _buildNumberButton('1'),
-              _buildNumberButton('2'),
-              _buildNumberButton('3'),
-              _buildNumberButton('4'),
-              _buildNumberButton('5'),
-              _buildNumberButton('6'),
-              _buildNumberButton('7'),
-              _buildNumberButton('8'),
-              _buildNumberButton('9'),
-              _buildActionButton(Icons.clear, _onClear),
-              _buildNumberButton('0'),
-              _buildActionButton(Icons.arrow_back, _onBackspace),
-            ],
-          ),
+        GridView.count(
+          crossAxisCount: 3,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          padding: EdgeInsets.zero,
+          mainAxisSpacing: 8,
+          crossAxisSpacing: 8,
+          childAspectRatio: 2.0,
+          children: [
+            _buildNumberButton('1'),
+            _buildNumberButton('2'),
+            _buildNumberButton('3'),
+            _buildNumberButton('4'),
+            _buildNumberButton('5'),
+            _buildNumberButton('6'),
+            _buildNumberButton('7'),
+            _buildNumberButton('8'),
+            _buildNumberButton('9'),
+            _buildActionButton(Icons.clear, _onClear),
+            _buildNumberButton('0'),
+            _buildActionButton(Icons.arrow_back, _onBackspace),
+          ],
         ),
       ],
     );

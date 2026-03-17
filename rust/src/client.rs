@@ -1,6 +1,5 @@
 use std::time::Duration;
 
-use fedimint_client::backup::Metadata;
 use fedimint_client::{ClientHandleArc, OperationId};
 use fedimint_core::Amount;
 use fedimint_core::config::FederationId;
@@ -20,7 +19,10 @@ use futures_util::StreamExt;
 use std::str::FromStr;
 
 use crate::db::{EventLogEntryKey, EventLogEntryPrefix};
-use crate::events::{ConduitEvent, parse_event_log_entry};
+use crate::events::{
+    ConduitPayment, ParsedEvent, PaymentNotification, RecentPaymentsUpdate, apply_update,
+    parse_event_log_entry, snapshot,
+};
 use crate::exchange::{ExchangeRateCache, fetch_exchange_rate};
 use crate::frb_generated::StreamSink;
 use crate::{BitcoinAddressWrapper, Bolt11InvoiceWrapper, InviteCodeWrapper, OOBNotesWrapper};
@@ -51,14 +53,6 @@ impl ConduitClient {
             .global
             .federation_name()
             .map(|name| name.to_string())
-    }
-
-    #[frb]
-    pub async fn backup_to_federation(&self) -> Result<(), String> {
-        self.client
-            .backup_to_federation(Metadata::empty())
-            .await
-            .map_err(|e| e.to_string())
     }
 
     #[frb(sync)]
@@ -373,63 +367,136 @@ impl ConduitClient {
     }
 
     #[frb]
-    pub async fn get_payment_history(&self) -> Vec<ConduitEvent> {
-        self.db
+    pub async fn get_payment_history(&self) -> Vec<ConduitPayment> {
+        let mut payments = Vec::new();
+
+        let entries = self
+            .db
             .begin_transaction_nc()
             .await
             .find_by_prefix(&EventLogEntryPrefix(self.federation_id))
             .await
-            .filter_map(|(_, entry)| async move { parse_event_log_entry(&entry) })
-            .collect::<Vec<ConduitEvent>>()
-            .await
-    }
-
-    #[frb]
-    pub async fn subscribe_event_log(&self, sink: StreamSink<ConduitEvent>) {
-        let mut position = EventLogId::LOG_START;
-
-        let mut recent = self
-            .db
-            .begin_transaction_nc()
-            .await
-            .find_by_prefix_sorted_descending(&EventLogEntryPrefix(self.federation_id))
-            .await
-            .take(10)
             .collect::<Vec<_>>()
             .await;
 
-        recent.reverse();
-
-        for (key, entry) in recent {
-            if let Some(event) = parse_event_log_entry(&entry) {
-                if sink.add(event).is_err() {
-                    return;
+        for entry in entries {
+            if let Some(parsed) = parse_event_log_entry(&entry.1) {
+                match parsed {
+                    ParsedEvent::Payment(payment) => {
+                        payments.push(payment);
+                    }
+                    ParsedEvent::Update {
+                        operation_id,
+                        success,
+                        oob,
+                    } => {
+                        apply_update(&mut payments, &operation_id, success, oob);
+                    }
                 }
             }
-
-            position = key.1.saturating_add(1);
         }
 
+        payments.reverse();
+
+        payments
+    }
+
+    #[frb]
+    pub async fn subscribe_event_log(&self, sink: StreamSink<RecentPaymentsUpdate>) {
+        let mut position = EventLogId::LOG_START;
+        let mut payments = Vec::new();
+
+        // Load historical events from our database
+        let entries = self
+            .db
+            .begin_transaction_nc()
+            .await
+            .find_by_prefix(&EventLogEntryPrefix(self.federation_id))
+            .await
+            .collect::<Vec<_>>()
+            .await;
+
+        for (key, entry) in entries {
+            position = key.1.saturating_add(1);
+
+            if let Some(parsed) = parse_event_log_entry(&entry) {
+                match parsed {
+                    ParsedEvent::Payment(payment) => {
+                        payments.push(payment);
+                    }
+                    ParsedEvent::Update {
+                        operation_id,
+                        success,
+                        oob,
+                    } => {
+                        apply_update(&mut payments, &operation_id, success, oob);
+                    }
+                }
+            }
+        }
+
+        let mut n_display = 4;
+
+        // Send initial snapshot without notifications
+        if sink
+            .add(RecentPaymentsUpdate {
+                payments: snapshot(&payments, n_display),
+                notification: None,
+            })
+            .is_err()
+        {
+            return;
+        }
+
+        // Poll for live events from the fedimint client
         loop {
             let batch = self.client.get_event_log(Some(position), 100).await;
 
             for persisted_entry in &batch {
-                if let Some(event) = parse_event_log_entry(persisted_entry.as_raw()) {
-                    if sink.add(event).is_err() {
-                        return;
+                let Some(parsed) = parse_event_log_entry(persisted_entry.as_raw()) else {
+                    continue;
+                };
+
+                let notification = match parsed {
+                    ParsedEvent::Payment(payment) => {
+                        n_display += 1;
+
+                        payments.push(payment.clone());
+
+                        payment.success.map(|success| PaymentNotification {
+                            incoming: payment.incoming,
+                            success,
+                            amount_sats: payment.amount_sats,
+                            payment_type: payment.payment_type.clone(),
+                        })
                     }
+                    ParsedEvent::Update {
+                        operation_id,
+                        success,
+                        oob,
+                    } => apply_update(&mut payments, &operation_id, success, oob),
+                };
 
-                    let mut dbtx = self.db.begin_transaction().await;
+                if sink
+                    .add(RecentPaymentsUpdate {
+                        payments: snapshot(&payments, n_display),
+                        notification,
+                    })
+                    .is_err()
+                {
+                    return;
+                }
 
-                    dbtx.insert_entry(
-                        &EventLogEntryKey(self.federation_id, persisted_entry.id()),
-                        persisted_entry.as_raw(),
-                    )
-                    .await;
+                let mut dbtx = self.db.begin_transaction().await;
 
-                    if dbtx.commit_tx_result().await.is_err() {
-                        return;
-                    }
+                dbtx.insert_entry(
+                    &EventLogEntryKey(self.federation_id, persisted_entry.id()),
+                    persisted_entry.as_raw(),
+                )
+                .await;
+
+                if dbtx.commit_tx_result().await.is_err() {
+                    return;
                 }
 
                 position = persisted_entry.id().saturating_add(1);

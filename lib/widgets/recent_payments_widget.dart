@@ -13,15 +13,13 @@ import 'package:conduit/widgets/onboarding_card_widget.dart';
 
 class RecentPayments extends StatefulWidget {
   final ConduitClient client;
-  final Stream<ConduitEvent> stream;
-  final int maxItems;
+  final Stream<RecentPaymentsUpdate> stream;
   final void Function(ConduitPayment) onTransactionTap;
 
   const RecentPayments({
     super.key,
     required this.client,
     required this.stream,
-    required this.maxItems,
     required this.onTransactionTap,
   });
 
@@ -30,155 +28,42 @@ class RecentPayments extends StatefulWidget {
 }
 
 class _RecentPaymentsState extends State<RecentPayments> {
-  final _listKey = GlobalKey<AnimatedListState>();
-  final List<ConduitPayment> _displayPayments =
-      []; // max maxItems, for AnimatedList
-  StreamSubscription<ConduitEvent>? _subscription;
-
-  static const _notificationWindowMs = 1000;
-
-  bool _isRecentEvent(int timestamp) {
-    return timestamp >
-        DateTime.now().millisecondsSinceEpoch - _notificationWindowMs;
-  }
+  List<ConduitPayment> _payments = [];
+  StreamSubscription<RecentPaymentsUpdate>? _subscription;
 
   @override
   void initState() {
     super.initState();
-    _subscribeToEvents();
+    _subscription = widget.stream.listen(_onSnapshot);
   }
 
-  void _subscribeToEvents() {
-    _subscription = widget.stream.listen((message) {
-      if (!mounted) return;
-
-      switch (message) {
-        case ConduitEvent_Event(:final field0):
-          _insertDisplayPayment(
-            field0,
-            animate: _isRecentEvent(field0.timestamp),
-          );
-
-          _showEventNotification(
-            timestamp: field0.timestamp,
-            success: field0.success,
-            incoming: field0.incoming,
-            amountSats: field0.amountSats,
-            paymentType: field0.paymentType,
-          );
-
-        case ConduitEvent_Update(:final field0):
-          _updatePayment(field0);
-      }
-    });
-  }
-
-  void _insertDisplayPayment(ConduitPayment payment, {required bool animate}) {
-    final duration =
-        animate ? const Duration(milliseconds: 600) : Duration.zero;
-
-    setState(() {
-      _displayPayments.insert(0, payment);
-    });
-
-    // AnimatedList may not exist yet (first items trigger rebuild from
-    // carousel to list). insertItem/removeItem are no-ops via ?. until
-    // the AnimatedList builds; initialItemCount handles those items.
-    _listKey.currentState?.insertItem(0, duration: duration);
-
-    if (_displayPayments.length > widget.maxItems) {
-      final removed = _displayPayments.removeAt(widget.maxItems);
-      _listKey.currentState?.removeItem(
-        widget.maxItems,
-        (context, animation) => _buildAnimatedItem(removed, animation),
-        duration: duration,
-      );
+  void _onSnapshot(RecentPaymentsUpdate update) {
+    if (!mounted) return;
+    setState(() => _payments = update.payments);
+    if (update.notification case final notification?) {
+      _showNotification(notification);
     }
   }
 
-  void _updatePayment(ConduitUpdate update) {
-    final index = _displayPayments.lastIndexWhere(
-      (e) => e.operationId == update.operationId,
-    );
-    if (index == -1) return;
-
-    final event = _displayPayments[index];
-
-    setState(() {
-      _displayPayments[index] = ConduitPayment(
-        operationId: event.operationId,
-        incoming: event.incoming,
-        paymentType: event.paymentType,
-        amountSats: event.amountSats,
-        feeSats: event.feeSats,
-        timestamp: event.timestamp,
-        success: update.success,
-        oob: update.oob,
-      );
-    });
-
-    _showEventNotification(
-      timestamp: update.timestamp,
-      success: update.success,
-      incoming: event.incoming,
-      amountSats: event.amountSats,
-      paymentType: event.paymentType,
-    );
-  }
-
-  void _showEventNotification({
-    required int timestamp,
-    required bool? success,
-    required bool incoming,
-    required int amountSats,
-    required PaymentType paymentType,
-  }) {
-    if (!_isRecentEvent(timestamp)) return;
-
-    if (success == true) {
-      if (incoming) {
-        NotificationUtils.showReceive(context, amountSats, paymentType);
+  void _showNotification(PaymentNotification notification) {
+    if (notification.success) {
+      if (notification.incoming) {
+        NotificationUtils.showReceive(
+          context,
+          notification.amountSats,
+          notification.paymentType,
+        );
       } else {
         HapticFeedback.heavyImpact();
       }
-    } else if (success == false) {
+    } else {
       HapticFeedback.heavyImpact();
-      if (incoming) {
+      if (notification.incoming) {
         NotificationUtils.showError(context, 'Failed to receive payment');
       } else {
         NotificationUtils.showError(context, 'Failed to send payment');
       }
     }
-  }
-
-  static List<ConduitPayment> _mergeUpdates(List<ConduitEvent> events) {
-    final payments = <ConduitPayment>[];
-    final indexByOperationId = <String, int>{};
-
-    // Events arrive newest-first; iterate in reverse for chronological merge
-    for (final event in events) {
-      switch (event) {
-        case ConduitEvent_Event(:final field0):
-          indexByOperationId[field0.operationId] = payments.length;
-          payments.add(field0);
-        case ConduitEvent_Update(:final field0):
-          final index = indexByOperationId[field0.operationId];
-          if (index == null) continue;
-          final original = payments[index];
-          payments[index] = ConduitPayment(
-            operationId: original.operationId,
-            incoming: original.incoming,
-            paymentType: original.paymentType,
-            amountSats: original.amountSats,
-            feeSats: original.feeSats,
-            timestamp: original.timestamp,
-            success: field0.success,
-            oob: field0.oob,
-          );
-      }
-    }
-
-    return payments.reversed.toList();
   }
 
   @override
@@ -187,31 +72,9 @@ class _RecentPaymentsState extends State<RecentPayments> {
     super.dispose();
   }
 
-  Widget _buildAnimatedItem(
-    ConduitPayment payment,
-    Animation<double> animation,
-  ) {
-    final curved = CurvedAnimation(
-      parent: animation,
-      curve: Curves.easeInOutCubic,
-    );
-
-    return SizeTransition(
-      sizeFactor: curved,
-      child: FadeTransition(
-        opacity: curved,
-        child: PaymentCard(
-          key: ValueKey(payment.operationId),
-          event: payment,
-          onTap: () => widget.onTransactionTap(payment),
-        ),
-      ),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
-    if (_displayPayments.isEmpty) {
+    if (_payments.isEmpty) {
       return const Align(
         alignment: Alignment.topCenter,
         child: _OnboardingCarousel(),
@@ -220,28 +83,25 @@ class _RecentPaymentsState extends State<RecentPayments> {
 
     return Column(
       children: [
-        AnimatedList(
-          key: _listKey,
-          shrinkWrap: true,
-          padding: EdgeInsets.zero,
-          physics: const NeverScrollableScrollPhysics(),
-          initialItemCount: _displayPayments.length,
-          itemBuilder: (context, index, animation) {
-            final payment = _displayPayments[index];
-            return BorderedList.decorateItem(
+        for (var i = 0; i < _payments.length; i++)
+          KeyedSubtree(
+            key: ValueKey(_payments[i].operationId),
+            child: BorderedList.decorateItem(
               context: context,
-              child: _buildAnimatedItem(payment, animation),
-              isFirst: index == 0,
-              isLast: index == _displayPayments.length - 1,
-            );
-          },
-        ),
+              child: _AnimatedEntry(
+                child: PaymentCard(
+                  event: _payments[i],
+                  onTap: () => widget.onTransactionTap(_payments[i]),
+                ),
+              ),
+              isFirst: i == 0,
+              isLast: i == _payments.length - 1,
+            ),
+          ),
         Center(
           child: TextButton(
             onPressed: () async {
-              final events = await widget.client.getPaymentHistory();
-
-              final payments = _mergeUpdates(events);
+              final payments = await widget.client.getPaymentHistory();
 
               if (!context.mounted) return;
 
@@ -261,6 +121,38 @@ class _RecentPaymentsState extends State<RecentPayments> {
         ),
       ],
     );
+  }
+}
+
+class _AnimatedEntry extends StatefulWidget {
+  final Widget child;
+  const _AnimatedEntry({required this.child});
+
+  @override
+  State<_AnimatedEntry> createState() => _AnimatedEntryState();
+}
+
+class _AnimatedEntryState extends State<_AnimatedEntry>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    duration: const Duration(milliseconds: 500),
+    vsync: this,
+  )..forward();
+
+  late final Animation<double> _animation = CurvedAnimation(
+    parent: _controller,
+    curve: Curves.easeInOut,
+  );
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizeTransition(sizeFactor: _animation, child: widget.child);
   }
 }
 

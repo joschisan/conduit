@@ -159,15 +159,16 @@ class _DisplayContactsScreenState extends State<DisplayContactsScreen> {
           children: [
             if (_contacts.isEmpty) _buildOnboardingCard(),
             if (_contacts.isNotEmpty)
-              SearchField(
-                controller: _searchController,
-                onChanged: (value) => setState(() => _query = value),
-              ),
-            if (_contacts.isNotEmpty)
               Expanded(
                 child: GroupedList<ConduitContact>(
+                  header: Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: SearchField(
+                      controller: _searchController,
+                      onChanged: (value) => setState(() => _query = value),
+                    ),
+                  ),
                   items: filtered,
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   groupKey: (contact) => contact.name[0].toUpperCase(),
                   itemBuilder:
                       (context, contact) => _ContactTile(

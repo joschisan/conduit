@@ -6,30 +6,36 @@ class GroupedList<T> extends StatelessWidget {
   final List<T> items;
   final String Function(T) groupKey;
   final Widget Function(BuildContext, T) itemBuilder;
-  final EdgeInsets padding;
+  final Widget? header;
 
   const GroupedList({
     super.key,
     required this.items,
     required this.groupKey,
     required this.itemBuilder,
-    this.padding = const EdgeInsets.all(16),
+    this.header,
   });
 
   @override
   Widget build(BuildContext context) {
+    final offset = header != null ? 1 : 0;
+
     return ListView.builder(
-      padding: padding,
-      itemCount: items.length,
+      padding: const EdgeInsets.all(16).copyWith(bottom: 32),
+      itemCount: items.length + offset,
       itemBuilder: (context, index) {
-        final key = groupKey(items[index]);
-        final isFirst = index == 0 || key != groupKey(items[index - 1]);
+        if (index < offset) return header!;
+
+        final itemIndex = index - offset;
+        final key = groupKey(items[itemIndex]);
+        final isFirst = itemIndex == 0 || key != groupKey(items[itemIndex - 1]);
         final isLast =
-            index == items.length - 1 || key != groupKey(items[index + 1]);
+            itemIndex == items.length - 1 ||
+            key != groupKey(items[itemIndex + 1]);
 
         final decorated = BorderedList.decorateItem(
           context: context,
-          child: itemBuilder(context, items[index]),
+          child: itemBuilder(context, items[itemIndex]),
           isFirst: isFirst,
           isLast: isLast,
         );
@@ -42,7 +48,7 @@ class GroupedList<T> extends StatelessWidget {
             Padding(
               padding: EdgeInsets.only(
                 left: 8,
-                top: index == 0 ? 0 : 16,
+                top: itemIndex == 0 ? 0 : 16,
                 bottom: 8,
               ),
               child: Text(key, style: mediumStyle),

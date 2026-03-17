@@ -42,8 +42,7 @@ class LnurlDrawer extends StatelessWidget {
 
     if (!context.mounted) return;
 
-    // Check if fixed amount (MoneyBadger case: min == max)
-    if (payResponse.minSats == payResponse.maxSats) {
+    if (payResponse.isFixedAmount()) {
       // Fixed amount - resolve invoice immediately
       final invoice = await lnurlResolve(
         payResponse: payResponse,

@@ -40,7 +40,7 @@ class FederationScreen extends StatefulWidget {
 }
 
 class _FederationScreenState extends State<FederationScreen> {
-  late final Stream<ConduitEvent> _eventStream;
+  late final Stream<RecentPaymentsUpdate> _eventStream;
   late final Stream<int> _balanceStream;
   late final Stream<List<(String, bool)>> _connectionStream;
   late final AppLinks _appLinks;
@@ -55,7 +55,6 @@ class _FederationScreenState extends State<FederationScreen> {
     _balanceStream = widget.client.subscribeBalance();
     _connectionStream = widget.client.subscribeConnectionStatus();
     _initDeepLinks();
-    _backupToFederation();
     _fetchExpirationStatus();
   }
 
@@ -71,12 +70,6 @@ class _FederationScreenState extends State<FederationScreen> {
       _expirationDate = date;
       _expirationSuccessor = successor;
     });
-  }
-
-  Future<void> _backupToFederation() async {
-    try {
-      await widget.client.backupToFederation();
-    } catch (_) {}
   }
 
   @override
@@ -291,11 +284,11 @@ class _FederationScreenState extends State<FederationScreen> {
           ),
         ],
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           children: [
-            const SizedBox(height: 48),
+            const SizedBox(height: 64),
             GestureDetector(
               onTap: () {
                 setState(() => _balanceHidden = !_balanceHidden);
@@ -316,7 +309,7 @@ class _FederationScreenState extends State<FederationScreen> {
                 },
               ),
             ),
-            const SizedBox(height: 48),
+            const SizedBox(height: 64),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -346,7 +339,6 @@ class _FederationScreenState extends State<FederationScreen> {
             RecentPayments(
               client: widget.client,
               stream: _eventStream,
-              maxItems: 5,
               onTransactionTap: _showEventDetails,
             ),
           ],
