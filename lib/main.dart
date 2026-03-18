@@ -30,16 +30,7 @@ void main() async {
   final clientFactory = await ConduitClientFactory.tryLoad(db: db);
 
   if (clientFactory != null) {
-    final initialClient = await clientFactory.loadSelected();
-
-    runApp(
-      ConduitApp(
-        home: BaseScreen(
-          clientFactory: clientFactory,
-          initialClient: initialClient,
-        ),
-      ),
-    );
+    runApp(ConduitApp(home: BaseScreen(clientFactory: clientFactory)));
   } else {
     runApp(ConduitApp(home: LandingScreen(db: db)));
   }

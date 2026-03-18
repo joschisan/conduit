@@ -3,7 +3,7 @@ use std::sync::Arc;
 use crate::client::ConduitClient;
 use crate::db::{
     ClientConfigKey, ClientConfigPrefix, ContactKey, ContactPrefix, DbKeyPrefix,
-    EventLogEntryPrefix, RootEntropyKey, SelectedCurrencyKey, SelectedFederationKey,
+    EventLogEntryPrefix, RootEntropyKey, SelectedCurrencyKey,
 };
 use crate::lnurl::LnurlWrapper;
 use crate::{DatabaseWrapper, InviteCodeWrapper, MnemonicWrapper};
@@ -262,10 +262,6 @@ impl ConduitClientFactory {
 
         self.save_config(&client.config().await).await;
 
-        if !client.has_pending_recoveries() {
-            self.set_selected_federation(*federation_id).await;
-        }
-
         Some(self.create_client(Arc::new(client), *federation_id).await)
     }
 
@@ -330,27 +326,6 @@ impl ConduitClientFactory {
             .get_value(&SelectedCurrencyKey)
             .await
             .unwrap_or_else(|| "USD".to_string())
-    }
-
-    async fn set_selected_federation(&self, federation_id: FederationId) {
-        let mut dbtx = self.db.begin_transaction().await;
-
-        dbtx.insert_entry(&SelectedFederationKey, &federation_id)
-            .await;
-
-        dbtx.commit_tx().await;
-    }
-
-    #[frb]
-    pub async fn load_selected(&self) -> Option<ConduitClient> {
-        let federation_id = self
-            .db
-            .begin_transaction_nc()
-            .await
-            .get_value(&SelectedFederationKey)
-            .await?;
-
-        self.load(&federation_id).await
     }
 
     #[frb]

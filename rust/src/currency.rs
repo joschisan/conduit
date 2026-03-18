@@ -23,15 +23,14 @@ pub fn list_fiat_currencies() -> Vec<FiatCurrency> {
 
 #[frb(sync)]
 pub fn find_fiat_currency(code: &str) -> Option<FiatCurrency> {
-    CURRENCIES
-        .iter()
-        .find(|&&(c, _, _, _)| c == code)
-        .map(|&(code, name, symbol, decimal_digits)| FiatCurrency {
+    CURRENCIES.iter().find(|&&(c, _, _, _)| c == code).map(
+        |&(code, name, symbol, decimal_digits)| FiatCurrency {
             code: code.to_string(),
             name: name.to_string(),
             symbol: symbol.to_string(),
             decimal_digits,
-        })
+        },
+    )
 }
 
 const CURRENCIES: &[(&str, &str, &str, i32)] = &[

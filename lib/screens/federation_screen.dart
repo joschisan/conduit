@@ -75,6 +75,7 @@ class _FederationScreenState extends State<FederationScreen> {
   @override
   void dispose() {
     _linkSubscription?.cancel();
+    widget.client.shutdown();
     super.dispose();
   }
 
@@ -222,11 +223,6 @@ class _FederationScreenState extends State<FederationScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        automaticallyImplyLeading: false,
-        leading: IconButton(
-          icon: const Icon(Icons.settings, size: smallIconSize),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
         title: StreamBuilder<List<(String, bool)>>(
           stream: _connectionStream,
           builder: (context, snapshot) {

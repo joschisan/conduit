@@ -27,8 +27,8 @@ pub use fedimint_core::config::FederationId;
 
 // Re-export public API for FRB
 pub use client::{ConduitClient, ConduitRecoveryProgress};
-pub use events::{ConduitPayment, PaymentNotification, PaymentType, RecentPaymentsUpdate};
 pub use currency::{FiatCurrency, find_fiat_currency, list_fiat_currencies};
+pub use events::{ConduitPayment, PaymentNotification, PaymentType, RecentPaymentsUpdate};
 pub use factory::{ConduitClientFactory, ConduitContact, FederationInfo};
 pub use fountain::{OOBNotesDecoder, OOBNotesEncoder};
 pub use lnurl::{LnurlWrapper, PayResponseWrapper, lnurl_fetch_limits, lnurl_resolve, parse_lnurl};

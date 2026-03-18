@@ -12,42 +12,31 @@ import 'package:conduit/drawers/invite_scanner_drawer.dart';
 import 'package:conduit/drawers/leave_federation_drawer.dart';
 import 'package:conduit/drawers/recovery_drawer.dart';
 import 'package:conduit/widgets/bordered_list_widget.dart';
-import 'package:conduit/widgets/onboarding_card_widget.dart';
 import 'package:conduit/widgets/settings_card_widget.dart';
 
 class BaseScreen extends StatefulWidget {
   final ConduitClientFactory clientFactory;
-  final ConduitClient? initialClient;
 
-  const BaseScreen({
-    super.key,
-    required this.clientFactory,
-    this.initialClient,
-  });
+  const BaseScreen({super.key, required this.clientFactory});
 
   @override
   State<BaseScreen> createState() => _BaseScreenState();
 }
 
 class _BaseScreenState extends State<BaseScreen> {
-  late Future<List<FederationInfo>> _federationsFuture;
+  List<FederationInfo> _federations = [];
 
   @override
   void initState() {
     super.initState();
 
     _refreshFederations();
-
-    if (widget.initialClient != null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _navigateToClientScreen(widget.initialClient!);
-      });
-    }
   }
 
-  void _refreshFederations() {
+  Future<void> _refreshFederations() async {
+    final federations = await widget.clientFactory.listFederations();
     setState(() {
-      _federationsFuture = widget.clientFactory.listFederations();
+      _federations = federations;
     });
   }
 
@@ -57,82 +46,53 @@ class _BaseScreenState extends State<BaseScreen> {
     body: SafeArea(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
-        child: FutureBuilder<List<FederationInfo>>(
-          future: _federationsFuture,
-          builder: (context, snapshot) {
-            final federations = snapshot.data ?? [];
-            final showOnboarding = snapshot.hasData && federations.isEmpty;
-
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(left: 8),
-                  child: Text('Settings', style: mediumStyle),
-                ),
-                const SizedBox(height: 8),
-                BorderedList.column(
-                  children: [_buildSeedPhraseCard(), _buildCurrencyCard()],
-                ),
-                const SizedBox(height: 24),
-                if (showOnboarding)
-                  _buildOnboardingCard()
-                else
-                  _buildFederationsContent(snapshot),
-              ],
-            );
-          },
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(left: 8),
+              child: Text('Settings', style: mediumStyle),
+            ),
+            const SizedBox(height: 8),
+            BorderedList.column(
+              children: [_buildSeedPhraseCard(), _buildCurrencyCard()],
+            ),
+            const SizedBox(height: 32),
+            if (_federations.isEmpty)
+              _buildOnboardingCard()
+            else
+              _buildFederationsListView(),
+          ],
         ),
       ),
     ),
   );
 
   Widget _buildOnboardingCard() {
-    return OnboardingCard(
-      icon: Icons.account_balance_wallet,
-      title: 'Federations',
-      description:
-          'A federation is a group of trusted guardians who collectively custody bitcoin for their community in a multisig wallet.'
-          '\n\n'
-          'The guardians cannot tell which payments belong to you or what balance you have.',
-      actionText: 'Join Federation',
-      onAction: _showScannerDrawer,
+    return Column(
+      children: [
+        const SizedBox(height: 32),
+        TextButton(
+          onPressed: _showScannerDrawer,
+          child: Text(
+            'Join Federation',
+            style: mediumStyle.copyWith(
+              color: Theme.of(context).colorScheme.primary,
+            ),
+          ),
+        ),
+        Text(
+          'The federation cannot link payments to you or deduce your balance.',
+          textAlign: TextAlign.center,
+          style: smallStyle.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
+      ],
     );
   }
 
-  Widget _buildFederationsContent(
-    AsyncSnapshot<List<FederationInfo>> snapshot,
-  ) {
-    if (snapshot.connectionState == ConnectionState.waiting) {
-      return _buildLoadingState();
-    }
-
-    if (snapshot.hasError) {
-      return _buildErrorState();
-    }
-
-    final federations = snapshot.data ?? [];
-    return _buildFederationsListView(federations);
-  }
-
-  Widget _buildLoadingState() {
-    return const Center(child: CircularProgressIndicator());
-  }
-
-  Widget _buildErrorState() {
-    return Center(
-      child: Text(
-        'Error loading federations',
-        style: smallStyle.copyWith(color: Theme.of(context).colorScheme.error),
-      ),
-    );
-  }
-
-  Widget _buildFederationsListView(List<FederationInfo> federations) {
-    if (federations.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
+  Widget _buildFederationsListView() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -144,9 +104,9 @@ class _BaseScreenState extends State<BaseScreen> {
         BorderedList(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          itemCount: federations.length,
+          itemCount: _federations.length,
           itemBuilder: (context, index) {
-            final federation = federations[index];
+            final federation = _federations[index];
             return _buildFederationCard(federation);
           },
         ),

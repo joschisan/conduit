@@ -9,7 +9,6 @@ import 'package:conduit/utils/styles.dart';
 import 'package:conduit/widgets/search_field_widget.dart';
 import 'package:conduit/widgets/grouped_list_widget.dart';
 import 'package:conduit/widgets/loading_icon_widget.dart';
-import 'package:conduit/widgets/onboarding_card_widget.dart';
 
 class _ContactTile extends StatefulWidget {
   final ConduitContact contact;
@@ -136,14 +135,19 @@ class _DisplayContactsScreenState extends State<DisplayContactsScreen> {
     }
   }
 
-  Widget _buildOnboardingCard() {
-    return const Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16),
-      child: OnboardingCard(
-        icon: Icons.people,
-        title: 'Contacts',
-        description:
-            'To make recurring payments to the same recipient, create a contact by assigning a name to their lightning url or address.',
+  Widget _buildEmptyState() {
+    return Expanded(
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32),
+          child: Text(
+            'You have no contacts yet.',
+            textAlign: TextAlign.center,
+            style: smallStyle.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -157,7 +161,7 @@ class _DisplayContactsScreenState extends State<DisplayContactsScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            if (_contacts.isEmpty) _buildOnboardingCard(),
+            if (_contacts.isEmpty) _buildEmptyState(),
             if (_contacts.isNotEmpty)
               Expanded(
                 child: GroupedList<ConduitContact>(

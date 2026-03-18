@@ -27,7 +27,7 @@ class _OnchainAmountScreenState extends State<OnchainAmountScreen> {
 
     if (!mounted) return;
 
-    Navigator.of(context).push(
+    Navigator.of(context).pushReplacement(
       MaterialPageRoute(
         builder:
             (_) => ConfirmOnchainSendScreen(

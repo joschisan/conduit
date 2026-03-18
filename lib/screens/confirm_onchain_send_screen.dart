@@ -36,7 +36,7 @@ class _ConfirmOnchainSendScreenState extends State<ConfirmOnchainSendScreen> {
 
     if (!mounted) return;
 
-    Navigator.of(context).popUntil((route) => route.isFirst);
+    Navigator.of(context).pop();
   }
 
   @override

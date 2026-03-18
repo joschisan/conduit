@@ -9,9 +9,11 @@ pub(crate) enum DbKeyPrefix {
     RootEntropy = 0x00,
     ClientDatabase = 0x01,
     ClientConfig = 0x02,
-    // EventLogStartPosition = 0x03, Deprecated
+    #[allow(dead_code)]
+    EventLogStartPosition = 0x03, // Deprecated
     SelectedCurrency = 0x04,
-    SelectedFederation = 0x05,
+    #[allow(dead_code)]
+    SelectedFederation = 0x05, // Deprecated
     EventLogEntry = 0x06,
     Contact = 0x07,
 }
@@ -48,6 +50,7 @@ impl_db_record!(
     db_prefix = DbKeyPrefix::SelectedCurrency,
 );
 
+#[allow(dead_code)]
 #[derive(Clone, Debug, Encodable, Decodable)]
 pub(crate) struct SelectedFederationKey;
 

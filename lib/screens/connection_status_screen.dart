@@ -30,34 +30,31 @@ class ConnectionStatusScreen extends StatelessWidget {
 
           final statuses = snapshot.data!;
 
-          return ListView(
+          return SingleChildScrollView(
             padding: const EdgeInsets.all(16),
-            children: [
-              BorderedList.column(
-                children: [
-                  for (final (name, connected) in statuses)
-                    ListTile(
-                      contentPadding: listTilePadding,
-                      leading: Container(
-                        width: 14,
-                        height: 14,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color:
-                              connected ? color : color.withValues(alpha: 0.3),
-                        ),
-                      ),
-                      title: Text(name, style: mediumStyle),
-                      trailing: Text(
-                        connected ? 'Online' : 'Offline',
-                        style: smallStyle.copyWith(
-                          color: connected ? color : null,
-                        ),
+            child: BorderedList.column(
+              children: [
+                for (final (name, connected) in statuses)
+                  ListTile(
+                    contentPadding: listTilePadding,
+                    leading: Container(
+                      width: 14,
+                      height: 14,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: connected ? color : color.withValues(alpha: 0.3),
                       ),
                     ),
-                ],
-              ),
-            ],
+                    title: Text(name, style: mediumStyle),
+                    trailing: Text(
+                      connected ? 'Online' : 'Offline',
+                      style: smallStyle.copyWith(
+                        color: connected ? color : null,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
           );
         },
       ),

@@ -66,6 +66,17 @@ impl ConduitClient {
     }
 
     #[frb]
+    pub async fn shutdown(&self) {
+        self.client.executor().stop_executor();
+        self.client
+            .task_group()
+            .clone()
+            .shutdown_join_all(None)
+            .await
+            .expect("Client shutdown failed");
+    }
+
+    #[frb]
     pub async fn prefetch_exchange_rates(&self) {
         tokio::task::spawn(fetch_exchange_rate(
             self.exchange_rate_cache.clone(),
@@ -435,7 +446,7 @@ impl ConduitClient {
             }
         }
 
-        let mut n_display = 4;
+        let mut n_display = 3;
 
         // Send initial snapshot without notifications
         if sink

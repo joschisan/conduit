@@ -28,12 +28,10 @@ class PaymentCard extends StatelessWidget {
     final formattedAmount = NumberFormat('#,###').format(event.amountSats);
     final sign = event.incoming ? '+' : '-';
 
-    final primaryColor = Theme.of(context).colorScheme.primary;
-
     final icon = Icon(
       PaymentTypeUtils.getIcon(event.paymentType),
       size: mediumIconSize,
-      color: primaryColor,
+      color: Theme.of(context).colorScheme.primary,
     );
 
     Widget leading = switch (event.success) {
@@ -56,7 +54,10 @@ class PaymentCard extends StatelessWidget {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary,
+                    color:
+                        event.success == false
+                            ? Colors.red
+                            : Theme.of(context).colorScheme.primary,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(

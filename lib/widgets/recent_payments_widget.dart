@@ -9,7 +9,6 @@ import 'package:conduit/widgets/payment_card_widget.dart';
 import 'package:conduit/utils/notification_utils.dart';
 import 'package:conduit/utils/styles.dart';
 import 'package:conduit/screens/payment_history_screen.dart';
-import 'package:conduit/widgets/onboarding_card_widget.dart';
 
 class RecentPayments extends StatefulWidget {
   final ConduitClient client;
@@ -75,9 +74,17 @@ class _RecentPaymentsState extends State<RecentPayments> {
   @override
   Widget build(BuildContext context) {
     if (_payments.isEmpty) {
-      return const Align(
-        alignment: Alignment.topCenter,
-        child: _OnboardingCarousel(),
+      return Column(
+        children: [
+          const SizedBox(height: 64),
+          Text(
+            'You have no payments yet.',
+            textAlign: TextAlign.center,
+            style: smallStyle.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ],
       );
     }
 
@@ -153,58 +160,5 @@ class _AnimatedEntryState extends State<_AnimatedEntry>
   @override
   Widget build(BuildContext context) {
     return SizeTransition(sizeFactor: _animation, child: widget.child);
-  }
-}
-
-class _OnboardingCarousel extends StatefulWidget {
-  const _OnboardingCarousel();
-
-  @override
-  State<_OnboardingCarousel> createState() => _OnboardingCarouselState();
-}
-
-class _OnboardingCarouselState extends State<_OnboardingCarousel> {
-  static const _pages = [
-    (
-      icon: Icons.bolt,
-      title: 'Lightning',
-      description:
-          'Create a lightning invoice to receive bitcoin from any other lightning wallet.'
-          '\n\n'
-          'If you already have a lightning wallet, this is the quickest way to top up your balance.',
-    ),
-    (
-      icon: Icons.currency_bitcoin,
-      title: 'Onchain',
-      description:
-          'Generate an onchain address to move onchain bitcoin directly into the federation.'
-          '\n\n'
-          'Whenever the time comes, you can spend your cold storage bitcoin with great privacy.',
-    ),
-    (
-      icon: Icons.toll,
-      title: 'eCash',
-      description:
-          'Simply enter an amount and share the ecash token with another user of the federation.'
-          '\n\n'
-          'This is the most private and efficient way to transact within a federation.',
-    ),
-  ];
-
-  int _currentPage = 0;
-
-  @override
-  Widget build(BuildContext context) {
-    final page = _pages[_currentPage];
-    return OnboardingCard(
-      icon: page.icon,
-      title: page.title,
-      description: page.description,
-      actionText: 'Next',
-      onAction:
-          _currentPage < _pages.length - 1
-              ? () => setState(() => _currentPage++)
-              : null,
-    );
   }
 }

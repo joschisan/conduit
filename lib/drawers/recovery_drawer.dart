@@ -42,8 +42,8 @@ class _RecoveryDrawerState extends State<RecoveryDrawer> {
 
   Future<void> _performRecovery() async {
     await widget.client.waitForAllRecoveries();
+    await widget.client.shutdown();
 
-    // Reload the client to get a fresh instance after recovery
     final newClient = await widget.clientFactory.load(
       federationId: widget.client.federationId(),
     );
@@ -64,6 +64,12 @@ class _RecoveryDrawerState extends State<RecoveryDrawer> {
         ),
       );
     });
+  }
+
+  @override
+  void dispose() {
+    widget.client.shutdown();
+    super.dispose();
   }
 
   @override
