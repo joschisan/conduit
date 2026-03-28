@@ -1,3 +1,4 @@
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:conduit/utils/styles.dart';
@@ -73,16 +74,19 @@ class _LnurlAmountScreenState extends State<LnurlAmountScreen> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        title: Text(_contactName ?? 'Lightning Url'),
+        title: Text(_contactName ?? 'Send Lightning'),
         actions: [
           if (_contactName == null)
             IconButton(
-              icon: const Icon(Icons.person_add, size: smallIconSize),
+              icon: const Icon(
+                PhosphorIconsRegular.userPlus,
+                size: smallIconSize,
+              ),
               onPressed: _handleSaveContact,
             )
           else
             IconButton(
-              icon: const Icon(Icons.share, size: smallIconSize),
+              icon: const Icon(PhosphorIconsRegular.copy, size: smallIconSize),
               onPressed: _handleShare,
             ),
         ],

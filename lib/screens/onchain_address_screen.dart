@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:conduit/utils/styles.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/widgets/qr_code_widget.dart';
+import 'package:conduit/widgets/shareable_data_widget.dart';
 import 'package:conduit/drawers/generate_onchain_address_drawer.dart';
 import 'package:conduit/utils/notification_utils.dart';
 
@@ -87,15 +89,18 @@ class _OnchainAddressScreenState extends State<OnchainAddressScreen> {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: const Text('Onchain Address'),
+        title: const Text('Receive Onchain'),
         actions: [
           if (addresses.isNotEmpty)
             IconButton(
-              icon: const Icon(Icons.refresh, size: smallIconSize),
+              icon: const Icon(
+                PhosphorIconsRegular.arrowsClockwise,
+                size: smallIconSize,
+              ),
               onPressed: _recheckAddress,
             ),
           IconButton(
-            icon: const Icon(Icons.add, size: smallIconSize),
+            icon: const Icon(PhosphorIconsRegular.plus, size: smallIconSize),
             onPressed: _showGenerateConfirmation,
           ),
         ],
@@ -121,27 +126,25 @@ class _OnchainAddressScreenState extends State<OnchainAddressScreen> {
 
     return Column(
       children: [
+        QrCodeWidget(
+          data: currentAddress,
+          iconAsset: 'assets/qr_icon_onchain.png',
+        ),
+        const SizedBox(height: 16),
+        ShareableData(data: currentAddress),
         Expanded(
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              Expanded(
-                child: Center(
-                  child: Icon(
-                    Icons.currency_bitcoin,
-                    size: heroIconSize,
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ),
-              ),
-              QrCodeWidget(data: currentAddress),
-              const SizedBox(height: 16),
               Row(
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.arrow_back, size: smallIconSize),
+                    icon: const Icon(
+                      PhosphorIconsRegular.arrowLeft,
+                      size: smallIconSize,
+                    ),
                     onPressed: hasPrevious ? _previousAddress : null,
                   ),
                   Text('$currentPosition', style: largeStyle),
@@ -160,23 +163,22 @@ class _OnchainAddressScreenState extends State<OnchainAddressScreen> {
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.arrow_forward, size: smallIconSize),
+                    icon: const Icon(
+                      PhosphorIconsRegular.arrowRight,
+                      size: smallIconSize,
+                    ),
                     onPressed: hasNext ? _nextAddress : null,
                   ),
                 ],
               ),
-              Expanded(
-                child: Center(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 32.0),
-                    child: Text(
-                      'Confirmed onchain payments may take a few hours to appear. A reused address must be manually checked for payments.',
-                      style: smallStyle.copyWith(
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                child: Text(
+                  'Confirmed onchain payments may take a few hours to appear. A reused address must be manually checked for payments.',
+                  style: smallStyle.copyWith(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
+                  textAlign: TextAlign.center,
                 ),
               ),
             ],

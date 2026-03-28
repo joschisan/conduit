@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:conduit/utils/styles.dart';
 import 'package:conduit/widgets/qr_code_widget.dart';
-import 'package:conduit/widgets/qr_display_layout_widget.dart';
+import 'package:conduit/widgets/shareable_data_widget.dart';
 import 'package:conduit/widgets/amount_display_widget.dart';
 
 class DisplayInvoiceScreen extends StatelessWidget {
@@ -16,25 +15,20 @@ class DisplayInvoiceScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Lightning Invoice')),
+    appBar: AppBar(title: const Text('Receive Lightning')),
     body: SafeArea(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: QrDisplayLayout(
-          header: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.bolt,
-                size: heroIconSize,
-                color: Theme.of(context).colorScheme.primary,
-              ),
-              AmountDisplay(amount),
-            ],
-          ),
-          qrCode: QrCodeWidget(data: invoice),
-          description:
-              'This invoice can only be paid once. To receive recurring payments, please use your lightning url.',
+        child: Column(
+          children: [
+            QrCodeWidget(
+              data: invoice,
+              iconAsset: 'assets/qr_icon_lightning.png',
+            ),
+            const SizedBox(height: 16),
+            ShareableData(data: invoice),
+            Expanded(child: Center(child: AmountDisplay(amount))),
+          ],
         ),
       ),
     ),

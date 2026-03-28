@@ -1,3 +1,4 @@
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:conduit/bridge_generated.dart/factory.dart';
 import 'package:conduit/widgets/drawer_shell_widget.dart';
@@ -49,7 +50,7 @@ class _LeaveFederationDrawerState extends State<LeaveFederationDrawer> {
   @override
   Widget build(BuildContext context) {
     return DrawerShell(
-      icon: Icons.exit_to_app,
+      icon: PhosphorIconsRegular.signOut,
       title: 'Leave ${widget.federation.name}?',
       children: [
         AsyncButton(text: 'Confirm', onPressed: _handleLeaveFederation),

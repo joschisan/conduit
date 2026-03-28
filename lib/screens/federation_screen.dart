@@ -1,3 +1,4 @@
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:app_links/app_links.dart';
@@ -267,15 +268,15 @@ class _FederationScreenState extends State<FederationScreen> {
         centerTitle: false,
         actions: [
           IconButton(
-            icon: const Icon(Icons.alternate_email, size: smallIconSize),
+            icon: const Icon(PhosphorIconsRegular.at, size: smallIconSize),
             onPressed: _onLightningAddress,
           ),
           IconButton(
-            icon: const Icon(Icons.people, size: smallIconSize),
+            icon: const Icon(PhosphorIconsRegular.users, size: smallIconSize),
             onPressed: _onContacts,
           ),
           IconButton(
-            icon: const Icon(Icons.qr_code_scanner, size: smallIconSize),
+            icon: const Icon(PhosphorIconsRegular.qrCode, size: smallIconSize),
             onPressed: _onScan,
           ),
         ],
@@ -310,17 +311,17 @@ class _FederationScreenState extends State<FederationScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 _CircularActionButton(
-                  icon: Icons.bolt,
+                  icon: PhosphorIconsRegular.lightning,
                   label: 'Lightning',
                   onTap: _onCreateInvoice,
                 ),
                 _CircularActionButton(
-                  icon: Icons.currency_bitcoin,
+                  icon: PhosphorIconsRegular.link,
                   label: 'Onchain',
                   onTap: _onReceiveBitcoin,
                 ),
                 _CircularActionButton(
-                  icon: Icons.toll,
+                  icon: PhosphorIconsRegular.coinVertical,
                   label: 'eCash',
                   onTap: _onSendEcash,
                 ),
@@ -405,7 +406,11 @@ class _ExpirationWarningCard extends StatelessWidget {
         ),
         child: Row(
           children: [
-            Icon(Icons.bedtime, color: Colors.amber[700], size: smallIconSize),
+            Icon(
+              PhosphorIconsRegular.moon,
+              color: Colors.amber[700],
+              size: smallIconSize,
+            ),
             const SizedBox(width: 12),
             Expanded(
               child: Text(

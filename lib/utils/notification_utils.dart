@@ -1,3 +1,4 @@
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -70,7 +71,7 @@ class NotificationUtils {
     _showNotification(
       context,
       message,
-      Icons.error,
+      PhosphorIconsRegular.warningCircle,
       Colors.red,
       _defaultNotificationDuration,
     );
@@ -96,7 +97,7 @@ class NotificationUtils {
     _showNotification(
       context,
       message,
-      Icons.check_circle,
+      PhosphorIconsRegular.checkCircle,
       Colors.green,
       _defaultNotificationDuration,
     );

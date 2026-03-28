@@ -78,7 +78,7 @@ class _InputRecoveryPhraseScreenState extends State<InputRecoveryPhraseScreen> {
             (context, word) => ListTile(
               contentPadding: listTilePadding,
               leading: SizedBox(
-                width: 28,
+                width: 36,
                 child: Text(
                   '$currentWordNumber',
                   textAlign: TextAlign.center,

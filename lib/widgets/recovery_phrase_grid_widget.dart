@@ -40,7 +40,7 @@ class RecoveryPhraseGrid extends StatelessWidget {
       child: Row(
         children: [
           SizedBox(
-            width: 28,
+            width: 36,
             child: Text(
               '${index + 1}',
               textAlign: TextAlign.center,

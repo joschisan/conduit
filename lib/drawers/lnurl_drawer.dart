@@ -1,3 +1,4 @@
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/bridge_generated.dart/factory.dart';
@@ -8,7 +9,7 @@ import 'package:conduit/screens/lnurl_amount_screen.dart';
 import 'package:conduit/drawers/lightning_invoice_drawer.dart';
 import 'package:conduit/utils/drawer_utils.dart';
 
-class LnurlDrawer extends StatelessWidget {
+class LnurlDrawer extends StatefulWidget {
   final ConduitClient client;
   final ConduitClientFactory clientFactory;
   final LnurlWrapper lnurl;
@@ -36,35 +37,43 @@ class LnurlDrawer extends StatelessWidget {
     );
   }
 
-  Future<void> _handleContinue(BuildContext context) async {
-    // Fetch limits from LNURL endpoint
-    final payResponse = await lnurlFetchLimits(lnurl: lnurl);
+  @override
+  State<LnurlDrawer> createState() => _LnurlDrawerState();
+}
 
-    if (!context.mounted) return;
+class _LnurlDrawerState extends State<LnurlDrawer> {
+  Future<void> _handleContinue() async {
+    final payResponse = await lnurlFetchLimits(lnurl: widget.lnurl);
+
+    if (!mounted) return;
 
     if (payResponse.isFixedAmount()) {
-      // Fixed amount - resolve invoice immediately
       final invoice = await lnurlResolve(
         payResponse: payResponse,
         amountSats: payResponse.minSats,
       );
 
-      if (!context.mounted) return;
+      if (!mounted) return;
 
-      Navigator.of(context).pop(); // Close this drawer
-      LightningInvoiceDrawer.show(context, client: client, invoice: invoice);
+      Navigator.of(context).pop();
+      LightningInvoiceDrawer.show(
+        context,
+        client: widget.client,
+        invoice: invoice,
+      );
     } else {
-      // Variable amount - show amount screen with payResponse
-      final contactName = await clientFactory.getContactName(lnurl: lnurl);
+      final contactName = await widget.clientFactory.getContactName(
+        lnurl: widget.lnurl,
+      );
 
-      if (!context.mounted) return;
+      if (!mounted) return;
 
       DrawerUtils.popAndPush(
         context,
         LnurlAmountScreen(
-          client: client,
-          clientFactory: clientFactory,
-          lnurl: lnurl,
+          client: widget.client,
+          clientFactory: widget.clientFactory,
+          lnurl: widget.lnurl,
           payResponse: payResponse,
           contactName: contactName,
         ),
@@ -75,14 +84,11 @@ class LnurlDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DrawerShell(
-      icon: Icons.bolt,
-      title: 'Lightning Url',
+      icon: PhosphorIconsRegular.lightning,
+      title: 'Send Lightning',
       children: [
         const SizedBox(height: 8),
-        AsyncButton(
-          text: 'Continue',
-          onPressed: () => _handleContinue(context),
-        ),
+        AsyncButton(text: 'Continue', onPressed: _handleContinue),
       ],
     );
   }

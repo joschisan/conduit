@@ -11,7 +11,7 @@ pub struct OOBNotesEncoder(FountainEncoder);
 impl OOBNotesEncoder {
     #[frb(sync)]
     pub fn new(notes: &OOBNotesWrapper) -> Self {
-        Self(FountainEncoder::new(&notes.0, 512))
+        Self(FountainEncoder::new(&notes.0, 384))
     }
 
     #[frb]

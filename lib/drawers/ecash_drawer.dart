@@ -1,3 +1,4 @@
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:conduit/bridge_generated.dart/lib.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
@@ -40,8 +41,8 @@ class _EcashDrawerState extends State<EcashDrawer> {
   @override
   Widget build(BuildContext context) {
     return DrawerShell(
-      icon: Icons.toll,
-      title: 'eCash',
+      icon: PhosphorIconsRegular.coinVertical,
+      title: 'Receive eCash',
       children: [
         PrimaryCard(child: AmountDisplay(widget.notes.amountSats())),
         const SizedBox(height: 16),

@@ -1,3 +1,4 @@
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:conduit/utils/styles.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
@@ -80,7 +81,7 @@ class _RecoveryDrawerState extends State<RecoveryDrawer> {
         final hasError = snapshot.hasError;
 
         return DrawerShell(
-          icon: Icons.refresh,
+          icon: PhosphorIconsRegular.arrowsClockwise,
           title: 'Recovering Funds...',
           children: [
             if (hasError)
@@ -99,10 +100,15 @@ class _RecoveryDrawerState extends State<RecoveryDrawer> {
       children: [
         CircularProgressIndicator(color: Theme.of(context).colorScheme.primary),
         const SizedBox(height: 24),
-        Text(
-          'Keep this drawer open to progress the recovery.\nThis may take a few minutes.',
-          textAlign: TextAlign.center,
-          style: smallStyle,
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32),
+          child: Text(
+            'Keep this drawer open to progress the recovery.\nThis may take a few minutes.',
+            textAlign: TextAlign.center,
+            style: smallStyle.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
         ),
       ],
     );
@@ -113,7 +119,7 @@ class _RecoveryDrawerState extends State<RecoveryDrawer> {
       mainAxisSize: MainAxisSize.min,
       children: [
         Icon(
-          Icons.error,
+          PhosphorIconsRegular.warningCircle,
           size: heroIconSize,
           color: Theme.of(context).colorScheme.error,
         ),

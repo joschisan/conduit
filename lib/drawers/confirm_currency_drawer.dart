@@ -1,3 +1,4 @@
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:conduit/bridge_generated.dart/factory.dart';
 import 'package:conduit/widgets/drawer_shell_widget.dart';
@@ -47,7 +48,7 @@ class _ConfirmCurrencyDrawerState extends State<ConfirmCurrencyDrawer> {
   @override
   Widget build(BuildContext context) {
     return DrawerShell(
-      icon: Icons.currency_exchange,
+      icon: PhosphorIconsRegular.currencyDollar,
       title: 'Select ${widget.currency.name}?',
       children: [AsyncButton(text: 'Confirm', onPressed: _handleConfirm)],
     );

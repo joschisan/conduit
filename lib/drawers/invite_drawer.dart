@@ -1,3 +1,4 @@
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:conduit/utils/styles.dart';
 import 'package:conduit/bridge_generated.dart/lib.dart';
@@ -44,7 +45,7 @@ class InviteDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DrawerShell(
-      icon: Icons.account_balance_wallet,
+      icon: PhosphorIconsRegular.wallet,
       title: 'Federation Invite',
       children: [
         AsyncButton(text: 'Join', onPressed: () => onJoin(invite)),
@@ -88,7 +89,7 @@ class _RecoverDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DrawerShell(
-      icon: Icons.account_balance_wallet,
+      icon: PhosphorIconsRegular.wallet,
       title: 'Federation Invite',
       children: [
         AsyncButton(text: 'Recover', onPressed: () => onRecover(invite)),

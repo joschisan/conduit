@@ -1,3 +1,4 @@
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:conduit/utils/styles.dart';
@@ -65,13 +66,18 @@ class ExpirationDrawer extends StatelessWidget {
     final formattedDate = _formatDate();
 
     return DrawerShell(
-      icon: Icons.bedtime,
+      icon: PhosphorIconsRegular.moon,
       title: 'Expiry on $formattedDate',
       children: [
-        Text(
-          'This federation will expire on $formattedDate, please migrate your funds before this date.',
-          textAlign: TextAlign.center,
-          style: smallStyle,
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32),
+          child: Text(
+            'This federation will expire on $formattedDate, please migrate your funds before this date.',
+            textAlign: TextAlign.center,
+            style: smallStyle.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
         ),
 
         if (successor != null) ...[

@@ -44,7 +44,7 @@ class _SelectCurrencyScreenState extends State<SelectCurrencyScreen> {
             (context, currency) => ListTile(
               contentPadding: listTilePadding,
               leading: SizedBox(
-                width: 64,
+                width: 72,
                 child: Text(
                   currency.code,
                   textAlign: TextAlign.center,

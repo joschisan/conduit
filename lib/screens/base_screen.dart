@@ -1,3 +1,4 @@
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:conduit/bridge_generated.dart/lib.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
@@ -30,14 +31,19 @@ class _BaseScreenState extends State<BaseScreen> {
   void initState() {
     super.initState();
 
-    _refreshFederations();
+    _refreshFederations(autoNavigate: true);
   }
 
-  Future<void> _refreshFederations() async {
+  Future<void> _refreshFederations({bool autoNavigate = false}) async {
     final federations = await widget.clientFactory.listFederations();
+
     setState(() {
       _federations = federations;
     });
+
+    if (autoNavigate && federations.length == 1) {
+      _handleFederationTap(federations.first);
+    }
   }
 
   @override
@@ -81,11 +87,14 @@ class _BaseScreenState extends State<BaseScreen> {
             ),
           ),
         ),
-        Text(
-          'The federation cannot link payments to you or deduce your balance.',
-          textAlign: TextAlign.center,
-          style: smallStyle.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32),
+          child: Text(
+            'The federation cannot link payments to you or deduce your balance.',
+            textAlign: TextAlign.center,
+            style: smallStyle.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
         ),
       ],
@@ -182,7 +191,7 @@ class _BaseScreenState extends State<BaseScreen> {
 
   Widget _buildSeedPhraseCard() {
     return SettingsCard(
-      icon: Icons.key,
+      icon: PhosphorIconsRegular.key,
       title: 'Recovery Phrase',
       onTap: _handleSeedPhraseTap,
     );
@@ -190,7 +199,7 @@ class _BaseScreenState extends State<BaseScreen> {
 
   Widget _buildCurrencyCard() {
     return SettingsCard(
-      icon: Icons.currency_exchange,
+      icon: PhosphorIconsRegular.currencyDollar,
       title: 'Select Currency',
       onTap: _handleCurrencyTap,
     );
@@ -198,7 +207,7 @@ class _BaseScreenState extends State<BaseScreen> {
 
   Widget _buildFederationCard(FederationInfo federation) {
     return SettingsCard(
-      icon: Icons.account_balance_wallet,
+      icon: PhosphorIconsRegular.wallet,
       title: federation.name,
       onTap: () => _handleFederationTap(federation),
       onLongPress: () => _showLeaveFederationDrawer(federation),

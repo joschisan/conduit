@@ -50,7 +50,7 @@ class ConduitApp extends StatelessWidget {
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
           useMaterial3: true,
-          fontFamily: GoogleFonts.dmSans().fontFamily,
+          fontFamily: GoogleFonts.inter().fontFamily,
           appBarTheme: const AppBarTheme(
             centerTitle: true,
             titleTextStyle: mediumStyle,
@@ -62,7 +62,7 @@ class ConduitApp extends StatelessWidget {
             brightness: Brightness.dark,
           ),
           useMaterial3: true,
-          fontFamily: GoogleFonts.dmSans().fontFamily,
+          fontFamily: GoogleFonts.inter().fontFamily,
           appBarTheme: const AppBarTheme(
             centerTitle: true,
             titleTextStyle: mediumStyle,

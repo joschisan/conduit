@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:conduit/utils/styles.dart';
 import 'package:conduit/widgets/qr_code_widget.dart';
-import 'package:conduit/widgets/qr_display_layout_widget.dart';
+import 'package:conduit/widgets/shareable_data_widget.dart';
 
 class DisplayLnurlScreen extends StatelessWidget {
   final String lnurl;
@@ -10,19 +10,33 @@ class DisplayLnurlScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Lightning Url')),
+    appBar: AppBar(title: const Text('Receive Lightning')),
     body: SafeArea(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: QrDisplayLayout(
-          header: Icon(
-            Icons.bolt,
-            size: heroIconSize,
-            color: Theme.of(context).colorScheme.primary,
-          ),
-          qrCode: QrCodeWidget(data: lnurl),
-          description:
-              'This is a reusable payment code. It supports payment verification and can be used with a compatible point of sale.',
+        child: Column(
+          children: [
+            QrCodeWidget(
+              data: lnurl,
+              iconAsset: 'assets/qr_icon_lightning.png',
+            ),
+            const SizedBox(height: 16),
+            ShareableData(data: lnurl),
+            Expanded(
+              child: Center(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 32),
+                  child: Text(
+                    'This is a reusable payment code.',
+                    style: smallStyle.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     ),

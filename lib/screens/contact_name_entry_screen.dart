@@ -1,3 +1,4 @@
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:conduit/bridge_generated.dart/factory.dart';
 import 'package:conduit/bridge_generated.dart/lnurl.dart';
@@ -70,7 +71,7 @@ class _ContactNameEntryScreenState extends State<ContactNameEntryScreen> {
         actions: [
           if (widget.onDelete != null)
             IconButton(
-              icon: const Icon(Icons.delete_outline, size: smallIconSize),
+              icon: const Icon(PhosphorIconsRegular.trash, size: smallIconSize),
               onPressed: _handleDelete,
             ),
         ],

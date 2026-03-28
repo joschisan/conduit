@@ -1,3 +1,4 @@
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/bridge_generated.dart/factory.dart';
@@ -32,7 +33,7 @@ class _ContactTileState extends State<_ContactTile> with AsyncButtonMixin {
   @override
   Widget build(BuildContext context) {
     final icon = Icon(
-      Icons.bolt,
+      PhosphorIconsRegular.lightning,
       size: mediumIconSize,
       color: Theme.of(context).colorScheme.primary,
     );

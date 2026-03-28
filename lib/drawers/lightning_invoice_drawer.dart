@@ -1,3 +1,4 @@
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:conduit/bridge_generated.dart/lib.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
@@ -47,8 +48,8 @@ class _LightningInvoiceDrawerState extends State<LightningInvoiceDrawer> {
   @override
   Widget build(BuildContext context) {
     return DrawerShell(
-      icon: Icons.bolt,
-      title: 'Lightning Invoice',
+      icon: PhosphorIconsRegular.lightning,
+      title: 'Send Lightning',
       children: [
         PrimaryCard(child: AmountDisplay(widget.invoice.amountSats())),
         const SizedBox(height: 16),

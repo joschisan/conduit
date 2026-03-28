@@ -1,11 +1,8 @@
-use std::time::Duration;
-
 use fedimint_client::{ClientHandleArc, OperationId};
 use fedimint_core::Amount;
 use fedimint_core::config::FederationId;
 use fedimint_core::db::{Database, IDatabaseTransactionOpsCoreTyped};
 use fedimint_core::module::AmountUnit;
-use fedimint_core::task::sleep;
 use fedimint_core::util::SafeUrl;
 use fedimint_eventlog::EventLogId;
 use fedimint_lnv2_client::LightningClientModule;
@@ -459,8 +456,11 @@ impl ConduitClient {
             return;
         }
 
-        // Poll for live events from the fedimint client
+        let mut log_event_rx = self.client.log_event_added_rx();
+
         loop {
+            let changed = log_event_rx.changed();
+
             let batch = self.client.get_event_log(Some(position), 100).await;
 
             for persisted_entry in &batch {
@@ -514,7 +514,9 @@ impl ConduitClient {
             }
 
             if batch.len() < 100 {
-                sleep(Duration::from_millis(250)).await;
+                if changed.await.is_err() {
+                    return;
+                }
             }
         }
     }

@@ -1,3 +1,4 @@
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:conduit/bridge_generated.dart/lib.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
@@ -38,7 +39,7 @@ class CancelEcashDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DrawerShell(
-      icon: Icons.cancel,
+      icon: PhosphorIconsRegular.xCircle,
       title: 'Cancel Payment?',
       children: [
         AsyncButton(text: 'Confirm', onPressed: () => _handleConfirm(context)),

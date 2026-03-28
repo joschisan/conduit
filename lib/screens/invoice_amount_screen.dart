@@ -1,3 +1,4 @@
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/widgets/amount_entry_widget.dart';
@@ -37,10 +38,10 @@ class InvoiceAmountScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Lightning'),
+        title: const Text('Receive Lightning'),
         actions: [
           AsyncIconButton(
-            icon: Icons.bolt,
+            icon: PhosphorIconsRegular.lightning,
             onPressed: () => _handleLnurlTap(context),
           ),
         ],

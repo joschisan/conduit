@@ -68,7 +68,7 @@ pub fn parse_lnurl(request: &str) -> Option<LnurlWrapper> {
         return Some(LnurlWrapper(url));
     }
 
-    if let Some(url) = fedimint_lnurl::parse_address(request) {
+    if let Some(url) = fedimint_lnurl::parse_address(&request.to_lowercase()) {
         return Some(LnurlWrapper(url));
     }
 

@@ -1,3 +1,4 @@
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:conduit/utils/styles.dart';
 import 'package:intl/intl.dart';
@@ -37,7 +38,11 @@ class PaymentCard extends StatelessWidget {
     Widget leading = switch (event.success) {
       null => LoadingIcon(icon: icon),
       true => icon,
-      false => const Icon(Icons.error, size: mediumIconSize, color: Colors.red),
+      false => const Icon(
+        PhosphorIconsRegular.warningCircle,
+        size: mediumIconSize,
+        color: Colors.red,
+      ),
     };
 
     return ListTile(
@@ -45,30 +50,17 @@ class PaymentCard extends StatelessWidget {
       contentPadding: listTilePadding,
       leading: leading,
       title:
-          event.incoming
-              ? Align(
-                alignment: Alignment.centerLeft,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color:
-                        event.success == false
-                            ? Colors.red
-                            : Theme.of(context).colorScheme.primary,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    '$sign $formattedAmount sat',
-                    style: mediumStyle.copyWith(
-                      color: Theme.of(context).colorScheme.onPrimary,
-                    ),
-                  ),
-                ),
-              )
-              : Text('$sign $formattedAmount sat', style: mediumStyle),
+          Text(
+            '$sign $formattedAmount sat',
+            style: mediumStyle.copyWith(
+              color:
+                  event.success == false
+                      ? Colors.red
+                      : event.incoming
+                          ? Theme.of(context).colorScheme.primary
+                          : null,
+            ),
+          ),
       trailing: Text(
         _formatTime(date),
         style: smallStyle.copyWith(

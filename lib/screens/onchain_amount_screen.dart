@@ -43,7 +43,7 @@ class _OnchainAmountScreenState extends State<OnchainAmountScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Onchain')),
+      appBar: AppBar(title: const Text('Send Onchain')),
       body: SafeArea(
         child: AmountEntryWidget(
           client: widget.client,

@@ -1,3 +1,4 @@
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:conduit/bridge_generated.dart/lib.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
@@ -30,8 +31,8 @@ class OnchainAddressDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DrawerShell(
-      icon: Icons.currency_bitcoin,
-      title: 'Onchain Address',
+      icon: PhosphorIconsRegular.link,
+      title: 'Send Onchain',
       children: [
         const SizedBox(height: 8),
         AsyncButton(
