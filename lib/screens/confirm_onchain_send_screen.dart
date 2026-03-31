@@ -1,6 +1,4 @@
-import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter/material.dart';
-import 'package:conduit/utils/styles.dart';
 import 'package:conduit/bridge_generated.dart/lib.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/widgets/amount_display_widget.dart';
@@ -50,15 +48,11 @@ class _ConfirmOnchainSendScreenState extends State<ConfirmOnchainSendScreen> {
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
-              const Spacer(),
-              Icon(
-                PhosphorIconsRegular.link,
-                size: heroIconSize,
-                color: Theme.of(context).colorScheme.primary,
+              Expanded(
+                child: Center(
+                  child: AmountDisplay(widget.amountSats, fee: widget.feeSats),
+                ),
               ),
-              const Spacer(),
-              AmountDisplay(widget.amountSats, fee: widget.feeSats),
-              const Spacer(flex: 2),
               ShareableData(data: widget.address.toString()),
               const SizedBox(height: 16),
               AsyncButton(text: 'Confirm', onPressed: _handleConfirm),

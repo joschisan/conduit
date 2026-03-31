@@ -23,6 +23,7 @@ class OnchainAddressScreen extends StatefulWidget {
 
 class _OnchainAddressScreenState extends State<OnchainAddressScreen> {
   late List<(int, String)> addresses;
+  late PageController _pageController;
   late int currentIndex;
 
   @override
@@ -30,26 +31,17 @@ class _OnchainAddressScreenState extends State<OnchainAddressScreen> {
     super.initState();
     addresses = widget.addressesList;
     currentIndex = addresses.isEmpty ? 0 : addresses.length - 1;
+    _pageController = PageController(initialPage: currentIndex);
 
     if (addresses.isEmpty) {
       _generateNewAddress();
     }
   }
 
-  void _previousAddress() {
-    if (currentIndex > 0) {
-      setState(() {
-        currentIndex--;
-      });
-    }
-  }
-
-  void _nextAddress() {
-    if (currentIndex < addresses.length - 1) {
-      setState(() {
-        currentIndex++;
-      });
-    }
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 
   void _showGenerateConfirmation() {
@@ -64,10 +56,14 @@ class _OnchainAddressScreenState extends State<OnchainAddressScreen> {
       await widget.client.onchainReceiveAddress();
       final newAddresses = await widget.client.onchainListAddresses();
       setState(() {
-        // Addresses already sorted ascending by Rust (oldest first, newest last)
         addresses = newAddresses;
-        currentIndex = addresses.length - 1; // Show newest address
+        currentIndex = addresses.length - 1;
       });
+      _pageController.animateToPage(
+        currentIndex,
+        duration: const Duration(milliseconds: 500),
+        curve: Curves.easeInOut,
+      );
       if (notify && mounted) {
         NotificationUtils.showSuccess(context, 'Generated onchain address');
       }
@@ -106,85 +102,58 @@ class _OnchainAddressScreenState extends State<OnchainAddressScreen> {
         ],
       ),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child:
-              addresses.isEmpty
-                  ? const Center(child: CircularProgressIndicator())
-                  : _buildAddressContent(),
-        ),
+        child:
+            addresses.isEmpty
+                ? const Center(child: CircularProgressIndicator())
+                : _buildAddressContent(),
       ),
     );
   }
 
   Widget _buildAddressContent() {
-    final currentAddress = addresses[currentIndex].$2;
-    final currentPosition = currentIndex + 1;
-    final totalAddresses = addresses.length;
-    final hasPrevious = currentIndex > 0;
-    final hasNext = currentIndex < addresses.length - 1;
-
-    return Column(
-      children: [
-        QrCodeWidget(
-          data: currentAddress,
-          iconAsset: 'assets/qr_icon_onchain.png',
-        ),
-        const SizedBox(height: 16),
-        ShareableData(data: currentAddress),
-        Expanded(
+    return PageView.builder(
+      controller: _pageController,
+      itemCount: addresses.length,
+      onPageChanged: (index) {
+        setState(() {
+          currentIndex = index;
+        });
+      },
+      itemBuilder: (context, index) {
+        final address = addresses[index].$2;
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  IconButton(
-                    icon: const Icon(
-                      PhosphorIconsRegular.arrowLeft,
-                      size: smallIconSize,
-                    ),
-                    onPressed: hasPrevious ? _previousAddress : null,
-                  ),
-                  Text('$currentPosition', style: largeStyle),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 14),
-                    child: Container(
-                      width: 1,
-                      height: 24,
-                      color: Theme.of(context).dividerColor,
-                    ),
-                  ),
-                  Text(
-                    '$totalAddresses',
-                    style: mediumStyle.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(
-                      PhosphorIconsRegular.arrowRight,
-                      size: smallIconSize,
-                    ),
-                    onPressed: hasNext ? _nextAddress : null,
-                  ),
-                ],
+              const SizedBox(height: 16),
+              QrCodeWidget(data: address),
+              const SizedBox(height: 16),
+              ShareableData(data: address),
+              const SizedBox(height: 16),
+              Text(
+                '${currentIndex + 1} / ${addresses.length}',
+                style: largeStyle.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 32.0),
-                child: Text(
-                  'Confirmed onchain payments may take a few hours to appear. A reused address must be manually checked for payments.',
-                  style: smallStyle.copyWith(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+              Expanded(
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                    child: Text(
+                      'Confirmed onchain payments may take a few hours to appear. A reused address must be manually checked for payments.',
+                      style: smallStyle.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
                   ),
-                  textAlign: TextAlign.center,
                 ),
               ),
             ],
           ),
-        ),
-      ],
+        );
+      },
     );
   }
 }

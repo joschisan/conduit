@@ -1,3 +1,4 @@
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:conduit/bridge_generated.dart/lib.dart';
 import 'package:conduit/screens/confirm_recovery_phrase_screen.dart';
@@ -77,15 +78,10 @@ class _InputRecoveryPhraseScreenState extends State<InputRecoveryPhraseScreen> {
         itemBuilder:
             (context, word) => ListTile(
               contentPadding: listTilePadding,
-              leading: SizedBox(
-                width: 36,
-                child: Text(
-                  '$currentWordNumber',
-                  textAlign: TextAlign.center,
-                  style: largeStyle.copyWith(
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ),
+              leading: PhosphorIcon(
+                PhosphorIconsRegular.key,
+                color: Theme.of(context).colorScheme.primary,
+                size: mediumIconSize,
               ),
               title: Text(word, style: mediumStyle),
               onTap: () => _selectWord(word),

@@ -1,7 +1,7 @@
 use fedimint_core::module::serde_json;
 use fedimint_eventlog::{Event, EventLogEntry};
 use fedimint_lnv2_client::events::SendPaymentStatus;
-use fedimint_mint_client::event::ReceivePaymentStatus;
+use fedimint_mint_client::events::ReceivePaymentStatus;
 use fedimint_wallet_client::events::SendPaymentStatus as WalletSendPaymentStatus;
 use flutter_rust_bridge::frb;
 
@@ -87,7 +87,7 @@ pub(crate) fn parse_event_log_entry(entry: &EventLogEntry) -> Option<ParsedEvent
             incoming: false,
             payment_type: PaymentType::Lightning,
             amount_sats: (send.amount.msats / 1000) as i64,
-            fee_sats: send.fee.map(|fee| (fee.msats / 1000) as i64),
+            fee_sats: Some((send.fee.msats / 1000) as i64),
             timestamp: (entry.ts_usecs / 1000) as i64,
             success: None,
             oob: None,
@@ -115,7 +115,7 @@ pub(crate) fn parse_event_log_entry(entry: &EventLogEntry) -> Option<ParsedEvent
         }));
     }
 
-    if let Some(send) = parse::<fedimint_mint_client::event::SendPaymentEvent>(entry) {
+    if let Some(send) = parse::<fedimint_mint_client::events::SendPaymentEvent>(entry) {
         return Some(ParsedEvent::Payment(ConduitPayment {
             operation_id: format!("mint_{}", send.operation_id.fmt_short()),
             incoming: false,
@@ -128,7 +128,7 @@ pub(crate) fn parse_event_log_entry(entry: &EventLogEntry) -> Option<ParsedEvent
         }));
     }
 
-    if let Some(receive) = parse::<fedimint_mint_client::event::ReceivePaymentEvent>(entry) {
+    if let Some(receive) = parse::<fedimint_mint_client::events::ReceivePaymentEvent>(entry) {
         return Some(ParsedEvent::Payment(ConduitPayment {
             operation_id: format!("mint_{}", receive.operation_id.fmt_short()),
             incoming: true,
@@ -141,7 +141,7 @@ pub(crate) fn parse_event_log_entry(entry: &EventLogEntry) -> Option<ParsedEvent
         }));
     }
 
-    if let Some(update) = parse::<fedimint_mint_client::event::ReceivePaymentUpdateEvent>(entry) {
+    if let Some(update) = parse::<fedimint_mint_client::events::ReceivePaymentUpdateEvent>(entry) {
         return Some(ParsedEvent::Update {
             operation_id: format!("mint_{}", update.operation_id.fmt_short()),
             success: matches!(update.status, ReceivePaymentStatus::Success),

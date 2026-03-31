@@ -73,7 +73,7 @@ class _QrScannerWidgetState extends State<QrScannerWidget> {
                 child: IconButton(
                   onPressed: _handleClipboardPaste,
                   icon: const Icon(
-                    PhosphorIconsRegular.clipboard,
+                    PhosphorIconsRegular.clipboardText,
                     size: smallIconSize,
                   ),
                 ),

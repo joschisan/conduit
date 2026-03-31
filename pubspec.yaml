@@ -1,7 +1,7 @@
 name: conduit
 description: "A minimal Fedimint Wallet"
 publish_to: "none"
-version: 0.3.3+28
+version: 0.3.4+30
 
 environment:
   sdk: ^3.7.2
@@ -35,9 +35,6 @@ flutter:
   uses-material-design: true
   assets:
     - assets/logo.png
-    - assets/qr_icon_lightning.png
-    - assets/qr_icon_onchain.png
-    - assets/qr_icon_ecash.png
 
 flutter_launcher_icons:
   android: true

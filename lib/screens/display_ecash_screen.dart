@@ -55,10 +55,7 @@ class DisplayEcashScreen extends StatelessWidget {
                   if (!snapshot.hasData) {
                     return const Center(child: CircularProgressIndicator());
                   }
-                  return QrCodeWidget(
-                    data: snapshot.data!,
-                    iconAsset: 'assets/qr_icon_ecash.png',
-                  );
+                  return QrCodeWidget(data: snapshot.data!);
                 },
               ),
               const SizedBox(height: 16),

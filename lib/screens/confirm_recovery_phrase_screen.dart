@@ -1,10 +1,12 @@
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:conduit/bridge_generated.dart/lib.dart';
 import 'package:conduit/bridge_generated.dart/factory.dart';
 import 'package:conduit/screens/base_screen.dart';
 import 'package:conduit/widgets/async_button_widget.dart';
 import 'package:conduit/utils/notification_utils.dart';
-import 'package:conduit/widgets/recovery_phrase_grid_widget.dart';
+import 'package:conduit/utils/styles.dart';
+import 'package:conduit/widgets/bordered_list_widget.dart';
 
 class ConfirmRecoveryPhraseScreen extends StatelessWidget {
   final DatabaseWrapper db;
@@ -43,22 +45,36 @@ class ConfirmRecoveryPhraseScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Scaffold(
       appBar: AppBar(title: const Text('Recovery Phrase')),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              RecoveryPhraseGrid(words: seedPhrase),
-              const Spacer(),
-              AsyncButton(
-                text: 'Confirm',
-                onPressed: () => _recoverWallet(context),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16).copyWith(bottom: 32),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            for (int i = 0; i < seedPhrase.length; i++)
+              BorderedList.decorateItem(
+                context: context,
+                isFirst: i == 0,
+                isLast: i == seedPhrase.length - 1,
+                child: ListTile(
+                  contentPadding: listTilePadding,
+                  leading: PhosphorIcon(
+                    PhosphorIconsRegular.key,
+                    color: theme.colorScheme.primary,
+                    size: mediumIconSize,
+                  ),
+                  title: Text('${i + 1} - ${seedPhrase[i]}', style: mediumStyle),
+                ),
               ),
-            ],
-          ),
+            const SizedBox(height: 16),
+            AsyncButton(
+              text: 'Confirm',
+              onPressed: () => _recoverWallet(context),
+            ),
+          ],
         ),
       ),
     );
