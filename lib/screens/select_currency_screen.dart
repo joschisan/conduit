@@ -1,3 +1,4 @@
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:conduit/bridge_generated.dart/factory.dart';
 import 'package:conduit/drawers/confirm_currency_drawer.dart';
@@ -43,15 +44,10 @@ class _SelectCurrencyScreenState extends State<SelectCurrencyScreen> {
         itemBuilder:
             (context, currency) => ListTile(
               contentPadding: listTilePadding,
-              leading: SizedBox(
-                width: 72,
-                child: Text(
-                  currency.code,
-                  textAlign: TextAlign.center,
-                  style: largeStyle.copyWith(
-                    color: Theme.of(context).colorScheme.primary,
-                  ),
-                ),
+              leading: PhosphorIcon(
+                PhosphorIconsRegular.currencyDollar,
+                color: Theme.of(context).colorScheme.primary,
+                size: mediumIconSize,
               ),
               title: Text(currency.name, style: mediumStyle),
               onTap: () {

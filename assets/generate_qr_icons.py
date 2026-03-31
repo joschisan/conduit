@@ -16,13 +16,14 @@ if not os.path.exists(venv_python):
 elif sys.executable != venv_python:
     os.execv(venv_python, [venv_python] + sys.argv)
 
-from PIL import Image
+from PIL import Image, ImageDraw
 import cairosvg
 from io import BytesIO
 
 ICON_SIZE = 512
-ICON_COLOR = '#000000'
-PADDING = 80
+ICON_COLOR = '#FFFFFF'
+BG_COLOR = (0, 0, 0, 255)
+PADDING = 120
 
 # Phosphor Regular SVG paths (viewBox 0 0 256 256)
 ICONS = {
@@ -56,8 +57,11 @@ for name, path_data in ICONS.items():
         centered.paste(cropped, (paste_x, paste_y))
         icon_img = centered
 
-    # Place on transparent canvas
+    # Place on black circle background
     result = Image.new('RGBA', (ICON_SIZE, ICON_SIZE), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(result)
+    circle_margin = 60
+    draw.ellipse([circle_margin, circle_margin, ICON_SIZE - 1 - circle_margin, ICON_SIZE - 1 - circle_margin], fill=BG_COLOR)
     result.paste(icon_img, (PADDING, PADDING), icon_img)
 
     result.save(f'{name}.png')

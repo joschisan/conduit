@@ -35,9 +35,6 @@ flutter:
   uses-material-design: true
   assets:
     - assets/logo.png
-    - assets/qr_icon_lightning.png
-    - assets/qr_icon_onchain.png
-    - assets/qr_icon_ecash.png
 
 flutter_launcher_icons:
   android: true

@@ -16,10 +16,7 @@ class DisplayLnurlScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            QrCodeWidget(
-              data: lnurl,
-              iconAsset: 'assets/qr_icon_lightning.png',
-            ),
+            QrCodeWidget(data: lnurl),
             const SizedBox(height: 16),
             ShareableData(data: lnurl),
             Expanded(

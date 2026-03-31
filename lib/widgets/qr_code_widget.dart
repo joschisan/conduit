@@ -3,9 +3,8 @@ import 'package:pretty_qr_code/pretty_qr_code.dart';
 
 class QrCodeWidget extends StatelessWidget {
   final String data;
-  final String iconAsset;
 
-  const QrCodeWidget({super.key, required this.data, required this.iconAsset});
+  const QrCodeWidget({super.key, required this.data});
 
   @override
   Widget build(BuildContext context) => Container(
@@ -17,13 +16,9 @@ class QrCodeWidget extends StatelessWidget {
     child: PrettyQrView.data(
       key: ValueKey(data),
       data: data.toUpperCase(),
-      decoration: PrettyQrDecoration(
-        shape: const PrettyQrSquaresSymbol(color: Colors.black, rounding: 1),
+      decoration: const PrettyQrDecoration(
+        shape: PrettyQrSmoothSymbol(color: Colors.black),
         background: Colors.white,
-        image: PrettyQrDecorationImage(
-          image: AssetImage(iconAsset),
-          clipper: const PrettyQrCircleClipper(),
-        ),
       ),
     ),
   );

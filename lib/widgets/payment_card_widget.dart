@@ -35,9 +35,16 @@ class PaymentCard extends StatelessWidget {
       color: Theme.of(context).colorScheme.primary,
     );
 
+    Color? titleColor;
+    if (event.success == false) {
+      titleColor = Colors.red;
+    } else if (event.incoming) {
+      titleColor = Theme.of(context).colorScheme.primary;
+    }
+
     Widget leading = switch (event.success) {
-      null => LoadingIcon(icon: icon),
-      true => icon,
+      null => LoadingIcon(key: const ValueKey('loading'), icon: icon),
+      true => KeyedSubtree(key: const ValueKey('success'), child: icon),
       false => const Icon(
         PhosphorIconsRegular.warningCircle,
         size: mediumIconSize,
@@ -48,19 +55,16 @@ class PaymentCard extends StatelessWidget {
     return ListTile(
       onTap: onTap,
       contentPadding: listTilePadding,
-      leading: leading,
-      title:
-          Text(
-            '$sign $formattedAmount sat',
-            style: mediumStyle.copyWith(
-              color:
-                  event.success == false
-                      ? Colors.red
-                      : event.incoming
-                          ? Theme.of(context).colorScheme.primary
-                          : null,
-            ),
-          ),
+      leading: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 500),
+        switchInCurve: Curves.easeIn,
+        switchOutCurve: Curves.easeOut,
+        child: leading,
+      ),
+      title: Text(
+        '$sign $formattedAmount sat',
+        style: mediumStyle.copyWith(color: titleColor),
+      ),
       trailing: Text(
         _formatTime(date),
         style: smallStyle.copyWith(

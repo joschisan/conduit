@@ -21,10 +21,7 @@ class DisplayInvoiceScreen extends StatelessWidget {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            QrCodeWidget(
-              data: invoice,
-              iconAsset: 'assets/qr_icon_lightning.png',
-            ),
+            QrCodeWidget(data: invoice),
             const SizedBox(height: 16),
             ShareableData(data: invoice),
             Expanded(child: Center(child: AmountDisplay(amount))),

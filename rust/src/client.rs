@@ -464,6 +464,8 @@ impl ConduitClient {
             let batch = self.client.get_event_log(Some(position), 100).await;
 
             for persisted_entry in &batch {
+                position = persisted_entry.id().saturating_add(1);
+
                 let Some(parsed) = parse_event_log_entry(persisted_entry.as_raw()) else {
                     continue;
                 };
@@ -509,8 +511,6 @@ impl ConduitClient {
                 if dbtx.commit_tx_result().await.is_err() {
                     return;
                 }
-
-                position = persisted_entry.id().saturating_add(1);
             }
 
             if batch.len() < 100 {
