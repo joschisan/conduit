@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:conduit/widgets/address_card_widget.dart';
+import 'package:conduit/utils/styles.dart';
 import 'package:conduit/widgets/qr_code_widget.dart';
+import 'package:conduit/widgets/shareable_data_widget.dart';
 
 class WalletV2ReceiveScreen extends StatelessWidget {
   final String address;
@@ -13,43 +14,25 @@ class WalletV2ReceiveScreen extends StatelessWidget {
       appBar: AppBar(centerTitle: true, title: const Text('Onchain Address')),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Column(
             children: [
+              const SizedBox(height: 16),
+              QrCodeWidget(data: address),
+              const SizedBox(height: 16),
+              ShareableData(data: address),
               Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      child: Center(
-                        child: Icon(
-                          Icons.currency_bitcoin,
-                          size: 64,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                    child: Text(
+                      'Confirmed onchain payments will take about an hour to appear.',
+                      style: smallStyle.copyWith(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
+                      textAlign: TextAlign.center,
                     ),
-                    QrCodeWidget(data: address),
-                    const SizedBox(height: 16),
-                    AddressCard(address: address),
-                    Expanded(
-                      child: Center(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 32.0),
-                          child: Text(
-                            'Confirmed onchain payments will take about an hour to appear.',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.onSurface.withValues(alpha: 0.7),
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ],
