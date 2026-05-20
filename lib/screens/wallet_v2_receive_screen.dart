@@ -26,7 +26,7 @@ class WalletV2ReceiveScreen extends StatelessWidget {
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 32.0),
                     child: Text(
-                      'Confirmed onchain payments will take about an hour to appear.',
+                      'Confirmed onchain payments will take about two hours to appear.',
                       style: smallStyle.copyWith(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),
