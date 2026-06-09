@@ -101,6 +101,13 @@ impl ConduitClient {
     }
 
     #[frb]
+    pub async fn sats_to_fiat(&self, amount_sats: i64) -> Result<f64, String> {
+        fetch_exchange_rate(self.exchange_rate_cache.clone(), self.currency_code.clone())
+            .await
+            .map(|r| (amount_sats as f64 / 100_000_000.0) * r)
+    }
+
+    #[frb]
     pub async fn subscribe_balance(&self, sink: StreamSink<i64>) {
         let mut stream = self
             .client
@@ -435,7 +442,10 @@ impl ConduitClient {
 
     #[frb]
     pub async fn federation_stats(&self) -> Option<FederationStats> {
-        let module = self.client.get_first_module::<WalletV2ClientModule>().ok()?;
+        let module = self
+            .client
+            .get_first_module::<WalletV2ClientModule>()
+            .ok()?;
 
         Some(FederationStats {
             total_value_sat: module.total_value().await.ok()?.to_sat() as i64,
@@ -466,9 +476,9 @@ impl ConduitClient {
                     ParsedEvent::Update {
                         operation_id,
                         success,
-                        oob,
+                        txid,
                     } => {
-                        apply_update(&mut payments, &operation_id, success, oob);
+                        apply_update(&mut payments, &operation_id, success, txid);
                     }
                 }
             }
@@ -505,9 +515,9 @@ impl ConduitClient {
                     ParsedEvent::Update {
                         operation_id,
                         success,
-                        oob,
+                        txid,
                     } => {
-                        apply_update(&mut payments, &operation_id, success, oob);
+                        apply_update(&mut payments, &operation_id, success, txid);
                     }
                 }
             }
@@ -556,8 +566,8 @@ impl ConduitClient {
                     ParsedEvent::Update {
                         operation_id,
                         success,
-                        oob,
-                    } => apply_update(&mut payments, &operation_id, success, oob),
+                        txid,
+                    } => apply_update(&mut payments, &operation_id, success, txid),
                 };
 
                 if sink

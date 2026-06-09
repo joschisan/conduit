@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/bridge_generated.dart/events.dart';
 import 'package:conduit/widgets/bordered_list_widget.dart';
+import 'package:conduit/widgets/animated_entry_widget.dart';
 import 'package:conduit/widgets/payment_card_widget.dart';
 import 'package:conduit/utils/notification_utils.dart';
 import 'package:conduit/utils/styles.dart';
@@ -95,7 +96,7 @@ class _RecentPaymentsState extends State<RecentPayments> {
             key: ValueKey(_payments[i].operationId),
             child: BorderedList.decorateItem(
               context: context,
-              child: _AnimatedEntry(
+              child: AnimatedEntry(
                 child: PaymentCard(
                   event: _payments[i],
                   onTap: () => widget.onTransactionTap(_payments[i]),
@@ -128,37 +129,5 @@ class _RecentPaymentsState extends State<RecentPayments> {
         ),
       ],
     );
-  }
-}
-
-class _AnimatedEntry extends StatefulWidget {
-  final Widget child;
-  const _AnimatedEntry({required this.child});
-
-  @override
-  State<_AnimatedEntry> createState() => _AnimatedEntryState();
-}
-
-class _AnimatedEntryState extends State<_AnimatedEntry>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _controller = AnimationController(
-    duration: const Duration(milliseconds: 500),
-    vsync: this,
-  )..forward();
-
-  late final Animation<double> _animation = CurvedAnimation(
-    parent: _controller,
-    curve: Curves.easeInOut,
-  );
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SizeTransition(sizeFactor: _animation, child: widget.child);
   }
 }

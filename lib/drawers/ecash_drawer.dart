@@ -3,8 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:conduit/bridge_generated.dart/lib.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/widgets/drawer_shell_widget.dart';
-import 'package:conduit/widgets/amount_display_widget.dart';
-import 'package:conduit/widgets/primary_card_widget.dart';
+import 'package:conduit/widgets/amount_detail_list_widget.dart';
 import 'package:conduit/widgets/async_button_widget.dart';
 import 'package:conduit/utils/drawer_utils.dart';
 
@@ -44,7 +43,10 @@ class _EcashDrawerState extends State<EcashDrawer> {
       icon: PhosphorIconsRegular.coinVertical,
       title: 'Receive eCash',
       children: [
-        PrimaryCard(child: AmountDisplay(widget.notes.amountSats())),
+        AmountDetailList(
+          client: widget.client,
+          amountSats: widget.notes.amountSats(),
+        ),
         const SizedBox(height: 16),
         AsyncButton(text: 'Receive', onPressed: _handleReceive),
       ],

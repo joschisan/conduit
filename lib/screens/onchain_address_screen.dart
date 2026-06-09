@@ -3,7 +3,8 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:conduit/utils/styles.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/widgets/qr_code_widget.dart';
-import 'package:conduit/widgets/shareable_data_widget.dart';
+import 'package:conduit/widgets/bordered_list_widget.dart';
+import 'package:conduit/widgets/shareable_row_widget.dart';
 import 'package:conduit/drawers/generate_onchain_address_drawer.dart';
 import 'package:conduit/utils/notification_utils.dart';
 
@@ -128,7 +129,11 @@ class _OnchainAddressScreenState extends State<OnchainAddressScreen> {
               const SizedBox(height: 16),
               QrCodeWidget(data: address),
               const SizedBox(height: 16),
-              ShareableData(data: address),
+              BorderedList.column(
+                children: [
+                  ShareableRow(data: address, label: 'Bitcoin Address'),
+                ],
+              ),
               const SizedBox(height: 16),
               Text(
                 '${currentIndex + 1} / ${addresses.length}',

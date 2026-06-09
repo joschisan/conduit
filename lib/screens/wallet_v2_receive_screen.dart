@@ -7,7 +7,8 @@ import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/drawers/wallet_v2_wallet_details_drawer.dart';
 import 'package:conduit/widgets/async_icon_button_widget.dart';
 import 'package:conduit/widgets/qr_code_widget.dart';
-import 'package:conduit/widgets/shareable_data_widget.dart';
+import 'package:conduit/widgets/bordered_list_widget.dart';
+import 'package:conduit/widgets/shareable_row_widget.dart';
 
 class WalletV2ReceiveScreen extends StatelessWidget {
   final String address;
@@ -50,7 +51,11 @@ class WalletV2ReceiveScreen extends StatelessWidget {
               const SizedBox(height: 16),
               QrCodeWidget(data: address),
               const SizedBox(height: 16),
-              ShareableData(data: address),
+              BorderedList.column(
+                children: [
+                  ShareableRow(data: address, label: 'Bitcoin Address'),
+                ],
+              ),
               Expanded(
                 child: Center(
                   child: Padding(

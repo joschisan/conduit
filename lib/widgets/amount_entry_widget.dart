@@ -3,15 +3,19 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:conduit/utils/styles.dart';
-import 'package:intl/intl.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/bridge_generated.dart/currency.dart';
+import 'package:conduit/utils/currency_utils.dart';
 import 'package:conduit/widgets/amount_display_widget.dart';
 import 'package:conduit/widgets/async_button_widget.dart';
 
 class AmountEntryWidget extends StatefulWidget {
   final ConduitClient client;
-  final Future<void> Function(int amountSats) onConfirm;
+  final Future<void> Function(
+    int amountSats,
+    ({String name, String amount})? fiatAmount,
+  )
+  onConfirm;
   final void Function(int currentAmount)? onAmountChanged;
 
   const AmountEntryWidget({
@@ -80,13 +84,7 @@ class _AmountEntryWidgetState extends State<AmountEntryWidget> {
 
   double get _fiatAmount => _currentAmount / pow(10, _currency.decimalDigits);
 
-  String _formatFiatAmount() {
-    final format =
-        _currency.decimalDigits > 0
-            ? '#,##0.${'0' * _currency.decimalDigits}'
-            : '#,##0';
-    return '${_currency.symbol} ${NumberFormat(format).format(_fiatAmount)}';
-  }
+  String _formatFiatAmount() => formatFiat(_currency, _fiatAmount);
 
   Future<void> _handleConfirm() async {
     if (_currentAmount == 0) {
@@ -98,7 +96,10 @@ class _AmountEntryWidgetState extends State<AmountEntryWidget> {
             ? await widget.client.fiatToSats(amountFiat: _fiatAmount)
             : _currentAmount;
 
-    await widget.onConfirm(amountSats);
+    await widget.onConfirm(
+      amountSats,
+      _enterFiat ? (name: _currency.name, amount: _formatFiatAmount()) : null,
+    );
   }
 
   @override

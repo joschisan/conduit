@@ -1,16 +1,21 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:conduit/bridge_generated.dart/lib.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
-import 'package:conduit/widgets/amount_display_widget.dart';
 import 'package:conduit/widgets/async_button_widget.dart';
-import 'package:conduit/widgets/shareable_data_widget.dart';
+import 'package:conduit/widgets/bordered_list_widget.dart';
+import 'package:conduit/widgets/detail_row_widget.dart';
+import 'package:conduit/widgets/shareable_row_widget.dart';
+import 'package:conduit/widgets/warning_card_widget.dart';
 import 'package:conduit/utils/auth_utils.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 class ConfirmOnchainSendScreen extends StatefulWidget {
   final ConduitClient client;
   final BitcoinAddressWrapper address;
   final int amountSats;
   final int feeSats;
+  final ({String name, String amount})? fiatAmount;
 
   const ConfirmOnchainSendScreen({
     super.key,
@@ -18,6 +23,7 @@ class ConfirmOnchainSendScreen extends StatefulWidget {
     required this.address,
     required this.amountSats,
     required this.feeSats,
+    this.fiatAmount,
   });
 
   @override
@@ -48,13 +54,41 @@ class _ConfirmOnchainSendScreenState extends State<ConfirmOnchainSendScreen> {
           padding: const EdgeInsets.all(16),
           child: Column(
             children: [
-              Expanded(
-                child: Center(
-                  child: AmountDisplay(widget.amountSats, fee: widget.feeSats),
-                ),
+              BorderedList.column(
+                children: [
+                  DetailRow(
+                    icon: PhosphorIconsRegular.currencyBtc,
+                    label: 'Amount in Bitcoin',
+                    value:
+                        '${NumberFormat('#,###').format(widget.amountSats)} sat',
+                  ),
+                  if (widget.fiatAmount != null)
+                    DetailRow(
+                      icon: PhosphorIconsRegular.currencyDollar,
+                      label: 'Amount in ${widget.fiatAmount!.name}',
+                      value: widget.fiatAmount!.amount,
+                    ),
+                  ShareableRow(
+                    data: widget.address.toString(),
+                    label: 'Bitcoin Address',
+                  ),
+                  DetailRow(
+                    icon: PhosphorIconsRegular.network,
+                    label: 'Network Fee',
+                    value:
+                        '${NumberFormat('#,###').format(widget.feeSats)} sat',
+                  ),
+                ],
               ),
-              ShareableData(data: widget.address.toString()),
-              const SizedBox(height: 16),
+              const Spacer(),
+              if (widget.feeSats > widget.amountSats * 0.02) ...[
+                WarningCard(
+                  icon: PhosphorIconsRegular.warning,
+                  text:
+                      'High Relative Fee of ${(widget.feeSats / widget.amountSats * 100).toStringAsFixed(1)}%',
+                ),
+                const SizedBox(height: 16),
+              ],
               AsyncButton(text: 'Confirm', onPressed: _handleConfirm),
             ],
           ),

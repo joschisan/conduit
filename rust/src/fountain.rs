@@ -4,7 +4,7 @@ use fedimint_mint_client::OOBNotes;
 use fedimint_mintv2_client::ECash;
 use flutter_rust_bridge::frb;
 
-use crate::{EcashToken, ECashWrapper};
+use crate::{ECashWrapper, EcashToken};
 
 #[frb(opaque)]
 pub struct ECashEncoder(FountainEncoder);

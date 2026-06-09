@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:conduit/utils/styles.dart';
 import 'package:conduit/widgets/qr_code_widget.dart';
-import 'package:conduit/widgets/shareable_data_widget.dart';
+import 'package:conduit/widgets/bordered_list_widget.dart';
+import 'package:conduit/widgets/shareable_row_widget.dart';
 
 class DisplayLnurlScreen extends StatelessWidget {
   final String lnurl;
@@ -18,7 +19,9 @@ class DisplayLnurlScreen extends StatelessWidget {
           children: [
             QrCodeWidget(data: lnurl),
             const SizedBox(height: 16),
-            ShareableData(data: lnurl),
+            BorderedList.column(
+              children: [ShareableRow(data: lnurl, label: 'Lightning Url')],
+            ),
             Expanded(
               child: Center(
                 child: Padding(

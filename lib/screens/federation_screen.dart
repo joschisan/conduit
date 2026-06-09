@@ -7,6 +7,7 @@ import 'package:conduit/bridge_generated.dart/events.dart';
 import 'package:conduit/bridge_generated.dart/factory.dart';
 import 'package:conduit/bridge_generated.dart/lib.dart';
 import 'package:conduit/widgets/animated_balance_widget.dart';
+import 'package:conduit/widgets/warning_card_widget.dart';
 import 'package:conduit/widgets/recent_payments_widget.dart';
 import 'package:conduit/screens/invoice_amount_screen.dart';
 import 'package:conduit/screens/ecash_amount_screen.dart';
@@ -347,7 +348,11 @@ class _FederationScreenState extends State<FederationScreen> {
             if (_expirationDate != null)
               Padding(
                 padding: const EdgeInsets.only(bottom: 12),
-                child: _ExpirationWarningCard(onTap: _showExpirationDrawer),
+                child: WarningCard(
+                  icon: PhosphorIconsRegular.moon,
+                  text: 'Federation Expiry',
+                  onTap: _showExpirationDrawer,
+                ),
               ),
             RecentPayments(
               client: widget.client,
@@ -399,43 +404,6 @@ class _CircularActionButton extends StatelessWidget {
           const SizedBox(height: 8),
           Text(label, style: smallStyle),
         ],
-      ),
-    );
-  }
-}
-
-class _ExpirationWarningCard extends StatelessWidget {
-  final VoidCallback onTap;
-
-  const _ExpirationWarningCard({required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: Colors.amber.withValues(alpha: 0.15),
-          borderRadius: borderRadiusLarge,
-          border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              PhosphorIconsRegular.moon,
-              color: Colors.amber[700],
-              size: smallIconSize,
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(
-                'Federation Expiry',
-                style: mediumStyle.copyWith(color: Colors.amber[700]),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }

@@ -30,7 +30,9 @@ pub struct ConduitPayment {
     pub fee_sats: Option<i64>,
     pub timestamp: i64,
     pub success: Option<bool>,
-    pub oob: Option<String>,
+    pub ecash: Option<String>,
+    pub txid: Option<String>,
+    pub address: Option<String>,
 }
 
 /// Notification for a recent payment event
@@ -54,7 +56,7 @@ pub(crate) enum ParsedEvent {
     Update {
         operation_id: String,
         success: bool,
-        oob: Option<String>,
+        txid: Option<String>,
     },
 }
 
@@ -63,14 +65,14 @@ pub(crate) fn apply_update(
     payments: &mut [ConduitPayment],
     operation_id: &str,
     success: bool,
-    oob: Option<String>,
+    txid: Option<String>,
 ) -> Option<PaymentNotification> {
     let payment = payments
         .iter_mut()
         .rfind(|p| p.operation_id == operation_id)?;
 
     payment.success = Some(success);
-    payment.oob = oob;
+    payment.txid = txid;
 
     Some(PaymentNotification {
         incoming: payment.incoming,
@@ -95,7 +97,9 @@ pub(crate) fn parse_event_log_entry(entry: &EventLogEntry) -> Option<ParsedEvent
             fee_sats: Some((send.fee.msats / 1000) as i64),
             timestamp: (entry.ts_usecs / 1000) as i64,
             success: None,
-            oob: None,
+            ecash: None,
+            txid: None,
+            address: None,
         }));
     }
 
@@ -103,7 +107,7 @@ pub(crate) fn parse_event_log_entry(entry: &EventLogEntry) -> Option<ParsedEvent
         return Some(ParsedEvent::Update {
             operation_id: format!("lnv2_{}", update.operation_id.fmt_short()),
             success: matches!(update.status, SendPaymentStatus::Success(_)),
-            oob: None,
+            txid: None,
         });
     }
 
@@ -116,7 +120,9 @@ pub(crate) fn parse_event_log_entry(entry: &EventLogEntry) -> Option<ParsedEvent
             fee_sats: None,
             timestamp: (entry.ts_usecs / 1000) as i64,
             success: Some(true),
-            oob: None,
+            ecash: None,
+            txid: None,
+            address: None,
         }));
     }
 
@@ -129,7 +135,9 @@ pub(crate) fn parse_event_log_entry(entry: &EventLogEntry) -> Option<ParsedEvent
             fee_sats: None,
             timestamp: (entry.ts_usecs / 1000) as i64,
             success: Some(true),
-            oob: Some(send.oob_notes),
+            ecash: Some(send.oob_notes),
+            txid: None,
+            address: None,
         }));
     }
 
@@ -142,7 +150,9 @@ pub(crate) fn parse_event_log_entry(entry: &EventLogEntry) -> Option<ParsedEvent
             fee_sats: None,
             timestamp: (entry.ts_usecs / 1000) as i64,
             success: None,
-            oob: None,
+            ecash: None,
+            txid: None,
+            address: None,
         }));
     }
 
@@ -150,7 +160,7 @@ pub(crate) fn parse_event_log_entry(entry: &EventLogEntry) -> Option<ParsedEvent
         return Some(ParsedEvent::Update {
             operation_id: format!("mint_{}", update.operation_id.fmt_short()),
             success: matches!(update.status, ReceivePaymentStatus::Success),
-            oob: None,
+            txid: None,
         });
     }
 
@@ -163,12 +173,14 @@ pub(crate) fn parse_event_log_entry(entry: &EventLogEntry) -> Option<ParsedEvent
             fee_sats: Some(send.fee.to_sat() as i64),
             timestamp: (entry.ts_usecs / 1000) as i64,
             success: None,
-            oob: None,
+            ecash: None,
+            txid: None,
+            address: None,
         }));
     }
 
     if let Some(status) = parse::<fedimint_wallet_client::events::SendPaymentStatusEvent>(entry) {
-        let (success, oob) = match status.status {
+        let (success, txid) = match status.status {
             WalletSendPaymentStatus::Success(txid) => (true, Some(txid.to_string())),
             WalletSendPaymentStatus::Aborted => (false, None),
         };
@@ -176,7 +188,7 @@ pub(crate) fn parse_event_log_entry(entry: &EventLogEntry) -> Option<ParsedEvent
         return Some(ParsedEvent::Update {
             operation_id: format!("wallet_{}", status.operation_id.fmt_short()),
             success,
-            oob,
+            txid,
         });
     }
 
@@ -189,7 +201,9 @@ pub(crate) fn parse_event_log_entry(entry: &EventLogEntry) -> Option<ParsedEvent
             fee_sats: None,
             timestamp: (entry.ts_usecs / 1000) as i64,
             success: Some(true),
-            oob: Some(receive.txid.to_string()),
+            ecash: None,
+            txid: Some(receive.txid.to_string()),
+            address: None,
         }));
     }
 
@@ -204,7 +218,9 @@ pub(crate) fn parse_event_log_entry(entry: &EventLogEntry) -> Option<ParsedEvent
             fee_sats: None,
             timestamp: (entry.ts_usecs / 1000) as i64,
             success: Some(true),
-            oob: Some(send.ecash),
+            ecash: Some(send.ecash),
+            txid: None,
+            address: None,
         }));
     }
 
@@ -217,17 +233,17 @@ pub(crate) fn parse_event_log_entry(entry: &EventLogEntry) -> Option<ParsedEvent
             fee_sats: None,
             timestamp: (entry.ts_usecs / 1000) as i64,
             success: None,
-            oob: None,
+            ecash: None,
+            txid: None,
+            address: None,
         }));
     }
 
-    if let Some(update) =
-        parse::<fedimint_mintv2_client::ReceivePaymentUpdateEvent>(entry)
-    {
+    if let Some(update) = parse::<fedimint_mintv2_client::ReceivePaymentUpdateEvent>(entry) {
         return Some(ParsedEvent::Update {
             operation_id: format!("mintv2_{}", update.operation_id.fmt_short()),
             success: matches!(update.status, MintV2ReceivePaymentStatus::Success),
-            oob: None,
+            txid: None,
         });
     }
 
@@ -238,18 +254,21 @@ pub(crate) fn parse_event_log_entry(entry: &EventLogEntry) -> Option<ParsedEvent
             operation_id: format!("walletv2_{}", send.operation_id.fmt_short()),
             incoming: false,
             payment_type: PaymentType::Bitcoin,
-            amount_sats: send.value.to_sat() as i64,
+            // walletv2 reports `value` excluding the fee; fold it in so
+            // amount_sats is the total debited from the balance, matching the
+            // lightning and walletv1 modules.
+            amount_sats: (send.value + send.fee).to_sat() as i64,
             fee_sats: Some(send.fee.to_sat() as i64),
             timestamp: (entry.ts_usecs / 1000) as i64,
             success: None,
-            oob: None,
+            ecash: None,
+            txid: None,
+            address: Some(send.address.clone().assume_checked().to_string()),
         }));
     }
 
-    if let Some(status) =
-        parse::<fedimint_walletv2_client::events::SendPaymentUpdateEvent>(entry)
-    {
-        let (success, oob) = match status.status {
+    if let Some(status) = parse::<fedimint_walletv2_client::events::SendPaymentUpdateEvent>(entry) {
+        let (success, txid) = match status.status {
             WalletV2SendPaymentStatus::Success(txid) => (true, Some(txid.to_string())),
             WalletV2SendPaymentStatus::Aborted => (false, None),
         };
@@ -257,22 +276,25 @@ pub(crate) fn parse_event_log_entry(entry: &EventLogEntry) -> Option<ParsedEvent
         return Some(ParsedEvent::Update {
             operation_id: format!("walletv2_{}", status.operation_id.fmt_short()),
             success,
-            oob,
+            txid,
         });
     }
 
-    if let Some(receive) =
-        parse::<fedimint_walletv2_client::events::ReceivePaymentEvent>(entry)
-    {
+    if let Some(receive) = parse::<fedimint_walletv2_client::events::ReceivePaymentEvent>(entry) {
         return Some(ParsedEvent::Payment(ConduitPayment {
             operation_id: format!("walletv2_{}", receive.operation_id.fmt_short()),
             incoming: true,
             payment_type: PaymentType::Bitcoin,
-            amount_sats: receive.value.to_sat() as i64,
+            // walletv2 reports the gross deposit `value`; the peg-in fee is
+            // deducted before crediting, so subtract it to make amount_sats the
+            // net amount actually added to the balance.
+            amount_sats: (receive.value - receive.fee).to_sat() as i64,
             fee_sats: Some(receive.fee.to_sat() as i64),
             timestamp: (entry.ts_usecs / 1000) as i64,
             success: None,
-            oob: None,
+            ecash: None,
+            txid: None,
+            address: Some(receive.address.clone().assume_checked().to_string()),
         }));
     }
 
@@ -282,7 +304,7 @@ pub(crate) fn parse_event_log_entry(entry: &EventLogEntry) -> Option<ParsedEvent
         return Some(ParsedEvent::Update {
             operation_id: format!("walletv2_{}", status.operation_id.fmt_short()),
             success: matches!(status.status, WalletV2ReceivePaymentStatus::Success),
-            oob: None,
+            txid: None,
         });
     }
 

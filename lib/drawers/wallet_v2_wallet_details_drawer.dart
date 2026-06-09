@@ -1,10 +1,10 @@
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:conduit/utils/styles.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/widgets/drawer_shell_widget.dart';
 import 'package:conduit/widgets/bordered_list_widget.dart';
+import 'package:conduit/widgets/detail_row_widget.dart';
 import 'package:conduit/utils/drawer_utils.dart';
 
 class WalletV2WalletDetailsDrawer extends StatelessWidget {
@@ -21,36 +21,6 @@ class WalletV2WalletDetailsDrawer extends StatelessWidget {
       child: WalletV2WalletDetailsDrawer(stats: stats),
     );
   }
-
-  // Stack the value over the label inside the title slot (rather than using
-  // ListTile.subtitle) so the tile keeps the single-line height of the other
-  // bordered lists while still showing a header and subheader.
-  Widget _stat(
-    BuildContext context,
-    IconData icon,
-    String label,
-    String value,
-  ) => ListTile(
-    contentPadding: listTilePadding,
-    leading: Icon(
-      icon,
-      size: mediumIconSize,
-      color: Theme.of(context).colorScheme.primary,
-    ),
-    title: Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(value, style: mediumStyle),
-        Text(
-          label,
-          style: smallStyle.copyWith(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
-        ),
-      ],
-    ),
-  );
 
   String _btc(int sats) => '${(sats / 100000000).toStringAsFixed(8)} BTC';
 
@@ -74,24 +44,21 @@ class WalletV2WalletDetailsDrawer extends StatelessWidget {
       children: [
         BorderedList.column(
           children: [
-            _stat(
-              context,
-              PhosphorIconsRegular.currencyBtc,
-              'Value in Custody',
-              _btc(stats.totalValueSat),
+            DetailRow(
+              icon: PhosphorIconsRegular.currencyBtc,
+              label: 'Value in Custody',
+              value: _btc(stats.totalValueSat),
             ),
-            _stat(
-              context,
-              PhosphorIconsRegular.cube,
-              'Block Count',
-              _count(stats.blockCount),
+            DetailRow(
+              icon: PhosphorIconsRegular.cube,
+              label: 'Block Count',
+              value: _count(stats.blockCount),
             ),
             if (feerate != null)
-              _stat(
-                context,
-                PhosphorIconsRegular.speedometer,
-                'Feerate',
-                _feerate(feerate),
+              DetailRow(
+                icon: PhosphorIconsRegular.speedometer,
+                label: 'Feerate',
+                value: _feerate(feerate),
               ),
           ],
         ),

@@ -21,7 +21,11 @@ class InvoiceAmountScreen extends StatelessWidget {
     );
   }
 
-  Future<void> _handleConfirm(BuildContext context, int amountSats) async {
+  Future<void> _handleConfirm(
+    BuildContext context,
+    int amountSats,
+    ({String name, String amount})? fiatAmount,
+  ) async {
     final invoice = await client.lnReceive(amountSat: amountSats);
 
     if (!context.mounted) return;
@@ -29,7 +33,11 @@ class InvoiceAmountScreen extends StatelessWidget {
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
         builder:
-            (_) => DisplayInvoiceScreen(invoice: invoice, amount: amountSats),
+            (_) => DisplayInvoiceScreen(
+              invoice: invoice,
+              amount: amountSats,
+              fiatAmount: fiatAmount,
+            ),
       ),
     );
   }
@@ -49,7 +57,9 @@ class InvoiceAmountScreen extends StatelessWidget {
       body: SafeArea(
         child: AmountEntryWidget(
           client: client,
-          onConfirm: (amountSats) => _handleConfirm(context, amountSats),
+          onConfirm:
+              (amountSats, fiatAmount) =>
+                  _handleConfirm(context, amountSats, fiatAmount),
         ),
       ),
     );

@@ -66,7 +66,10 @@ class ConfirmRecoveryPhraseScreen extends StatelessWidget {
                     color: theme.colorScheme.primary,
                     size: mediumIconSize,
                   ),
-                  title: Text('${i + 1} - ${seedPhrase[i]}', style: mediumStyle),
+                  title: Text(
+                    '${i + 1} - ${seedPhrase[i]}',
+                    style: mediumStyle,
+                  ),
                 ),
               ),
             const SizedBox(height: 16),
