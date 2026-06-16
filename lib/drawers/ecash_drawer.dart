@@ -1,9 +1,11 @@
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:conduit/bridge_generated.dart/lib.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/widgets/drawer_shell_widget.dart';
-import 'package:conduit/widgets/amount_detail_list_widget.dart';
+import 'package:conduit/widgets/bordered_list_widget.dart';
+import 'package:conduit/widgets/detail_row_widget.dart';
 import 'package:conduit/widgets/async_button_widget.dart';
 import 'package:conduit/utils/drawer_utils.dart';
 
@@ -43,9 +45,15 @@ class _EcashDrawerState extends State<EcashDrawer> {
       icon: PhosphorIconsRegular.coinVertical,
       title: 'Receive eCash',
       children: [
-        AmountDetailList(
-          client: widget.client,
-          amountSats: widget.notes.amountSats(),
+        BorderedList.column(
+          children: [
+            DetailRow(
+              icon: PhosphorIconsRegular.currencyBtc,
+              label: 'Amount in Bitcoin',
+              value:
+                  '${NumberFormat('#,###').format(widget.notes.amountSats())} sat',
+            ),
+          ],
         ),
         const SizedBox(height: 16),
         AsyncButton(text: 'Receive', onPressed: _handleReceive),

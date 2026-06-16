@@ -17,12 +17,14 @@ class AmountEntryWidget extends StatefulWidget {
   )
   onConfirm;
   final void Function(int currentAmount)? onAmountChanged;
+  final String buttonText;
 
   const AmountEntryWidget({
     super.key,
     required this.client,
     required this.onConfirm,
     this.onAmountChanged,
+    this.buttonText = 'Confirm',
   });
 
   @override
@@ -147,7 +149,7 @@ class _AmountEntryWidgetState extends State<AmountEntryWidget> {
         // Confirm button
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: AsyncButton(text: 'Confirm', onPressed: _handleConfirm),
+          child: AsyncButton(text: widget.buttonText, onPressed: _handleConfirm),
         ),
 
         const SizedBox(height: 16),

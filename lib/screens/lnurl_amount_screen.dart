@@ -7,7 +7,7 @@ import 'package:conduit/bridge_generated.dart/factory.dart';
 import 'package:conduit/bridge_generated.dart/lnurl.dart';
 import 'package:conduit/widgets/amount_entry_widget.dart';
 import 'package:conduit/screens/contact_name_entry_screen.dart';
-import 'package:conduit/utils/auth_utils.dart';
+import 'package:conduit/screens/confirm_lnurl_send_screen.dart';
 
 class LnurlAmountScreen extends StatefulWidget {
   final ConduitClient client;
@@ -41,15 +41,23 @@ class _LnurlAmountScreenState extends State<LnurlAmountScreen> {
       amountSats: amountSats,
     );
 
-    if (!mounted) return;
-
-    await requireBiometricAuth(context);
-
-    await widget.client.lnSend(invoice: invoice);
+    final fees = await widget.client.lnCalculateFees(invoice: invoice);
 
     if (!mounted) return;
 
-    Navigator.of(context).pop();
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder:
+            (_) => ConfirmLnurlSendScreen(
+              client: widget.client,
+              invoice: invoice,
+              amountSats: amountSats,
+              fees: fees,
+              fiatAmount: fiatAmount,
+              contactName: _contactName,
+            ),
+      ),
+    );
   }
 
   Future<void> _handleSaveContact() async {
@@ -99,6 +107,7 @@ class _LnurlAmountScreenState extends State<LnurlAmountScreen> {
         child: AmountEntryWidget(
           client: widget.client,
           onConfirm: _handleConfirm,
+          buttonText: 'Continue',
         ),
       ),
     );

@@ -44,6 +44,23 @@ pub struct FederationStats {
 }
 
 #[frb]
+pub struct LnSendFees {
+    pub gateway_url: String,
+    pub fee_sats: i64,
+    /// Whether the payment is settled as a direct swap between fedimints rather
+    /// than routed over the lightning network. True when the invoice's payee is
+    /// the selected gateway's own lightning node.
+    pub is_direct: bool,
+}
+
+#[frb]
+pub struct LnReceiveInvoice {
+    pub invoice: String,
+    pub gateway_url: String,
+    pub fee_sats: i64,
+}
+
+#[frb]
 #[derive(Clone)]
 pub struct ConduitClient {
     pub(crate) client: ClientHandleArc,
@@ -98,13 +115,6 @@ impl ConduitClient {
         fetch_exchange_rate(self.exchange_rate_cache.clone(), self.currency_code.clone())
             .await
             .map(|r| ((amount_fiat / r) * 100_000_000.0).round() as i64)
-    }
-
-    #[frb]
-    pub async fn sats_to_fiat(&self, amount_sats: i64) -> Result<f64, String> {
-        fetch_exchange_rate(self.exchange_rate_cache.clone(), self.currency_code.clone())
-            .await
-            .map(|r| (amount_sats as f64 / 100_000_000.0) * r)
     }
 
     #[frb]
@@ -242,32 +252,106 @@ impl ConduitClient {
         }
     }
 
+    /// Generates an invoice to receive `amount_sat`. The gateway is selected up
+    /// front so the gateway and its (deducted) receive fee can be shown
+    /// alongside the invoice; the same gateway is then used to mint it. The
+    /// recipient receives `amount_sat` minus `fee_sats`.
     #[frb]
-    pub async fn ln_receive(&self, amount_sat: i64) -> Result<String, String> {
-        let invoice = self
+    pub async fn ln_receive(&self, amount_sat: i64) -> Result<LnReceiveInvoice, String> {
+        let module = self
             .client
             .get_first_module::<LightningClientModule>()
-            .unwrap()
+            .unwrap();
+
+        let (gateway, routing_info) =
+            module.select_gateway(None).await.map_err(|e| e.to_string())?;
+
+        let amount = Amount::from_sats(amount_sat as u64);
+
+        let fee_sats = routing_info
+            .receive_fee
+            .fee(amount.msats)
+            .msats
+            .div_ceil(1000) as i64;
+
+        let invoice = module
             .receive(
-                Amount::from_sats(amount_sat as u64),
+                amount,
                 60 * 60 * 24,
                 Bolt11InvoiceDescription::Direct(String::new()),
-                None,
+                Some(gateway.clone()),
                 ().into(),
             )
             .await
             .map_err(|e| e.to_string())?
             .0;
 
-        Ok(invoice.to_string())
+        Ok(LnReceiveInvoice {
+            invoice: invoice.to_string(),
+            gateway_url: gateway.to_string(),
+            fee_sats,
+        })
     }
 
+    /// Selects the gateway that would auto-route this invoice and quotes the
+    /// fee for it, mirroring the selection [`Self::ln_send`] performs with
+    /// `None`. Intended for display on the send confirmation screen; the actual
+    /// fee charged is fixed when the payment is submitted.
     #[frb]
-    pub async fn ln_send(&self, invoice: &Bolt11InvoiceWrapper) -> Result<OperationId, String> {
+    pub async fn ln_calculate_fees(
+        &self,
+        invoice: &Bolt11InvoiceWrapper,
+    ) -> Result<LnSendFees, String> {
+        let module = self
+            .client
+            .get_first_module::<LightningClientModule>()
+            .unwrap();
+
+        let (gateway, routing_info) = module
+            .select_gateway(Some(invoice.0.clone()))
+            .await
+            .map_err(|e| e.to_string())?;
+
+        let amount_msats = invoice
+            .0
+            .amount_milli_satoshis()
+            .ok_or("Invoice has no amount")?;
+
+        let (send_fee, _) = routing_info.send_parameters(&invoice.0);
+
+        let fee_sats = send_fee.fee(amount_msats).msats.div_ceil(1000) as i64;
+
+        // A direct swap settles between fedimints when the invoice's payee is
+        // the gateway's own lightning node; otherwise it routes over lightning.
+        let is_direct =
+            invoice.0.recover_payee_pub_key() == routing_info.lightning_public_key;
+
+        Ok(LnSendFees {
+            gateway_url: gateway.to_string(),
+            fee_sats,
+            is_direct,
+        })
+    }
+
+    /// Sends a payment for `invoice`. When `gateway` is `Some`, that gateway
+    /// (as returned by [`Self::ln_calculate_fees`]) is used directly so the fee
+    /// quoted on the confirmation screen matches what is charged; `None` lets
+    /// the module auto-select.
+    #[frb]
+    pub async fn ln_send(
+        &self,
+        invoice: &Bolt11InvoiceWrapper,
+        gateway: Option<String>,
+    ) -> Result<OperationId, String> {
+        let gateway = match gateway {
+            Some(url) => Some(SafeUrl::parse(&url).map_err(|e| e.to_string())?),
+            None => None,
+        };
+
         self.client
             .get_first_module::<LightningClientModule>()
             .unwrap()
-            .send(invoice.0.clone(), None, ().into())
+            .send(invoice.0.clone(), gateway, ().into())
             .await
             .map_err(|e| e.to_string())
     }

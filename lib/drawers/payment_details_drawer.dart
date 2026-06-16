@@ -63,11 +63,6 @@ class PaymentDetailsDrawer extends StatelessWidget {
                       : 'Balance Change (incl. network fee)',
               value: '$sign ${_sats(event.amountSats)}',
             ),
-            DetailRow(
-              icon: PhosphorIconsRegular.calendarBlank,
-              label: 'Date',
-              value: _formatDateTime(event.timestamp),
-            ),
             if (event.address != null)
               ShareableRow(data: event.address!, label: 'Bitcoin Address'),
             if (event.txid != null)
@@ -80,6 +75,11 @@ class PaymentDetailsDrawer extends StatelessWidget {
                 label: 'Network Fee',
                 value: _sats(fee),
               ),
+            DetailRow(
+              icon: PhosphorIconsRegular.calendarBlank,
+              label: 'Date',
+              value: _formatDateTime(event.timestamp),
+            ),
           ],
         ),
       ],

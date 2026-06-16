@@ -15,7 +15,7 @@ class DisplayRecoveryPhraseScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Recovery Phrase')),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16).copyWith(bottom: 32),
+        padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [

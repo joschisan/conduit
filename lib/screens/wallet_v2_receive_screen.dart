@@ -35,7 +35,7 @@ class WalletV2ReceiveScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         centerTitle: true,
-        title: const Text('Onchain Address'),
+        title: const Text('Receive Onchain'),
         actions: [
           AsyncIconButton(
             icon: PhosphorIconsRegular.info,

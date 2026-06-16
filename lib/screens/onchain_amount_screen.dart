@@ -52,6 +52,7 @@ class _OnchainAmountScreenState extends State<OnchainAmountScreen> {
         child: AmountEntryWidget(
           client: widget.client,
           onConfirm: _handleConfirm,
+          buttonText: 'Continue',
         ),
       ),
     );

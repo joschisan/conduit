@@ -26,7 +26,7 @@ class InvoiceAmountScreen extends StatelessWidget {
     int amountSats,
     ({String name, String amount})? fiatAmount,
   ) async {
-    final invoice = await client.lnReceive(amountSat: amountSats);
+    final receive = await client.lnReceive(amountSat: amountSats);
 
     if (!context.mounted) return;
 
@@ -34,8 +34,10 @@ class InvoiceAmountScreen extends StatelessWidget {
       MaterialPageRoute(
         builder:
             (_) => DisplayInvoiceScreen(
-              invoice: invoice,
+              invoice: receive.invoice,
               amount: amountSats,
+              gatewayUrl: receive.gatewayUrl,
+              feeSats: receive.feeSats,
               fiatAmount: fiatAmount,
             ),
       ),

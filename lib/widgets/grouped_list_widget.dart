@@ -21,7 +21,7 @@ class GroupedList<T> extends StatelessWidget {
     final offset = header != null ? 1 : 0;
 
     return ListView.builder(
-      padding: const EdgeInsets.all(16).copyWith(bottom: 32),
+      padding: const EdgeInsets.all(16),
       itemCount: items.length + offset,
       itemBuilder: (context, index) {
         if (index < offset) return header!;

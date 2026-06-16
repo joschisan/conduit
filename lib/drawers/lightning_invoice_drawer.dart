@@ -1,11 +1,13 @@
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:conduit/bridge_generated.dart/lib.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/widgets/drawer_shell_widget.dart';
-import 'package:conduit/widgets/amount_detail_list_widget.dart';
+import 'package:conduit/widgets/bordered_list_widget.dart';
+import 'package:conduit/widgets/detail_row_widget.dart';
 import 'package:conduit/widgets/async_button_widget.dart';
-import 'package:conduit/utils/auth_utils.dart';
+import 'package:conduit/drawers/confirm_lightning_send_drawer.dart';
 import 'package:conduit/utils/drawer_utils.dart';
 
 class LightningInvoiceDrawer extends StatefulWidget {
@@ -34,14 +36,20 @@ class LightningInvoiceDrawer extends StatefulWidget {
 }
 
 class _LightningInvoiceDrawerState extends State<LightningInvoiceDrawer> {
-  Future<void> _handleConfirm() async {
-    await requireBiometricAuth(context);
-
-    await widget.client.lnSend(invoice: widget.invoice);
+  /// Selects the gateway and quotes its fee, then hands off to the confirmation
+  /// drawer. The gateway is only chosen here, once the user opts to continue.
+  Future<void> _handleContinue() async {
+    final fees = await widget.client.lnCalculateFees(invoice: widget.invoice);
 
     if (!mounted) return;
 
     Navigator.of(context).pop();
+    ConfirmLightningSendDrawer.show(
+      context,
+      client: widget.client,
+      invoice: widget.invoice,
+      fees: fees,
+    );
   }
 
   @override
@@ -50,12 +58,18 @@ class _LightningInvoiceDrawerState extends State<LightningInvoiceDrawer> {
       icon: PhosphorIconsRegular.lightning,
       title: 'Send Lightning',
       children: [
-        AmountDetailList(
-          client: widget.client,
-          amountSats: widget.invoice.amountSats(),
+        BorderedList.column(
+          children: [
+            DetailRow(
+              icon: PhosphorIconsRegular.currencyBtc,
+              label: 'Amount in Bitcoin',
+              value:
+                  '${NumberFormat('#,###').format(widget.invoice.amountSats())} sat',
+            ),
+          ],
         ),
         const SizedBox(height: 16),
-        AsyncButton(text: 'Confirm', onPressed: _handleConfirm),
+        AsyncButton(text: 'Continue', onPressed: _handleContinue),
       ],
     );
   }

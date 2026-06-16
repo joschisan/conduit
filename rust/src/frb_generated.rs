@@ -42,7 +42,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.10.0";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -1284955511;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = 326009703;
 
 // Section: executor
 
@@ -1683,6 +1683,81 @@ fn wire__crate__client__ConduitClient_has_pending_recoveries_impl(
         },
     )
 }
+fn wire__crate__client__ConduitClient_ln_calculate_fees_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "ConduitClient_ln_calculate_fees",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<ConduitClient>,
+            >>::sse_decode(&mut deserializer);
+            let api_invoice = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Bolt11InvoiceWrapper>,
+            >>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, String>(
+                    (move || async move {
+                        let mut api_that_guard = None;
+                        let mut api_invoice_guard = None;
+                        let decode_indices_ =
+                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
+                                vec![
+                                    flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                        &api_that, 0, false,
+                                    ),
+                                    flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                        &api_invoice,
+                                        1,
+                                        false,
+                                    ),
+                                ],
+                            );
+                        for i in decode_indices_ {
+                            match i {
+                                0 => {
+                                    api_that_guard =
+                                        Some(api_that.lockable_decode_async_ref().await)
+                                }
+                                1 => {
+                                    api_invoice_guard =
+                                        Some(api_invoice.lockable_decode_async_ref().await)
+                                }
+                                _ => unreachable!(),
+                            }
+                        }
+                        let api_that_guard = api_that_guard.unwrap();
+                        let api_invoice_guard = api_invoice_guard.unwrap();
+                        let output_ok = crate::client::ConduitClient::ln_calculate_fees(
+                            &*api_that_guard,
+                            &*api_invoice_guard,
+                        )
+                        .await?;
+                        Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
 fn wire__crate__client__ConduitClient_ln_receive_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
@@ -1771,6 +1846,7 @@ fn wire__crate__client__ConduitClient_ln_send_impl(
             let api_invoice = <RustOpaqueMoi<
                 flutter_rust_bridge::for_generated::RustAutoOpaqueInner<Bolt11InvoiceWrapper>,
             >>::sse_decode(&mut deserializer);
+            let api_gateway = <Option<String>>::sse_decode(&mut deserializer);
             deserializer.end();
             move |context| async move {
                 transform_result_sse::<_, String>(
@@ -1808,6 +1884,7 @@ fn wire__crate__client__ConduitClient_ln_send_impl(
                         let output_ok = crate::client::ConduitClient::ln_send(
                             &*api_that_guard,
                             &*api_invoice_guard,
+                            api_gateway,
                         )
                         .await?;
                         Ok(output_ok)
@@ -2253,66 +2330,6 @@ fn wire__crate__client__ConduitClient_prefetch_exchange_rates_impl(
                             crate::client::ConduitClient::prefetch_exchange_rates(&*api_that_guard)
                                 .await;
                         })?;
-                        Ok(output_ok)
-                    })()
-                    .await,
-                )
-            }
-        },
-    )
-}
-fn wire__crate__client__ConduitClient_sats_to_fiat_impl(
-    port_: flutter_rust_bridge::for_generated::MessagePort,
-    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
-    rust_vec_len_: i32,
-    data_len_: i32,
-) {
-    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
-        flutter_rust_bridge::for_generated::TaskInfo {
-            debug_name: "ConduitClient_sats_to_fiat",
-            port: Some(port_),
-            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
-        },
-        move || {
-            let message = unsafe {
-                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
-                    ptr_,
-                    rust_vec_len_,
-                    data_len_,
-                )
-            };
-            let mut deserializer =
-                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
-            let api_that = <RustOpaqueMoi<
-                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<ConduitClient>,
-            >>::sse_decode(&mut deserializer);
-            let api_amount_sats = <i64>::sse_decode(&mut deserializer);
-            deserializer.end();
-            move |context| async move {
-                transform_result_sse::<_, String>(
-                    (move || async move {
-                        let mut api_that_guard = None;
-                        let decode_indices_ =
-                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
-                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
-                                    &api_that, 0, false,
-                                )],
-                            );
-                        for i in decode_indices_ {
-                            match i {
-                                0 => {
-                                    api_that_guard =
-                                        Some(api_that.lockable_decode_async_ref().await)
-                                }
-                                _ => unreachable!(),
-                            }
-                        }
-                        let api_that_guard = api_that_guard.unwrap();
-                        let output_ok = crate::client::ConduitClient::sats_to_fiat(
-                            &*api_that_guard,
-                            api_amount_sats,
-                        )
-                        .await?;
                         Ok(output_ok)
                     })()
                     .await,
@@ -4676,6 +4693,34 @@ impl SseDecode for Vec<(String, bool)> {
     }
 }
 
+impl SseDecode for crate::client::LnReceiveInvoice {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_invoice = <String>::sse_decode(deserializer);
+        let mut var_gatewayUrl = <String>::sse_decode(deserializer);
+        let mut var_feeSats = <i64>::sse_decode(deserializer);
+        return crate::client::LnReceiveInvoice {
+            invoice: var_invoice,
+            gateway_url: var_gatewayUrl,
+            fee_sats: var_feeSats,
+        };
+    }
+}
+
+impl SseDecode for crate::client::LnSendFees {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
+        let mut var_gatewayUrl = <String>::sse_decode(deserializer);
+        let mut var_feeSats = <i64>::sse_decode(deserializer);
+        let mut var_isDirect = <bool>::sse_decode(deserializer);
+        return crate::client::LnSendFees {
+            gateway_url: var_gatewayUrl,
+            fee_sats: var_feeSats,
+            is_direct: var_isDirect,
+        };
+    }
+}
+
 impl SseDecode for crate::lnurl::LnurlWrapper {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -5037,45 +5082,48 @@ fn pde_ffi_dispatcher_primary_impl(
             rust_vec_len,
             data_len,
         ),
-        28 => wire__crate__client__ConduitClient_ln_receive_impl(port, ptr, rust_vec_len, data_len),
-        29 => wire__crate__client__ConduitClient_ln_send_impl(port, ptr, rust_vec_len, data_len),
-        30 => wire__crate__client__ConduitClient_lnurl_impl(port, ptr, rust_vec_len, data_len),
-        31 => wire__crate__client__ConduitClient_onchain_calculate_fees_impl(
+        28 => wire__crate__client__ConduitClient_ln_calculate_fees_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        32 => wire__crate__client__ConduitClient_onchain_list_addresses_impl(
+        29 => wire__crate__client__ConduitClient_ln_receive_impl(port, ptr, rust_vec_len, data_len),
+        30 => wire__crate__client__ConduitClient_ln_send_impl(port, ptr, rust_vec_len, data_len),
+        31 => wire__crate__client__ConduitClient_lnurl_impl(port, ptr, rust_vec_len, data_len),
+        32 => wire__crate__client__ConduitClient_onchain_calculate_fees_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        33 => wire__crate__client__ConduitClient_onchain_receive_address_impl(
+        33 => wire__crate__client__ConduitClient_onchain_list_addresses_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        34 => wire__crate__client__ConduitClient_onchain_recheck_address_impl(
+        34 => wire__crate__client__ConduitClient_onchain_receive_address_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        35 => {
+        35 => wire__crate__client__ConduitClient_onchain_recheck_address_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        36 => {
             wire__crate__client__ConduitClient_onchain_send_impl(port, ptr, rust_vec_len, data_len)
         }
-        36 => wire__crate__client__ConduitClient_prefetch_exchange_rates_impl(
+        37 => wire__crate__client__ConduitClient_prefetch_exchange_rates_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        37 => {
-            wire__crate__client__ConduitClient_sats_to_fiat_impl(port, ptr, rust_vec_len, data_len)
-        }
         38 => wire__crate__client__ConduitClient_shutdown_impl(port, ptr, rust_vec_len, data_len),
         39 => wire__crate__client__ConduitClient_subscribe_balance_impl(
             port,
@@ -5529,6 +5577,45 @@ impl flutter_rust_bridge::IntoIntoDart<crate::currency::FiatCurrency>
     for crate::currency::FiatCurrency
 {
     fn into_into_dart(self) -> crate::currency::FiatCurrency {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::client::LnReceiveInvoice {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.invoice.into_into_dart().into_dart(),
+            self.gateway_url.into_into_dart().into_dart(),
+            self.fee_sats.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
+    for crate::client::LnReceiveInvoice
+{
+}
+impl flutter_rust_bridge::IntoIntoDart<crate::client::LnReceiveInvoice>
+    for crate::client::LnReceiveInvoice
+{
+    fn into_into_dart(self) -> crate::client::LnReceiveInvoice {
+        self
+    }
+}
+// Codec=Dco (DartCObject based), see doc to use other codecs
+impl flutter_rust_bridge::IntoDart for crate::client::LnSendFees {
+    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
+        [
+            self.gateway_url.into_into_dart().into_dart(),
+            self.fee_sats.into_into_dart().into_dart(),
+            self.is_direct.into_into_dart().into_dart(),
+        ]
+        .into_dart()
+    }
+}
+impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive for crate::client::LnSendFees {}
+impl flutter_rust_bridge::IntoIntoDart<crate::client::LnSendFees> for crate::client::LnSendFees {
+    fn into_into_dart(self) -> crate::client::LnSendFees {
         self
     }
 }
@@ -6094,6 +6181,24 @@ impl SseEncode for Vec<(String, bool)> {
         for item in self {
             <(String, bool)>::sse_encode(item, serializer);
         }
+    }
+}
+
+impl SseEncode for crate::client::LnReceiveInvoice {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.invoice, serializer);
+        <String>::sse_encode(self.gateway_url, serializer);
+        <i64>::sse_encode(self.fee_sats, serializer);
+    }
+}
+
+impl SseEncode for crate::client::LnSendFees {
+    // Codec=Sse (Serialization based), see doc to use other codecs
+    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
+        <String>::sse_encode(self.gateway_url, serializer);
+        <i64>::sse_encode(self.fee_sats, serializer);
+        <bool>::sse_encode(self.is_direct, serializer);
     }
 }
 

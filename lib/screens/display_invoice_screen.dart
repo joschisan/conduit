@@ -9,43 +9,51 @@ import 'package:conduit/widgets/detail_row_widget.dart';
 class DisplayInvoiceScreen extends StatelessWidget {
   final String invoice;
   final int amount;
+  final String gatewayUrl;
+  final int feeSats;
   final ({String name, String amount})? fiatAmount;
 
   const DisplayInvoiceScreen({
     super.key,
     required this.invoice,
     required this.amount,
+    required this.gatewayUrl,
+    required this.feeSats,
     this.fiatAmount,
   });
 
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(title: const Text('Receive Lightning')),
-    body: SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            QrCodeWidget(data: invoice),
-            const SizedBox(height: 16),
-            BorderedList.column(
-              children: [
-                ShareableRow(data: invoice, label: 'Lightning Invoice'),
+    body: SingleChildScrollView(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        children: [
+          QrCodeWidget(data: invoice),
+          const SizedBox(height: 16),
+          BorderedList.column(
+            children: [
+              ShareableRow(data: invoice, label: 'Lightning Invoice'),
+              DetailRow(
+                icon: PhosphorIconsRegular.currencyBtc,
+                label: 'Amount in Bitcoin',
+                value: '${NumberFormat('#,###').format(amount)} sat',
+              ),
+              if (fiatAmount != null)
                 DetailRow(
-                  icon: PhosphorIconsRegular.currencyBtc,
-                  label: 'Amount in Bitcoin',
-                  value: '${NumberFormat('#,###').format(amount)} sat',
+                  icon: PhosphorIconsRegular.currencyDollar,
+                  label: 'Amount in ${fiatAmount!.name}',
+                  value: fiatAmount!.amount,
                 ),
-                if (fiatAmount != null)
-                  DetailRow(
-                    icon: PhosphorIconsRegular.currencyDollar,
-                    label: 'Amount in ${fiatAmount!.name}',
-                    value: fiatAmount!.amount,
-                  ),
-              ],
-            ),
-          ],
-        ),
+              ShareableRow(data: gatewayUrl, label: 'Gateway'),
+              DetailRow(
+                icon: PhosphorIconsRegular.network,
+                label: 'Network Fee',
+                value: '${NumberFormat('#,###').format(feeSats)} sat',
+              ),
+            ],
+          ),
+        ],
       ),
     ),
   );
