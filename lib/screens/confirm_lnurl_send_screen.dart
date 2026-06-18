@@ -63,7 +63,7 @@ class _ConfirmLnurlSendScreenState extends State<ConfirmLnurlSendScreen> {
                     icon: PhosphorIconsRegular.network,
                     label: 'Network Fee',
                     value:
-                        '${NumberFormat('#,###').format(widget.fees.feeSats)} sat · ${widget.fees.isDirect ? 'direct' : 'lightning'}',
+                        '${NumberFormat('#,###').format(widget.fees.feeSats)} sat · ${(widget.fees.feeSats / widget.amountSats * 100).toStringAsFixed(1)}%',
                   ),
                 ],
               ),

@@ -1,59 +1,68 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
-import 'package:conduit/bridge_generated.dart/client.dart';
-import 'package:conduit/utils/currency_utils.dart';
-import 'package:conduit/widgets/animated_entry_widget.dart';
-import 'package:conduit/widgets/bordered_list_widget.dart';
-import 'package:conduit/widgets/detail_row_widget.dart';
 
-/// Shows the wallet balance as a "Balance in Bitcoin" row plus a "Balance in
-/// `<currency>`" row, animating the value between balance updates.
-///
-/// The exchange rate is fetched once on load so the fiat row can appear; the
-/// fiat figure is then converted from the cache and animates alongside the sat
-/// amount.
-class AnimatedBalanceDisplay extends StatefulWidget {
-  final ConduitClient client;
-  final int amount;
+/// Tweens between balance values when `sats` changes — smooth counter
+/// animation instead of a jarring text swap. Style-agnostic so the
+/// same widget works for the hero balance, federation row cards, etc.
+class AnimatedBalance extends StatefulWidget {
+  final int sats;
+  final TextStyle style;
+  // When set, the " sat" suffix renders in this (typically smaller) style
+  // while the number keeps `style` — matching the amount-entry display.
+  final TextStyle? unitStyle;
+  // When set, each tweened sats value is rendered through this instead of the
+  // default "N sat" — e.g. converting to a fiat string so the fiat figure
+  // counts up on the same tween as the sats amount.
+  final String Function(int sats)? formatter;
+  final TextAlign? textAlign;
+  final Duration duration;
 
-  const AnimatedBalanceDisplay(this.client, this.amount, {super.key});
+  const AnimatedBalance({
+    super.key,
+    required this.sats,
+    required this.style,
+    this.unitStyle,
+    this.formatter,
+    this.textAlign,
+    this.duration = const Duration(milliseconds: 1000),
+  });
 
   @override
-  State<AnimatedBalanceDisplay> createState() => _AnimatedBalanceDisplayState();
+  State<AnimatedBalance> createState() => _AnimatedBalanceState();
 }
 
-class _AnimatedBalanceDisplayState extends State<AnimatedBalanceDisplay>
+class _AnimatedBalanceState extends State<AnimatedBalance>
     with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
+  late final AnimationController _controller;
   late Animation<int> _animation;
+  // Hosting screens often mount this widget with a placeholder `sats: 0`
+  // while the balance stream resolves. Snap on the first update so the
+  // tween only kicks in for genuine balance changes after that.
+  bool _initialised = false;
 
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(
-      duration: const Duration(milliseconds: 1000),
-      vsync: this,
-    );
-    _animation = AlwaysStoppedAnimation(widget.amount);
-
-    // Warm the exchange rate cache so the fiat row can be shown, then rebuild.
-    widget.client.prefetchExchangeRates().then((_) {
-      if (mounted) setState(() {});
-    });
+    _controller = AnimationController(duration: widget.duration, vsync: this);
+    _animation = AlwaysStoppedAnimation(widget.sats);
   }
 
   @override
-  void didUpdateWidget(AnimatedBalanceDisplay oldWidget) {
+  void didUpdateWidget(AnimatedBalance oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.amount != widget.amount) {
-      _animation = IntTween(
-        begin: _animation.value,
-        end: widget.amount,
-      ).animate(
-        CurvedAnimation(parent: _controller, curve: Curves.easeInOutCubic),
-      );
-      _controller.forward(from: 0);
+    if (oldWidget.sats != widget.sats) {
+      if (!_initialised) {
+        _initialised = true;
+        _animation = AlwaysStoppedAnimation(widget.sats);
+      } else {
+        _animation = IntTween(
+          begin: _animation.value,
+          end: widget.sats,
+        ).animate(
+          CurvedAnimation(parent: _controller, curve: Curves.easeInOutCubic),
+        );
+        _controller.forward(from: 0);
+      }
     }
   }
 
@@ -63,39 +72,36 @@ class _AnimatedBalanceDisplayState extends State<AnimatedBalanceDisplay>
     super.dispose();
   }
 
-  List<Widget> _balanceRows() {
-    final amountSats = _animation.value;
-
-    final rows = <Widget>[
-      DetailRow(
-        icon: PhosphorIconsRegular.currencyBtc,
-        label: 'Balance in Bitcoin',
-        value: '${NumberFormat('#,###').format(amountSats)} sat',
-      ),
-    ];
-
-    final fiat = cachedFiatAmount(widget.client, amountSats);
-    if (fiat != null) {
-      rows.add(
-        AnimatedEntry(
-          child: DetailRow(
-            icon: PhosphorIconsRegular.currencyDollar,
-            label: 'Balance in ${fiat.currency}',
-            value: fiat.amount,
-          ),
-        ),
-      );
-    }
-
-    return rows;
-  }
-
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
       animation: _animation,
-      builder:
-          (context, _) => BorderedList.column(children: _balanceRows()),
+      builder: (_, _) {
+        if (widget.formatter != null) {
+          return Text(
+            widget.formatter!(_animation.value),
+            style: widget.style,
+            textAlign: widget.textAlign,
+          );
+        }
+        final number = NumberFormat('#,###').format(_animation.value);
+        if (widget.unitStyle == null) {
+          return Text(
+            '$number sat',
+            style: widget.style,
+            textAlign: widget.textAlign,
+          );
+        }
+        return Text.rich(
+          TextSpan(
+            children: [
+              TextSpan(text: number, style: widget.style),
+              TextSpan(text: ' sat', style: widget.unitStyle),
+            ],
+          ),
+          textAlign: widget.textAlign,
+        );
+      },
     );
   }
 }

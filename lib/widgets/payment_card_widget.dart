@@ -4,6 +4,7 @@ import 'package:conduit/utils/styles.dart';
 import 'package:intl/intl.dart';
 import 'package:conduit/bridge_generated.dart/events.dart';
 import 'package:conduit/utils/payment_utils.dart';
+import 'package:conduit/widgets/amount_visibility.dart';
 import 'package:conduit/widgets/loading_icon_widget.dart';
 
 String _formatTime(DateTime dateTime) {
@@ -62,7 +63,9 @@ class PaymentCard extends StatelessWidget {
         child: leading,
       ),
       title: Text(
-        '$sign $formattedAmount sat',
+        AmountVisibility.of(context)
+            ? '$sign $formattedAmount sat'
+            : '$maskedAmount sat',
         style: mediumStyle.copyWith(color: titleColor),
       ),
       trailing: Text(

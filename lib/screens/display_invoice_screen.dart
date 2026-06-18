@@ -38,7 +38,8 @@ class DisplayInvoiceScreen extends StatelessWidget {
               DetailRow(
                 icon: PhosphorIconsRegular.network,
                 label: 'Network Fee',
-                value: '${NumberFormat('#,###').format(feeSats)} sat',
+                value:
+                    '${NumberFormat('#,###').format(feeSats)} sat · ${(feeSats / amount * 100).toStringAsFixed(1)}%',
               ),
             ],
           ),

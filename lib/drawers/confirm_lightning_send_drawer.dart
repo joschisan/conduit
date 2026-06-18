@@ -68,7 +68,7 @@ class ConfirmLightningSendDrawer extends StatelessWidget {
               icon: PhosphorIconsRegular.network,
               label: 'Network Fee',
               value:
-                  '${NumberFormat('#,###').format(fees.feeSats)} sat · ${fees.isDirect ? 'direct' : 'lightning'}',
+                  '${NumberFormat('#,###').format(fees.feeSats)} sat · ${(fees.feeSats / amountSats * 100).toStringAsFixed(1)}%',
             ),
           ],
         ),

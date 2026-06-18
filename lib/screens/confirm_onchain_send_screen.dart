@@ -63,7 +63,7 @@ class _ConfirmOnchainSendScreenState extends State<ConfirmOnchainSendScreen> {
                     icon: PhosphorIconsRegular.network,
                     label: 'Network Fee',
                     value:
-                        '${NumberFormat('#,###').format(widget.feeSats)} sat',
+                        '${NumberFormat('#,###').format(widget.feeSats)} sat · ${(widget.feeSats / widget.amountSats * 100).toStringAsFixed(1)}%',
                   ),
                   ShareableRow(
                     data: widget.address.toString(),

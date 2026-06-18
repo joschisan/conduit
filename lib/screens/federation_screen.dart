@@ -7,6 +7,8 @@ import 'package:conduit/bridge_generated.dart/events.dart';
 import 'package:conduit/bridge_generated.dart/factory.dart';
 import 'package:conduit/bridge_generated.dart/lib.dart';
 import 'package:conduit/widgets/animated_balance_widget.dart';
+import 'package:conduit/widgets/amount_visibility.dart';
+import 'package:conduit/utils/currency_utils.dart';
 import 'package:conduit/widgets/warning_card_widget.dart';
 import 'package:conduit/widgets/recent_payments_widget.dart';
 import 'package:conduit/screens/invoice_amount_screen.dart';
@@ -27,6 +29,9 @@ import 'package:conduit/screens/display_contacts_screen.dart';
 import 'package:conduit/screens/lightning_address_entry_screen.dart';
 import 'package:conduit/drawers/expiration_drawer.dart';
 import 'package:flutter/services.dart';
+
+/// How the balance renders, cycled by a single app-bar control.
+enum BalanceDisplay { sats, fiat, hidden }
 
 class FederationScreen extends StatefulWidget {
   final ConduitClient client;
@@ -50,6 +55,27 @@ class _FederationScreenState extends State<FederationScreen> {
   StreamSubscription<Uri>? _linkSubscription;
   int? _expirationDate;
   InviteCodeWrapper? _expirationSuccessor;
+  // Single cycling control over how the balance reads: sats → fiat → hidden.
+  // Starts hidden so balances aren't exposed on open.
+  BalanceDisplay _balanceDisplay = BalanceDisplay.hidden;
+
+  // Whether a cached exchange rate exists, so the fiat step is reachable.
+  // `satsToFiat` is a cache-only sync read returning null when no fresh rate
+  // is stored.
+  bool get _fiatAvailable => widget.client.satsToFiat(amountSats: 0) != null;
+
+  void _cycleBalanceDisplay() {
+    setState(() {
+      // Skip the fiat step entirely when no rate is cached.
+      _balanceDisplay = switch (_balanceDisplay) {
+        BalanceDisplay.sats =>
+          _fiatAvailable ? BalanceDisplay.fiat : BalanceDisplay.hidden,
+        BalanceDisplay.fiat => BalanceDisplay.hidden,
+        BalanceDisplay.hidden => BalanceDisplay.sats,
+      };
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -58,6 +84,11 @@ class _FederationScreenState extends State<FederationScreen> {
     _connectionStream = widget.client.subscribeConnectionStatus();
     _initDeepLinks();
     _fetchExpirationStatus();
+    // Warm the exchange-rate cache so the fiat toggle is reachable and the
+    // fiat figure renders from cache without blocking. Repaint once it lands.
+    widget.client.prefetchExchangeRates().then((_) {
+      if (mounted) setState(() {});
+    });
   }
 
   Future<void> _fetchExpirationStatus() async {
@@ -297,58 +328,140 @@ class _FederationScreenState extends State<FederationScreen> {
           ),
         ],
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
-        child: Column(
-          children: [
-            StreamBuilder<int>(
-              stream: _balanceStream,
-              builder: (context, snapshot) {
-                if (snapshot.hasData) {
-                  return AnimatedBalanceDisplay(widget.client, snapshot.data!);
-                } else {
-                  return const CircularProgressIndicator();
-                }
-              },
-            ),
-            const SizedBox(height: 16),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                _CircularActionButton(
-                  icon: PhosphorIconsRegular.lightning,
-                  label: 'Lightning',
-                  onTap: _onCreateInvoice,
-                ),
-                _CircularActionButton(
-                  icon: PhosphorIconsRegular.link,
-                  label: 'Onchain',
-                  onTap: _onReceiveBitcoin,
-                ),
-                _CircularActionButton(
-                  icon: PhosphorIconsRegular.coinVertical,
-                  label: 'eCash',
-                  onTap: _onSendEcash,
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            if (_expirationDate != null)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: WarningCard(
-                  icon: PhosphorIconsRegular.moon,
-                  text: 'Federation Expiry',
-                  onTap: _showExpirationDrawer,
+      body: AmountVisibility(
+        visible: _balanceDisplay != BalanceDisplay.hidden,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+          child: Column(
+            children: [
+              // Tapping the balance cycles the display sats → fiat → hidden,
+              // the same control as the app-bar switcher.
+              GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: _cycleBalanceDisplay,
+                // One subscription to the single-subscription balance stream,
+                // lifted above the hero so toggling never re-listens to it.
+                child: StreamBuilder<int>(
+                  stream: _balanceStream,
+                  builder:
+                      (context, snapshot) => _BalanceHero(
+                        sats: snapshot.data ?? 0,
+                        client: widget.client,
+                        display: _balanceDisplay,
+                      ),
                 ),
               ),
-            RecentPayments(
-              client: widget.client,
-              stream: _eventStream,
-              onTransactionTap: _showEventDetails,
-            ),
-          ],
+              const SizedBox(height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _CircularActionButton(
+                    icon: PhosphorIconsRegular.lightning,
+                    label: 'Lightning',
+                    onTap: _onCreateInvoice,
+                  ),
+                  _CircularActionButton(
+                    icon: PhosphorIconsRegular.link,
+                    label: 'Onchain',
+                    onTap: _onReceiveBitcoin,
+                  ),
+                  _CircularActionButton(
+                    icon: PhosphorIconsRegular.coinVertical,
+                    label: 'eCash',
+                    onTap: _onSendEcash,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              if (_expirationDate != null)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: WarningCard(
+                    icon: PhosphorIconsRegular.moon,
+                    text: 'Federation Expiry',
+                    onTap: _showExpirationDrawer,
+                  ),
+                ),
+              RecentPayments(
+                client: widget.client,
+                stream: _eventStream,
+                onTransactionTap: _showEventDetails,
+              ),
+            ],
+          ),
         ),
+      ),
+    );
+  }
+}
+
+/// Hero balance shown above the action row. Masked away when hidden, shown in
+/// fiat when toggled (falling back to sats until a rate is cached), otherwise
+/// the animated sats amount.
+class _BalanceHero extends StatelessWidget {
+  final int sats;
+  final ConduitClient client;
+  final BalanceDisplay display;
+
+  const _BalanceHero({
+    required this.sats,
+    required this.client,
+    required this.display,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    // Fiat when toggled and a rate is cached; otherwise the sats display
+    // (and a "Bitcoin" unit label to match).
+    final fiat =
+        display == BalanceDisplay.fiat ? cachedFiatAmount(client, sats) : null;
+    final hidden = display == BalanceDisplay.hidden;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 36),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        // Stretch to full width so the centered text aligns to the screen
+        // centre rather than shrink-wrapping the number.
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Hidden masks the amount with the same dots used for payment-row
+          // amounts, keeping the " sat" suffix and layout in place.
+          if (hidden)
+            Text.rich(
+              textAlign: TextAlign.center,
+              const TextSpan(
+                children: [
+                  TextSpan(text: maskedAmount, style: heroStyle),
+                  TextSpan(text: ' sat', style: largeStyle),
+                ],
+              ),
+            )
+          else if (fiat != null)
+            AnimatedBalance(
+              sats: sats,
+              style: heroStyle,
+              textAlign: TextAlign.center,
+              // Convert each tweened sats value to fiat so it counts up on the
+              // same tween as the sats view.
+              formatter: (s) => cachedFiatAmount(client, s)?.amount ?? '',
+            )
+          else
+            AnimatedBalance(
+              sats: sats,
+              style: heroStyle,
+              unitStyle: largeStyle,
+              textAlign: TextAlign.center,
+            ),
+          const SizedBox(height: 8),
+          Text(
+            fiat?.currency ?? 'Bitcoin',
+            textAlign: TextAlign.center,
+            style: mediumStyle.copyWith(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
+          ),
+        ],
       ),
     );
   }
