@@ -18,6 +18,10 @@ struct ExchangeRate {
 /// Cached exchange rate: BTC price in user's currency (e.g., 94000.0 for $94k)
 pub(crate) type ExchangeRateCache = Arc<Mutex<Option<(f64, Instant)>>>;
 
+/// How long a cached exchange rate is considered fresh before it is re-fetched
+/// (and before [`crate::client::ConduitClient::sats_to_fiat`] stops using it).
+pub(crate) const EXCHANGE_RATE_TTL: Duration = Duration::from_secs(3600);
+
 pub(crate) async fn fetch_exchange_rate(
     cache: ExchangeRateCache,
     currency_code: String,
@@ -25,7 +29,7 @@ pub(crate) async fn fetch_exchange_rate(
     let mut guard = cache.lock().await;
 
     if let Some((rate, timestamp)) = guard.as_ref() {
-        if timestamp.elapsed() < Duration::from_secs(600) {
+        if timestamp.elapsed() < EXCHANGE_RATE_TTL {
             return Ok(*rate);
         }
     }

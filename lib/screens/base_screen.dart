@@ -49,27 +49,25 @@ class _BaseScreenState extends State<BaseScreen> {
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(title: const Text('Conduit')),
-    body: SafeArea(
-      child: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.only(left: 8),
-              child: Text('Settings', style: mediumStyle),
-            ),
-            const SizedBox(height: 8),
-            BorderedList.column(
-              children: [_buildSeedPhraseCard(), _buildCurrencyCard()],
-            ),
-            const SizedBox(height: 32),
-            if (_federations.isEmpty)
-              _buildOnboardingCard()
-            else
-              _buildFederationsListView(),
-          ],
-        ),
+    body: SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 8),
+            child: Text('Settings', style: mediumStyle),
+          ),
+          const SizedBox(height: 8),
+          BorderedList.column(
+            children: [_buildSeedPhraseCard(), _buildCurrencyCard()],
+          ),
+          const SizedBox(height: 32),
+          if (_federations.isEmpty)
+            _buildOnboardingCard()
+          else
+            _buildFederationsListView(),
+        ],
       ),
     ),
   );

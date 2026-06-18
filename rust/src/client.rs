@@ -23,7 +23,7 @@ use crate::events::{
     ConduitPayment, ParsedEvent, PaymentNotification, RecentPaymentsUpdate, apply_update,
     parse_event_log_entry, snapshot,
 };
-use crate::exchange::{ExchangeRateCache, fetch_exchange_rate};
+use crate::exchange::{EXCHANGE_RATE_TTL, ExchangeRateCache, fetch_exchange_rate};
 use crate::frb_generated::StreamSink;
 use crate::{
     BitcoinAddressWrapper, Bolt11InvoiceWrapper, ECashWrapper, EcashToken, InviteCodeWrapper,
@@ -102,12 +102,14 @@ impl ConduitClient {
             .expect("Client shutdown failed");
     }
 
+    /// Warms the exchange rate cache so a subsequent [`Self::sats_to_fiat`] can
+    /// convert without a network round trip. Awaits the fetch so callers can
+    /// rebuild once a rate is on hand; errors are ignored since this is only a
+    /// best-effort prefetch.
     #[frb]
     pub async fn prefetch_exchange_rates(&self) {
-        tokio::task::spawn(fetch_exchange_rate(
-            self.exchange_rate_cache.clone(),
-            self.currency_code.clone(),
-        ));
+        let _ = fetch_exchange_rate(self.exchange_rate_cache.clone(), self.currency_code.clone())
+            .await;
     }
 
     #[frb]
@@ -115,6 +117,21 @@ impl ConduitClient {
         fetch_exchange_rate(self.exchange_rate_cache.clone(), self.currency_code.clone())
             .await
             .map(|r| ((amount_fiat / r) * 100_000_000.0).round() as i64)
+    }
+
+    /// Converts `amount_sats` to the user's fiat currency using the cached
+    /// exchange rate, without triggering a network fetch. Returns `None` when
+    /// no fresh rate has been cached yet (or the cache is momentarily locked) so
+    /// callers can show fiat opportunistically without blocking on the network.
+    #[frb(sync)]
+    pub fn sats_to_fiat(&self, amount_sats: i64) -> Option<f64> {
+        let guard = self.exchange_rate_cache.try_lock().ok()?;
+        if let Some((rate, timestamp)) = guard.as_ref() {
+            if timestamp.elapsed() < EXCHANGE_RATE_TTL {
+                return Some((amount_sats as f64 / 100_000_000.0) * rate);
+            }
+        }
+        None
     }
 
     #[frb]

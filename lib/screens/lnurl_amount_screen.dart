@@ -32,10 +32,7 @@ class LnurlAmountScreen extends StatefulWidget {
 class _LnurlAmountScreenState extends State<LnurlAmountScreen> {
   late String? _contactName = widget.contactName;
 
-  Future<void> _handleConfirm(
-    int amountSats,
-    ({String name, String amount})? fiatAmount,
-  ) async {
+  Future<void> _handleConfirm(int amountSats) async {
     final invoice = await lnurlResolve(
       payResponse: widget.payResponse,
       amountSats: amountSats,
@@ -53,7 +50,6 @@ class _LnurlAmountScreenState extends State<LnurlAmountScreen> {
               invoice: invoice,
               amountSats: amountSats,
               fees: fees,
-              fiatAmount: fiatAmount,
               contactName: _contactName,
             ),
       ),

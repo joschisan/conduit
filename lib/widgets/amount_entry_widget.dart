@@ -11,11 +11,7 @@ import 'package:conduit/widgets/async_button_widget.dart';
 
 class AmountEntryWidget extends StatefulWidget {
   final ConduitClient client;
-  final Future<void> Function(
-    int amountSats,
-    ({String name, String amount})? fiatAmount,
-  )
-  onConfirm;
+  final Future<void> Function(int amountSats) onConfirm;
   final void Function(int currentAmount)? onAmountChanged;
   final String buttonText;
 
@@ -98,10 +94,7 @@ class _AmountEntryWidgetState extends State<AmountEntryWidget> {
             ? await widget.client.fiatToSats(amountFiat: _fiatAmount)
             : _currentAmount;
 
-    await widget.onConfirm(
-      amountSats,
-      _enterFiat ? (name: _currency.name, amount: _formatFiatAmount()) : null,
-    );
+    await widget.onConfirm(amountSats);
   }
 
   @override

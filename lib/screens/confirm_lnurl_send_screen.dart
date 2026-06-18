@@ -5,7 +5,7 @@ import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/widgets/async_button_widget.dart';
 import 'package:conduit/widgets/bordered_list_widget.dart';
 import 'package:conduit/widgets/detail_row_widget.dart';
-import 'package:conduit/widgets/shareable_row_widget.dart';
+import 'package:conduit/widgets/amount_rows.dart';
 import 'package:conduit/widgets/warning_card_widget.dart';
 import 'package:conduit/utils/auth_utils.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
@@ -15,7 +15,6 @@ class ConfirmLnurlSendScreen extends StatefulWidget {
   final Bolt11InvoiceWrapper invoice;
   final int amountSats;
   final LnSendFees fees;
-  final ({String name, String amount})? fiatAmount;
   final String? contactName;
 
   const ConfirmLnurlSendScreen({
@@ -24,7 +23,6 @@ class ConfirmLnurlSendScreen extends StatefulWidget {
     required this.invoice,
     required this.amountSats,
     required this.fees,
-    this.fiatAmount,
     this.contactName,
   });
 
@@ -57,25 +55,10 @@ class _ConfirmLnurlSendScreenState extends State<ConfirmLnurlSendScreen> {
             children: [
               BorderedList.column(
                 children: [
-                  if (widget.contactName != null)
-                    DetailRow(
-                      icon: PhosphorIconsRegular.user,
-                      label: 'Contact',
-                      value: widget.contactName!,
-                    ),
-                  DetailRow(
-                    icon: PhosphorIconsRegular.currencyBtc,
-                    label: 'Amount in Bitcoin',
-                    value:
-                        '${NumberFormat('#,###').format(widget.amountSats)} sat',
+                  ...amountRows(
+                    client: widget.client,
+                    amountSats: widget.amountSats,
                   ),
-                  if (widget.fiatAmount != null)
-                    DetailRow(
-                      icon: PhosphorIconsRegular.currencyDollar,
-                      label: 'Amount in ${widget.fiatAmount!.name}',
-                      value: widget.fiatAmount!.amount,
-                    ),
-                  ShareableRow(data: widget.fees.gatewayUrl, label: 'Gateway'),
                   DetailRow(
                     icon: PhosphorIconsRegular.network,
                     label: 'Network Fee',

@@ -48,7 +48,6 @@ class _FederationScreenState extends State<FederationScreen> {
   late final Stream<List<(String, bool)>> _connectionStream;
   late final AppLinks _appLinks;
   StreamSubscription<Uri>? _linkSubscription;
-  bool _balanceHidden = true;
   int? _expirationDate;
   InviteCodeWrapper? _expirationSuccessor;
   @override
@@ -299,31 +298,20 @@ class _FederationScreenState extends State<FederationScreen> {
         ],
       ),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
         child: Column(
           children: [
-            const SizedBox(height: 64),
-            GestureDetector(
-              onTap: () {
-                setState(() => _balanceHidden = !_balanceHidden);
+            StreamBuilder<int>(
+              stream: _balanceStream,
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  return AnimatedBalanceDisplay(widget.client, snapshot.data!);
+                } else {
+                  return const CircularProgressIndicator();
+                }
               },
-              child: StreamBuilder<int>(
-                stream: _balanceStream,
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    if (_balanceHidden) {
-                      return Text.rich(
-                        TextSpan(text: '* * * *', style: heroStyle),
-                      );
-                    }
-                    return AnimatedBalanceDisplay(snapshot.data!);
-                  } else {
-                    return const CircularProgressIndicator();
-                  }
-                },
-              ),
             ),
-            const SizedBox(height: 64),
+            const SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [

@@ -19,10 +19,7 @@ class OnchainAmountScreen extends StatefulWidget {
 }
 
 class _OnchainAmountScreenState extends State<OnchainAmountScreen> {
-  Future<void> _handleConfirm(
-    int amountSats,
-    ({String name, String amount})? fiatAmount,
-  ) async {
+  Future<void> _handleConfirm(int amountSats) async {
     final feeSats = await widget.client.onchainCalculateFees(
       address: widget.address,
       amountSats: amountSats,
@@ -38,7 +35,6 @@ class _OnchainAmountScreenState extends State<OnchainAmountScreen> {
               address: widget.address,
               amountSats: amountSats,
               feeSats: feeSats,
-              fiatAmount: fiatAmount,
             ),
       ),
     );

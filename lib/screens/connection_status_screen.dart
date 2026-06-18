@@ -31,7 +31,7 @@ class ConnectionStatusScreen extends StatelessWidget {
           final statuses = snapshot.data!;
 
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
             child: BorderedList.column(
               children: [
                 for (final (name, connected) in statuses)

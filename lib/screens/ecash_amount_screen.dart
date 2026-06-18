@@ -10,11 +10,7 @@ class EcashAmountScreen extends StatelessWidget {
 
   const EcashAmountScreen({super.key, required this.client});
 
-  Future<void> _handleConfirm(
-    BuildContext context,
-    int amountSats,
-    ({String name, String amount})? fiatAmount,
-  ) async {
+  Future<void> _handleConfirm(BuildContext context, int amountSats) async {
     await requireBiometricAuth(context);
 
     final notes = await client.ecashSend(amountSat: amountSats);
@@ -28,7 +24,6 @@ class EcashAmountScreen extends StatelessWidget {
               client: client,
               notes: notes,
               encoder: ECashEncoder(notes: notes),
-              fiatAmount: fiatAmount,
             ),
       ),
     );
@@ -41,9 +36,7 @@ class EcashAmountScreen extends StatelessWidget {
       body: SafeArea(
         child: AmountEntryWidget(
           client: client,
-          onConfirm:
-              (amountSats, fiatAmount) =>
-                  _handleConfirm(context, amountSats, fiatAmount),
+          onConfirm: (amountSats) => _handleConfirm(context, amountSats),
         ),
       ),
     );

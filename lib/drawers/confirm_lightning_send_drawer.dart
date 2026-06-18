@@ -6,7 +6,7 @@ import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/widgets/drawer_shell_widget.dart';
 import 'package:conduit/widgets/bordered_list_widget.dart';
 import 'package:conduit/widgets/detail_row_widget.dart';
-import 'package:conduit/widgets/shareable_row_widget.dart';
+import 'package:conduit/widgets/amount_rows.dart';
 import 'package:conduit/widgets/async_button_widget.dart';
 import 'package:conduit/widgets/warning_card_widget.dart';
 import 'package:conduit/utils/auth_utils.dart';
@@ -63,12 +63,7 @@ class ConfirmLightningSendDrawer extends StatelessWidget {
       children: [
         BorderedList.column(
           children: [
-            DetailRow(
-              icon: PhosphorIconsRegular.currencyBtc,
-              label: 'Amount in Bitcoin',
-              value: '${NumberFormat('#,###').format(amountSats)} sat',
-            ),
-            ShareableRow(data: fees.gatewayUrl, label: 'Gateway'),
+            ...amountRows(client: client, amountSats: amountSats),
             DetailRow(
               icon: PhosphorIconsRegular.network,
               label: 'Network Fee',

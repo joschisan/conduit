@@ -5,6 +5,7 @@ import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/widgets/async_button_widget.dart';
 import 'package:conduit/widgets/bordered_list_widget.dart';
 import 'package:conduit/widgets/detail_row_widget.dart';
+import 'package:conduit/widgets/amount_rows.dart';
 import 'package:conduit/widgets/shareable_row_widget.dart';
 import 'package:conduit/widgets/warning_card_widget.dart';
 import 'package:conduit/utils/auth_utils.dart';
@@ -15,7 +16,6 @@ class ConfirmOnchainSendScreen extends StatefulWidget {
   final BitcoinAddressWrapper address;
   final int amountSats;
   final int feeSats;
-  final ({String name, String amount})? fiatAmount;
 
   const ConfirmOnchainSendScreen({
     super.key,
@@ -23,7 +23,6 @@ class ConfirmOnchainSendScreen extends StatefulWidget {
     required this.address,
     required this.amountSats,
     required this.feeSats,
-    this.fiatAmount,
   });
 
   @override
@@ -56,27 +55,19 @@ class _ConfirmOnchainSendScreenState extends State<ConfirmOnchainSendScreen> {
             children: [
               BorderedList.column(
                 children: [
-                  DetailRow(
-                    icon: PhosphorIconsRegular.currencyBtc,
-                    label: 'Amount in Bitcoin',
-                    value:
-                        '${NumberFormat('#,###').format(widget.amountSats)} sat',
-                  ),
-                  if (widget.fiatAmount != null)
-                    DetailRow(
-                      icon: PhosphorIconsRegular.currencyDollar,
-                      label: 'Amount in ${widget.fiatAmount!.name}',
-                      value: widget.fiatAmount!.amount,
-                    ),
-                  ShareableRow(
-                    data: widget.address.toString(),
-                    label: 'Bitcoin Address',
+                  ...amountRows(
+                    client: widget.client,
+                    amountSats: widget.amountSats,
                   ),
                   DetailRow(
                     icon: PhosphorIconsRegular.network,
                     label: 'Network Fee',
                     value:
                         '${NumberFormat('#,###').format(widget.feeSats)} sat',
+                  ),
+                  ShareableRow(
+                    data: widget.address.toString(),
+                    label: 'Bitcoin Address',
                   ),
                 ],
               ),

@@ -64,6 +64,7 @@ class BorderedList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
+      padding: EdgeInsets.zero,
       shrinkWrap: shrinkWrap,
       physics: physics,
       itemCount: itemCount,
