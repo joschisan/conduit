@@ -30,9 +30,6 @@ import 'package:conduit/screens/lightning_address_entry_screen.dart';
 import 'package:conduit/drawers/expiration_drawer.dart';
 import 'package:flutter/services.dart';
 
-/// How the balance renders, cycled by a single app-bar control.
-enum BalanceDisplay { sats, fiat, hidden }
-
 class FederationScreen extends StatefulWidget {
   final ConduitClient client;
   final ConduitClientFactory clientFactory;
@@ -328,8 +325,8 @@ class _FederationScreenState extends State<FederationScreen> {
           ),
         ],
       ),
-      body: AmountVisibility(
-        visible: _balanceDisplay != BalanceDisplay.hidden,
+      body: AmountDisplay(
+        display: _balanceDisplay,
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
           child: Column(

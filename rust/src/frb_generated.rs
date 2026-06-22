@@ -4566,7 +4566,10 @@ impl SseDecode for crate::events::ConduitPayment {
         let mut var_success = <Option<bool>>::sse_decode(deserializer);
         let mut var_ecash = <Option<String>>::sse_decode(deserializer);
         let mut var_txid = <Option<String>>::sse_decode(deserializer);
+        let mut var_preimage = <Option<String>>::sse_decode(deserializer);
         let mut var_address = <Option<String>>::sse_decode(deserializer);
+        let mut var_fiatAmount = <Option<f64>>::sse_decode(deserializer);
+        let mut var_fiatCurrencyCode = <Option<String>>::sse_decode(deserializer);
         return crate::events::ConduitPayment {
             operation_id: var_operationId,
             incoming: var_incoming,
@@ -4577,7 +4580,10 @@ impl SseDecode for crate::events::ConduitPayment {
             success: var_success,
             ecash: var_ecash,
             txid: var_txid,
+            preimage: var_preimage,
             address: var_address,
+            fiat_amount: var_fiatAmount,
+            fiat_currency_code: var_fiatCurrencyCode,
         };
     }
 }
@@ -5565,7 +5571,10 @@ impl flutter_rust_bridge::IntoDart for crate::events::ConduitPayment {
             self.success.into_into_dart().into_dart(),
             self.ecash.into_into_dart().into_dart(),
             self.txid.into_into_dart().into_dart(),
+            self.preimage.into_into_dart().into_dart(),
             self.address.into_into_dart().into_dart(),
+            self.fiat_amount.into_into_dart().into_dart(),
+            self.fiat_currency_code.into_into_dart().into_dart(),
         ]
         .into_dart()
     }
@@ -6113,7 +6122,10 @@ impl SseEncode for crate::events::ConduitPayment {
         <Option<bool>>::sse_encode(self.success, serializer);
         <Option<String>>::sse_encode(self.ecash, serializer);
         <Option<String>>::sse_encode(self.txid, serializer);
+        <Option<String>>::sse_encode(self.preimage, serializer);
         <Option<String>>::sse_encode(self.address, serializer);
+        <Option<f64>>::sse_encode(self.fiat_amount, serializer);
+        <Option<String>>::sse_encode(self.fiat_currency_code, serializer);
     }
 }
 

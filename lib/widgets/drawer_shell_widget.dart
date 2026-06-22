@@ -4,12 +4,14 @@ import 'package:conduit/utils/styles.dart';
 class DrawerShell extends StatelessWidget {
   final IconData icon;
   final String title;
+  final String? subtitle;
   final List<Widget> children;
 
   const DrawerShell({
     super.key,
     required this.icon,
     required this.title,
+    this.subtitle,
     required this.children,
   });
 
@@ -35,7 +37,22 @@ class DrawerShell extends StatelessWidget {
                   color: Theme.of(context).colorScheme.primary,
                 ),
                 const SizedBox(width: 16),
-                Expanded(child: Text(title, style: mediumStyle)),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(title, style: mediumStyle),
+                      if (subtitle case final subtitle?)
+                        Text(
+                          subtitle,
+                          style: smallStyle.copyWith(
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
               ],
             ),
             const SizedBox(height: 16),

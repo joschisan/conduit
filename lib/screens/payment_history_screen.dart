@@ -6,6 +6,7 @@ import 'package:conduit/bridge_generated.dart/events.dart';
 import 'package:conduit/utils/styles.dart';
 import 'package:conduit/widgets/grouped_list_widget.dart';
 import 'package:conduit/widgets/payment_card_widget.dart';
+import 'package:conduit/widgets/amount_visibility.dart';
 import 'package:conduit/drawers/payment_details_drawer.dart';
 
 class PaymentHistoryScreen extends StatefulWidget {
@@ -23,6 +24,19 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
   bool _ecash = false;
   bool _incoming = false;
   bool _outgoing = false;
+
+  // A single control toggles the list between sats and fiat (no hidden step);
+  // cards without a snapshotted rate stay in sats even in fiat mode.
+  BalanceDisplay _display = BalanceDisplay.sats;
+
+  void _toggleDisplay() {
+    setState(() {
+      _display =
+          _display == BalanceDisplay.fiat
+              ? BalanceDisplay.sats
+              : BalanceDisplay.fiat;
+    });
+  }
 
   static String _formatDateHeader(DateTime date) {
     final now = DateTime.now();
@@ -60,52 +74,68 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Payment History')),
-      body: GroupedList<ConduitPayment>(
-        items: _filteredPayments,
-        groupKey:
-            (payment) => _formatDateHeader(
-              DateTime.fromMillisecondsSinceEpoch(payment.timestamp),
+      appBar: AppBar(
+        title: const Text('Payment History'),
+        actions: [
+          IconButton(
+            icon: Icon(
+              _display == BalanceDisplay.fiat
+                  ? PhosphorIconsRegular.currencyBtc
+                  : PhosphorIconsRegular.currencyDollar,
+              size: smallIconSize,
             ),
-        header: Padding(
-          padding: const EdgeInsets.only(bottom: 16),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _FilterButton(
-                icon: PhosphorIconsRegular.lightning,
-                active: _lightning,
-                onTap: () => setState(() => _lightning = !_lightning),
-              ),
-              _FilterButton(
-                icon: PhosphorIconsRegular.link,
-                active: _bitcoin,
-                onTap: () => setState(() => _bitcoin = !_bitcoin),
-              ),
-              _FilterButton(
-                icon: PhosphorIconsRegular.coinVertical,
-                active: _ecash,
-                onTap: () => setState(() => _ecash = !_ecash),
-              ),
-              _FilterButton(
-                icon: PhosphorIconsRegular.plus,
-                active: _incoming,
-                onTap: () => setState(() => _incoming = !_incoming),
-              ),
-              _FilterButton(
-                icon: PhosphorIconsRegular.minus,
-                active: _outgoing,
-                onTap: () => setState(() => _outgoing = !_outgoing),
-              ),
-            ],
+            onPressed: _toggleDisplay,
           ),
-        ),
-        itemBuilder:
-            (context, payment) => PaymentCard(
-              key: ValueKey(payment.operationId),
-              event: payment,
-              onTap: () => PaymentDetailsDrawer.show(context, event: payment),
+        ],
+      ),
+      body: AmountDisplay(
+        display: _display,
+        child: GroupedList<ConduitPayment>(
+          items: _filteredPayments,
+          groupKey:
+              (payment) => _formatDateHeader(
+                DateTime.fromMillisecondsSinceEpoch(payment.timestamp),
+              ),
+          header: Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _FilterButton(
+                  icon: PhosphorIconsRegular.lightning,
+                  active: _lightning,
+                  onTap: () => setState(() => _lightning = !_lightning),
+                ),
+                _FilterButton(
+                  icon: PhosphorIconsRegular.link,
+                  active: _bitcoin,
+                  onTap: () => setState(() => _bitcoin = !_bitcoin),
+                ),
+                _FilterButton(
+                  icon: PhosphorIconsRegular.coinVertical,
+                  active: _ecash,
+                  onTap: () => setState(() => _ecash = !_ecash),
+                ),
+                _FilterButton(
+                  icon: PhosphorIconsRegular.plus,
+                  active: _incoming,
+                  onTap: () => setState(() => _incoming = !_incoming),
+                ),
+                _FilterButton(
+                  icon: PhosphorIconsRegular.minus,
+                  active: _outgoing,
+                  onTap: () => setState(() => _outgoing = !_outgoing),
+                ),
+              ],
             ),
+          ),
+          itemBuilder:
+              (context, payment) => PaymentCard(
+                key: ValueKey(payment.operationId),
+                event: payment,
+                onTap: () => PaymentDetailsDrawer.show(context, event: payment),
+              ),
+        ),
       ),
     );
   }

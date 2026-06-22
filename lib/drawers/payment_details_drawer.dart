@@ -8,6 +8,7 @@ import 'package:conduit/widgets/detail_row_widget.dart';
 import 'package:conduit/widgets/shareable_row_widget.dart';
 import 'package:conduit/utils/payment_utils.dart';
 import 'package:conduit/utils/drawer_utils.dart';
+import 'package:conduit/utils/currency_utils.dart';
 
 class PaymentDetailsDrawer extends StatelessWidget {
   final ConduitPayment event;
@@ -44,42 +45,41 @@ class PaymentDetailsDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final fee = event.feeSats;
-    final sign = event.incoming ? '+' : '-';
+    final fiat = historicalFiat(event);
 
     return DrawerShell(
       icon: PaymentTypeUtils.getIcon(event.paymentType),
       title: _title(),
+      subtitle: _formatDateTime(event.timestamp),
       children: [
         BorderedList.column(
           children: [
             DetailRow(
-              icon:
-                  event.incoming
-                      ? PhosphorIconsRegular.arrowDown
-                      : PhosphorIconsRegular.arrowUp,
-              label:
-                  event.paymentType == PaymentType.ecash
-                      ? 'Balance Change'
-                      : 'Balance Change (incl. network fee)',
-              value: '$sign ${_sats(event.amountSats)}',
+              icon: PhosphorIconsRegular.currencyBtc,
+              label: 'Amount in Bitcoin',
+              value: _sats(event.amountSats),
             ),
+            if (fiat != null)
+              DetailRow(
+                icon: PhosphorIconsRegular.currencyDollar,
+                label: 'Amount in ${fiat.currency}',
+                value: fiat.amount,
+              ),
             if (fee != null)
               DetailRow(
                 icon: PhosphorIconsRegular.network,
                 label: 'Network Fee',
-                value: _sats(fee),
+                value:
+                    '${_sats(fee)} · ${(fee / event.amountSats * 100).toStringAsFixed(1)}%',
               ),
             if (event.address != null)
               ShareableRow(data: event.address!, label: 'Bitcoin Address'),
             if (event.txid != null)
               ShareableRow(data: event.txid!, label: 'Bitcoin Txid'),
+            if (event.preimage != null)
+              ShareableRow(data: event.preimage!, label: 'Preimage'),
             if (event.ecash != null)
               ShareableRow(data: event.ecash!, label: 'eCash'),
-            DetailRow(
-              icon: PhosphorIconsRegular.calendarBlank,
-              label: 'Date',
-              value: _formatDateTime(event.timestamp),
-            ),
           ],
         ),
       ],

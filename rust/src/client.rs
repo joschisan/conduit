@@ -18,7 +18,7 @@ use futures_util::StreamExt;
 
 use std::str::FromStr;
 
-use crate::db::{EventLogEntryKey, EventLogEntryPrefix};
+use crate::db::{EventLogEntryKey, EventLogEntryPrefix, OperationFiatKey};
 use crate::events::{
     ConduitPayment, ParsedEvent, PaymentNotification, RecentPaymentsUpdate, apply_update,
     parse_event_log_entry, snapshot,
@@ -132,6 +132,57 @@ impl ConduitClient {
             }
         }
         None
+    }
+
+    /// Freezes the current exchange rate against `operation_id` so history can
+    /// later show the fiat value as of the time of the payment. Uses only the
+    /// cached rate — never the network — and is a no-op when no fresh rate is
+    /// cached (the payment simply shows no fiat) or a snapshot already exists.
+    /// The rate is snapshotted in `self.currency_code`, the same currency the
+    /// cache was fetched against, so the stored code and rate can never disagree.
+    async fn snapshot_fiat(&self, operation_id: OperationId) {
+        let rate = {
+            let Ok(guard) = self.exchange_rate_cache.try_lock() else {
+                return;
+            };
+
+            match guard.as_ref() {
+                Some((rate, timestamp)) if timestamp.elapsed() < EXCHANGE_RATE_TTL => *rate,
+                _ => return,
+            }
+        };
+
+        let mut dbtx = self.db.begin_transaction().await;
+
+        if dbtx.get_value(&OperationFiatKey(operation_id)).await.is_none() {
+            dbtx.insert_entry(
+                &OperationFiatKey(operation_id),
+                &(self.currency_code.clone(), rate.to_be_bytes()),
+            )
+            .await;
+
+            dbtx.commit_tx().await;
+        }
+    }
+
+    /// Fills `payment`'s fiat fields from the rate snapshotted at payment time,
+    /// converting `amount_sats` at that frozen BTC price. Leaves them `None`
+    /// when no snapshot was recorded for the operation.
+    async fn attach_fiat(&self, payment: &mut ConduitPayment, operation_id: OperationId) {
+        let Some((currency_code, rate_bytes)) = self
+            .db
+            .begin_transaction_nc()
+            .await
+            .get_value(&OperationFiatKey(operation_id))
+            .await
+        else {
+            return;
+        };
+
+        let rate = f64::from_be_bytes(rate_bytes);
+
+        payment.fiat_amount = Some((payment.amount_sats as f64 / 100_000_000.0) * rate);
+        payment.fiat_currency_code = Some(currency_code);
     }
 
     #[frb]
@@ -571,15 +622,26 @@ impl ConduitClient {
         for entry in entries {
             if let Some(parsed) = parse_event_log_entry(&entry.1) {
                 match parsed {
-                    ParsedEvent::Payment(payment) => {
+                    ParsedEvent::Payment {
+                        mut payment,
+                        operation_id,
+                    } => {
+                        self.attach_fiat(&mut payment, operation_id).await;
                         payments.push(payment);
                     }
                     ParsedEvent::Update {
                         operation_id,
                         success,
                         txid,
+                        preimage,
                     } => {
-                        apply_update(&mut payments, &operation_id, success, txid);
+                        apply_update(
+                            &mut payments,
+                            &operation_id,
+                            success,
+                            txid,
+                            preimage,
+                        );
                     }
                 }
             }
@@ -610,15 +672,26 @@ impl ConduitClient {
 
             if let Some(parsed) = parse_event_log_entry(&entry) {
                 match parsed {
-                    ParsedEvent::Payment(payment) => {
+                    ParsedEvent::Payment {
+                        mut payment,
+                        operation_id,
+                    } => {
+                        self.attach_fiat(&mut payment, operation_id).await;
                         payments.push(payment);
                     }
                     ParsedEvent::Update {
                         operation_id,
                         success,
                         txid,
+                        preimage,
                     } => {
-                        apply_update(&mut payments, &operation_id, success, txid);
+                        apply_update(
+                            &mut payments,
+                            &operation_id,
+                            success,
+                            txid,
+                            preimage,
+                        );
                     }
                 }
             }
@@ -652,8 +725,16 @@ impl ConduitClient {
                 };
 
                 let notification = match parsed {
-                    ParsedEvent::Payment(payment) => {
+                    ParsedEvent::Payment {
+                        mut payment,
+                        operation_id,
+                    } => {
                         n_display += 1;
+
+                        // First live sighting of this payment: freeze the fiat
+                        // rate, then fold it into the payment we hand to the UI.
+                        self.snapshot_fiat(operation_id).await;
+                        self.attach_fiat(&mut payment, operation_id).await;
 
                         payments.push(payment.clone());
 
@@ -668,7 +749,14 @@ impl ConduitClient {
                         operation_id,
                         success,
                         txid,
-                    } => apply_update(&mut payments, &operation_id, success, txid),
+                        preimage,
+                    } => apply_update(
+                        &mut payments,
+                        &operation_id,
+                        success,
+                        txid,
+                        preimage,
+                    ),
                 };
 
                 if sink

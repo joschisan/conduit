@@ -6,19 +6,26 @@ import 'package:conduit/widgets/drawer_shell_widget.dart';
 import 'package:conduit/widgets/bordered_list_widget.dart';
 import 'package:conduit/widgets/detail_row_widget.dart';
 import 'package:conduit/utils/drawer_utils.dart';
+import 'package:conduit/utils/currency_utils.dart';
 
 class WalletV2WalletDetailsDrawer extends StatelessWidget {
+  final ConduitClient client;
   final FederationStats stats;
 
-  const WalletV2WalletDetailsDrawer({super.key, required this.stats});
+  const WalletV2WalletDetailsDrawer({
+    super.key,
+    required this.client,
+    required this.stats,
+  });
 
   static Future<void> show(
     BuildContext context, {
+    required ConduitClient client,
     required FederationStats stats,
   }) {
     return DrawerUtils.show(
       context: context,
-      child: WalletV2WalletDetailsDrawer(stats: stats),
+      child: WalletV2WalletDetailsDrawer(client: client, stats: stats),
     );
   }
 
@@ -37,6 +44,7 @@ class WalletV2WalletDetailsDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final feerate = stats.feerate;
+    final fiat = cachedFiatAmount(client, stats.totalValueSat);
 
     return DrawerShell(
       icon: PhosphorIconsRegular.info,
@@ -46,9 +54,15 @@ class WalletV2WalletDetailsDrawer extends StatelessWidget {
           children: [
             DetailRow(
               icon: PhosphorIconsRegular.currencyBtc,
-              label: 'Value in Custody',
+              label: 'Bitcoin in Custody',
               value: _btc(stats.totalValueSat),
             ),
+            if (fiat != null)
+              DetailRow(
+                icon: PhosphorIconsRegular.currencyDollar,
+                label: '${fiat.currency} in Custody',
+                value: fiat.amount,
+              ),
             DetailRow(
               icon: PhosphorIconsRegular.cube,
               label: 'Block Count',

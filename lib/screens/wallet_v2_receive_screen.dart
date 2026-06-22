@@ -27,7 +27,9 @@ class WalletV2ReceiveScreen extends StatelessWidget {
 
     // Don't await the drawer's dismissal here, otherwise the icon's spinner
     // keeps running for as long as the drawer stays open.
-    unawaited(WalletV2WalletDetailsDrawer.show(context, stats: stats));
+    unawaited(
+      WalletV2WalletDetailsDrawer.show(context, client: client, stats: stats),
+    );
   }
 
   @override

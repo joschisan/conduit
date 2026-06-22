@@ -8,7 +8,10 @@ use fedimint_walletv2_client::events::{
     ReceivePaymentStatus as WalletV2ReceivePaymentStatus,
     SendPaymentStatus as WalletV2SendPaymentStatus,
 };
+use bitcoin::hex::DisplayHex;
 use flutter_rust_bridge::frb;
+
+use crate::OperationId;
 
 /// Type of payment
 #[frb]
@@ -32,7 +35,13 @@ pub struct ConduitPayment {
     pub success: Option<bool>,
     pub ecash: Option<String>,
     pub txid: Option<String>,
+    pub preimage: Option<String>,
     pub address: Option<String>,
+    /// Fiat value of `amount_sats` at the rate snapshotted when the payment was
+    /// first observed live. `None` for payments that predate the feature or
+    /// landed with no fresh rate cached.
+    pub fiat_amount: Option<f64>,
+    pub fiat_currency_code: Option<String>,
 }
 
 /// Notification for a recent payment event
@@ -52,27 +61,35 @@ pub struct RecentPaymentsUpdate {
 }
 
 pub(crate) enum ParsedEvent {
-    Payment(ConduitPayment),
+    Payment {
+        payment: ConduitPayment,
+        operation_id: OperationId,
+    },
     Update {
-        operation_id: String,
+        operation_id: OperationId,
         success: bool,
         txid: Option<String>,
+        preimage: Option<String>,
     },
 }
 
 /// Fold an update into a payment list by operation_id
 pub(crate) fn apply_update(
     payments: &mut [ConduitPayment],
-    operation_id: &str,
+    operation_id: &OperationId,
     success: bool,
     txid: Option<String>,
+    preimage: Option<String>,
 ) -> Option<PaymentNotification> {
+    let operation_id = operation_id.fmt_full().to_string();
+
     let payment = payments
         .iter_mut()
         .rfind(|p| p.operation_id == operation_id)?;
 
     payment.success = Some(success);
     payment.txid = txid;
+    payment.preimage = preimage;
 
     Some(PaymentNotification {
         incoming: payment.incoming,
@@ -89,94 +106,135 @@ pub(crate) fn snapshot(payments: &[ConduitPayment], count: usize) -> Vec<Conduit
 
 pub(crate) fn parse_event_log_entry(entry: &EventLogEntry) -> Option<ParsedEvent> {
     if let Some(send) = parse::<fedimint_lnv2_client::events::SendPaymentEvent>(entry) {
-        return Some(ParsedEvent::Payment(ConduitPayment {
-            operation_id: format!("lnv2_{}", send.operation_id.fmt_short()),
-            incoming: false,
-            payment_type: PaymentType::Lightning,
-            amount_sats: (send.amount.msats / 1000) as i64,
-            fee_sats: Some((send.fee.msats / 1000) as i64),
-            timestamp: (entry.ts_usecs / 1000) as i64,
-            success: None,
-            ecash: None,
-            txid: None,
-            address: None,
-        }));
+        return Some(ParsedEvent::Payment {
+            operation_id: send.operation_id,
+            payment: ConduitPayment {
+                operation_id: send.operation_id.fmt_full().to_string(),
+                incoming: false,
+                payment_type: PaymentType::Lightning,
+                amount_sats: (send.amount.msats / 1000) as i64,
+                fee_sats: Some((send.fee.msats / 1000) as i64),
+                timestamp: (entry.ts_usecs / 1000) as i64,
+                success: None,
+                ecash: None,
+                txid: None,
+                address: None,
+                fiat_amount: None,
+                fiat_currency_code: None,
+                preimage: None,
+            },
+        });
     }
 
     if let Some(update) = parse::<fedimint_lnv2_client::events::SendPaymentUpdateEvent>(entry) {
+        // The preimage arrives here, on the terminal update, not on the
+        // SendPaymentEvent that created the payment — fold it in like the txid.
+        let (success, preimage) = match update.status {
+            SendPaymentStatus::Success(preimage) => {
+                (true, Some(preimage.as_slice().to_lower_hex_string()))
+            }
+            SendPaymentStatus::Refunded => (false, None),
+        };
+
         return Some(ParsedEvent::Update {
-            operation_id: format!("lnv2_{}", update.operation_id.fmt_short()),
-            success: matches!(update.status, SendPaymentStatus::Success(_)),
+            operation_id: update.operation_id,
+            success,
             txid: None,
+            preimage,
         });
     }
 
     if let Some(receive) = parse::<fedimint_lnv2_client::events::ReceivePaymentEvent>(entry) {
-        return Some(ParsedEvent::Payment(ConduitPayment {
-            operation_id: format!("lnv2_{}", receive.operation_id.fmt_short()),
-            incoming: true,
-            payment_type: PaymentType::Lightning,
-            amount_sats: (receive.amount.msats / 1000) as i64,
-            fee_sats: None,
-            timestamp: (entry.ts_usecs / 1000) as i64,
-            success: Some(true),
-            ecash: None,
-            txid: None,
-            address: None,
-        }));
+        return Some(ParsedEvent::Payment {
+            operation_id: receive.operation_id,
+            payment: ConduitPayment {
+                operation_id: receive.operation_id.fmt_full().to_string(),
+                incoming: true,
+                payment_type: PaymentType::Lightning,
+                amount_sats: (receive.amount.msats / 1000) as i64,
+                fee_sats: None,
+                timestamp: (entry.ts_usecs / 1000) as i64,
+                success: Some(true),
+                ecash: None,
+                txid: None,
+                address: None,
+                fiat_amount: None,
+                fiat_currency_code: None,
+                preimage: None,
+            },
+        });
     }
 
     if let Some(send) = parse::<fedimint_mint_client::events::SendPaymentEvent>(entry) {
-        return Some(ParsedEvent::Payment(ConduitPayment {
-            operation_id: format!("mint_{}", send.operation_id.fmt_short()),
-            incoming: false,
-            payment_type: PaymentType::Ecash,
-            amount_sats: (send.amount.msats / 1000) as i64,
-            fee_sats: None,
-            timestamp: (entry.ts_usecs / 1000) as i64,
-            success: Some(true),
-            ecash: Some(send.oob_notes),
-            txid: None,
-            address: None,
-        }));
+        return Some(ParsedEvent::Payment {
+            operation_id: send.operation_id,
+            payment: ConduitPayment {
+                operation_id: send.operation_id.fmt_full().to_string(),
+                incoming: false,
+                payment_type: PaymentType::Ecash,
+                amount_sats: (send.amount.msats / 1000) as i64,
+                fee_sats: None,
+                timestamp: (entry.ts_usecs / 1000) as i64,
+                success: Some(true),
+                ecash: Some(send.oob_notes),
+                txid: None,
+                address: None,
+                fiat_amount: None,
+                fiat_currency_code: None,
+                preimage: None,
+            },
+        });
     }
 
     if let Some(receive) = parse::<fedimint_mint_client::events::ReceivePaymentEvent>(entry) {
-        return Some(ParsedEvent::Payment(ConduitPayment {
-            operation_id: format!("mint_{}", receive.operation_id.fmt_short()),
-            incoming: true,
-            payment_type: PaymentType::Ecash,
-            amount_sats: (receive.amount.msats / 1000) as i64,
-            fee_sats: None,
-            timestamp: (entry.ts_usecs / 1000) as i64,
-            success: None,
-            ecash: None,
-            txid: None,
-            address: None,
-        }));
+        return Some(ParsedEvent::Payment {
+            operation_id: receive.operation_id,
+            payment: ConduitPayment {
+                operation_id: receive.operation_id.fmt_full().to_string(),
+                incoming: true,
+                payment_type: PaymentType::Ecash,
+                amount_sats: (receive.amount.msats / 1000) as i64,
+                fee_sats: None,
+                timestamp: (entry.ts_usecs / 1000) as i64,
+                success: None,
+                ecash: None,
+                txid: None,
+                address: None,
+                fiat_amount: None,
+                fiat_currency_code: None,
+                preimage: None,
+            },
+        });
     }
 
     if let Some(update) = parse::<fedimint_mint_client::events::ReceivePaymentUpdateEvent>(entry) {
         return Some(ParsedEvent::Update {
-            operation_id: format!("mint_{}", update.operation_id.fmt_short()),
+            operation_id: update.operation_id,
             success: matches!(update.status, ReceivePaymentStatus::Success),
             txid: None,
+            preimage: None,
         });
     }
 
     if let Some(send) = parse::<fedimint_wallet_client::events::SendPaymentEvent>(entry) {
-        return Some(ParsedEvent::Payment(ConduitPayment {
-            operation_id: format!("wallet_{}", send.operation_id.fmt_short()),
-            incoming: false,
-            payment_type: PaymentType::Bitcoin,
-            amount_sats: send.amount.to_sat() as i64,
-            fee_sats: Some(send.fee.to_sat() as i64),
-            timestamp: (entry.ts_usecs / 1000) as i64,
-            success: None,
-            ecash: None,
-            txid: None,
-            address: None,
-        }));
+        return Some(ParsedEvent::Payment {
+            operation_id: send.operation_id,
+            payment: ConduitPayment {
+                operation_id: send.operation_id.fmt_full().to_string(),
+                incoming: false,
+                payment_type: PaymentType::Bitcoin,
+                amount_sats: send.amount.to_sat() as i64,
+                fee_sats: Some(send.fee.to_sat() as i64),
+                timestamp: (entry.ts_usecs / 1000) as i64,
+                success: None,
+                ecash: None,
+                txid: None,
+                address: None,
+                fiat_amount: None,
+                fiat_currency_code: None,
+                preimage: None,
+            },
+        });
     }
 
     if let Some(status) = parse::<fedimint_wallet_client::events::SendPaymentStatusEvent>(entry) {
@@ -186,85 +244,108 @@ pub(crate) fn parse_event_log_entry(entry: &EventLogEntry) -> Option<ParsedEvent
         };
 
         return Some(ParsedEvent::Update {
-            operation_id: format!("wallet_{}", status.operation_id.fmt_short()),
+            operation_id: status.operation_id,
             success,
             txid,
+            preimage: None,
         });
     }
 
     if let Some(receive) = parse::<fedimint_wallet_client::events::ReceivePaymentEvent>(entry) {
-        return Some(ParsedEvent::Payment(ConduitPayment {
-            operation_id: format!("wallet_{}", receive.operation_id.fmt_short()),
-            incoming: true,
-            payment_type: PaymentType::Bitcoin,
-            amount_sats: (receive.amount.msats / 1000) as i64,
-            fee_sats: None,
-            timestamp: (entry.ts_usecs / 1000) as i64,
-            success: Some(true),
-            ecash: None,
-            txid: Some(receive.txid.to_string()),
-            address: None,
-        }));
+        return Some(ParsedEvent::Payment {
+            operation_id: receive.operation_id,
+            payment: ConduitPayment {
+                operation_id: receive.operation_id.fmt_full().to_string(),
+                incoming: true,
+                payment_type: PaymentType::Bitcoin,
+                amount_sats: (receive.amount.msats / 1000) as i64,
+                fee_sats: None,
+                timestamp: (entry.ts_usecs / 1000) as i64,
+                success: Some(true),
+                ecash: None,
+                txid: Some(receive.txid.to_string()),
+                address: None,
+                fiat_amount: None,
+                fiat_currency_code: None,
+                preimage: None,
+            },
+        });
     }
 
     // MintV2 events
 
     if let Some(send) = parse::<fedimint_mintv2_client::SendPaymentEvent>(entry) {
-        return Some(ParsedEvent::Payment(ConduitPayment {
-            operation_id: format!("mintv2_{}", send.operation_id.fmt_short()),
-            incoming: false,
-            payment_type: PaymentType::Ecash,
-            amount_sats: (send.amount.msats / 1000) as i64,
-            fee_sats: None,
-            timestamp: (entry.ts_usecs / 1000) as i64,
-            success: Some(true),
-            ecash: Some(send.ecash),
-            txid: None,
-            address: None,
-        }));
+        return Some(ParsedEvent::Payment {
+            operation_id: send.operation_id,
+            payment: ConduitPayment {
+                operation_id: send.operation_id.fmt_full().to_string(),
+                incoming: false,
+                payment_type: PaymentType::Ecash,
+                amount_sats: (send.amount.msats / 1000) as i64,
+                fee_sats: None,
+                timestamp: (entry.ts_usecs / 1000) as i64,
+                success: Some(true),
+                ecash: Some(send.ecash),
+                txid: None,
+                address: None,
+                fiat_amount: None,
+                fiat_currency_code: None,
+                preimage: None,
+            },
+        });
     }
 
     if let Some(receive) = parse::<fedimint_mintv2_client::ReceivePaymentEvent>(entry) {
-        return Some(ParsedEvent::Payment(ConduitPayment {
-            operation_id: format!("mintv2_{}", receive.operation_id.fmt_short()),
-            incoming: true,
-            payment_type: PaymentType::Ecash,
-            amount_sats: (receive.amount.msats / 1000) as i64,
-            fee_sats: None,
-            timestamp: (entry.ts_usecs / 1000) as i64,
-            success: None,
-            ecash: None,
-            txid: None,
-            address: None,
-        }));
+        return Some(ParsedEvent::Payment {
+            operation_id: receive.operation_id,
+            payment: ConduitPayment {
+                operation_id: receive.operation_id.fmt_full().to_string(),
+                incoming: true,
+                payment_type: PaymentType::Ecash,
+                amount_sats: (receive.amount.msats / 1000) as i64,
+                fee_sats: None,
+                timestamp: (entry.ts_usecs / 1000) as i64,
+                success: None,
+                ecash: None,
+                txid: None,
+                address: None,
+                fiat_amount: None,
+                fiat_currency_code: None,
+                preimage: None,
+            },
+        });
     }
 
     if let Some(update) = parse::<fedimint_mintv2_client::ReceivePaymentUpdateEvent>(entry) {
         return Some(ParsedEvent::Update {
-            operation_id: format!("mintv2_{}", update.operation_id.fmt_short()),
+            operation_id: update.operation_id,
             success: matches!(update.status, MintV2ReceivePaymentStatus::Success),
             txid: None,
+            preimage: None,
         });
     }
 
     // WalletV2 events
 
     if let Some(send) = parse::<fedimint_walletv2_client::events::SendPaymentEvent>(entry) {
-        return Some(ParsedEvent::Payment(ConduitPayment {
-            operation_id: format!("walletv2_{}", send.operation_id.fmt_short()),
-            incoming: false,
-            payment_type: PaymentType::Bitcoin,
-            // walletv2 reports `value` excluding the fee; fold it in so
-            // amount_sats is the total debited from the balance, matching the
-            // lightning and walletv1 modules.
-            amount_sats: (send.value + send.fee).to_sat() as i64,
-            fee_sats: Some(send.fee.to_sat() as i64),
-            timestamp: (entry.ts_usecs / 1000) as i64,
-            success: None,
-            ecash: None,
-            txid: None,
-            address: Some(send.address.clone().assume_checked().to_string()),
-        }));
+        return Some(ParsedEvent::Payment {
+            operation_id: send.operation_id,
+            payment: ConduitPayment {
+                operation_id: send.operation_id.fmt_full().to_string(),
+                incoming: false,
+                payment_type: PaymentType::Bitcoin,
+                amount_sats: send.value.to_sat() as i64,
+                fee_sats: Some(send.fee.to_sat() as i64),
+                timestamp: (entry.ts_usecs / 1000) as i64,
+                success: None,
+                ecash: None,
+                txid: None,
+                address: Some(send.address.clone().assume_checked().to_string()),
+                fiat_amount: None,
+                fiat_currency_code: None,
+                preimage: None,
+            },
+        });
     }
 
     if let Some(status) = parse::<fedimint_walletv2_client::events::SendPaymentUpdateEvent>(entry) {
@@ -274,37 +355,42 @@ pub(crate) fn parse_event_log_entry(entry: &EventLogEntry) -> Option<ParsedEvent
         };
 
         return Some(ParsedEvent::Update {
-            operation_id: format!("walletv2_{}", status.operation_id.fmt_short()),
+            operation_id: status.operation_id,
             success,
             txid,
+            preimage: None,
         });
     }
 
     if let Some(receive) = parse::<fedimint_walletv2_client::events::ReceivePaymentEvent>(entry) {
-        return Some(ParsedEvent::Payment(ConduitPayment {
-            operation_id: format!("walletv2_{}", receive.operation_id.fmt_short()),
-            incoming: true,
-            payment_type: PaymentType::Bitcoin,
-            // walletv2 reports the gross deposit `value`; the peg-in fee is
-            // deducted before crediting, so subtract it to make amount_sats the
-            // net amount actually added to the balance.
-            amount_sats: (receive.value - receive.fee).to_sat() as i64,
-            fee_sats: Some(receive.fee.to_sat() as i64),
-            timestamp: (entry.ts_usecs / 1000) as i64,
-            success: None,
-            ecash: None,
-            txid: None,
-            address: Some(receive.address.clone().assume_checked().to_string()),
-        }));
+        return Some(ParsedEvent::Payment {
+            operation_id: receive.operation_id,
+            payment: ConduitPayment {
+                operation_id: receive.operation_id.fmt_full().to_string(),
+                incoming: true,
+                payment_type: PaymentType::Bitcoin,
+                amount_sats: receive.value.to_sat() as i64,
+                fee_sats: Some(receive.fee.to_sat() as i64),
+                timestamp: (entry.ts_usecs / 1000) as i64,
+                success: None,
+                ecash: None,
+                txid: None,
+                address: Some(receive.address.clone().assume_checked().to_string()),
+                fiat_amount: None,
+                fiat_currency_code: None,
+                preimage: None,
+            },
+        });
     }
 
     if let Some(status) =
         parse::<fedimint_walletv2_client::events::ReceivePaymentUpdateEvent>(entry)
     {
         return Some(ParsedEvent::Update {
-            operation_id: format!("walletv2_{}", status.operation_id.fmt_short()),
+            operation_id: status.operation_id,
             success: matches!(status.status, WalletV2ReceivePaymentStatus::Success),
             txid: None,
+            preimage: None,
         });
     }
 

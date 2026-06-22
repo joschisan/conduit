@@ -4,26 +4,24 @@ import 'package:flutter/widgets.dart';
 /// toggled amounts off.
 const maskedAmount = '•••••';
 
-/// Broadcasts whether monetary amounts should be shown, letting descendants
-/// (balances, payment tiles) mask them without prop-drilling. Defaults to
-/// visible when no ancestor is present, so widgets reused outside the home
-/// subtree (e.g. the payment-history screen) are unaffected.
-class AmountVisibility extends InheritedWidget {
-  final bool visible;
+/// How a monetary amount renders, cycled by the app-bar controls.
+enum BalanceDisplay { sats, fiat, hidden }
 
-  const AmountVisibility({
-    super.key,
-    required this.visible,
-    required super.child,
-  });
+/// Broadcasts how monetary amounts should render (sats / fiat / hidden), letting
+/// descendants (balances, payment tiles) adapt without prop-drilling. Defaults
+/// to sats when no ancestor is present, so widgets reused outside a providing
+/// subtree are unaffected.
+class AmountDisplay extends InheritedWidget {
+  final BalanceDisplay display;
 
-  static bool of(BuildContext context) {
-    final widget =
-        context.dependOnInheritedWidgetOfExactType<AmountVisibility>();
-    return widget?.visible ?? true;
+  const AmountDisplay({super.key, required this.display, required super.child});
+
+  static BalanceDisplay of(BuildContext context) {
+    final widget = context.dependOnInheritedWidgetOfExactType<AmountDisplay>();
+    return widget?.display ?? BalanceDisplay.sats;
   }
 
   @override
-  bool updateShouldNotify(AmountVisibility oldWidget) =>
-      visible != oldWidget.visible;
+  bool updateShouldNotify(AmountDisplay oldWidget) =>
+      display != oldWidget.display;
 }

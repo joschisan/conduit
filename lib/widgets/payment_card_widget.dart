@@ -4,6 +4,7 @@ import 'package:conduit/utils/styles.dart';
 import 'package:intl/intl.dart';
 import 'package:conduit/bridge_generated.dart/events.dart';
 import 'package:conduit/utils/payment_utils.dart';
+import 'package:conduit/utils/currency_utils.dart';
 import 'package:conduit/widgets/amount_visibility.dart';
 import 'package:conduit/widgets/loading_icon_widget.dart';
 
@@ -29,6 +30,15 @@ class PaymentCard extends StatelessWidget {
     final date = DateTime.fromMillisecondsSinceEpoch(event.timestamp);
     final formattedAmount = NumberFormat('#,###').format(event.amountSats);
     final sign = event.incoming ? '+' : '-';
+
+    // In fiat mode show the value frozen at payment time, falling back to sats
+    // for payments that carry no snapshot (predate the feature / no rate then).
+    final fiat = historicalFiat(event, symbolLast: true);
+    final title = switch (AmountDisplay.of(context)) {
+      BalanceDisplay.hidden => '$maskedAmount sat',
+      BalanceDisplay.fiat when fiat != null => '$sign${fiat.amount}',
+      _ => '$sign$formattedAmount sat',
+    };
 
     final icon = Icon(
       PaymentTypeUtils.getIcon(event.paymentType),
@@ -62,12 +72,7 @@ class PaymentCard extends StatelessWidget {
         switchOutCurve: Curves.easeOut,
         child: leading,
       ),
-      title: Text(
-        AmountVisibility.of(context)
-            ? '$sign $formattedAmount sat'
-            : '$maskedAmount sat',
-        style: mediumStyle.copyWith(color: titleColor),
-      ),
+      title: Text(title, style: mediumStyle.copyWith(color: titleColor)),
       trailing: Text(
         _formatTime(date),
         style: smallStyle.copyWith(

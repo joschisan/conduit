@@ -3,6 +3,8 @@ use fedimint_core::encoding::{Decodable, Encodable};
 use fedimint_core::{impl_db_lookup, impl_db_record};
 use fedimint_eventlog::{EventLogEntry, EventLogId};
 
+use crate::OperationId;
+
 #[repr(u8)]
 #[derive(Clone, Debug)]
 pub(crate) enum DbKeyPrefix {
@@ -16,6 +18,7 @@ pub(crate) enum DbKeyPrefix {
     SelectedFederation = 0x05, // Deprecated
     EventLogEntry = 0x06,
     Contact = 0x07,
+    OperationFiat = 0x08,
 }
 
 #[derive(Clone, Debug, Encodable, Decodable)]
@@ -73,6 +76,22 @@ impl_db_record!(
 );
 
 impl_db_lookup!(key = EventLogEntryKey, query_prefix = EventLogEntryPrefix);
+
+/// Exchange rate snapshotted against an operation when its payment is first
+/// observed live, so history can show the fiat value as of the time of the
+/// payment. The value is `(currency_code, btc_price_bytes)`, where the BTC price
+/// (in `currency_code`) is stored as `f64::to_be_bytes` since fedimint's
+/// `Encodable` has no `f64` impl (and a `u64` would be BigSize var-int encoded).
+/// Absent for operations that predate the feature or landed with no fresh rate
+/// cached.
+#[derive(Clone, Debug, Encodable, Decodable)]
+pub(crate) struct OperationFiatKey(pub(crate) OperationId);
+
+impl_db_record!(
+    key = OperationFiatKey,
+    value = (String, [u8; 8]),
+    db_prefix = DbKeyPrefix::OperationFiat,
+);
 
 #[derive(Clone, Debug, Encodable, Decodable)]
 pub(crate) struct ContactKey(pub(crate) String);
