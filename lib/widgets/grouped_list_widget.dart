@@ -20,16 +20,14 @@ class GroupedList<T> extends StatelessWidget {
     final offset = header != null ? 1 : 0;
 
     return ListView.builder(
-      // Full-bleed rows: no horizontal padding on the list. The header keeps its
-      // own inset and rows carry their content padding instead.
-      padding: const EdgeInsets.only(top: 16, bottom: 32),
+      // Full-bleed rows: no horizontal padding on the list. The header manages
+      // its own padding (top included) and rows carry their content padding.
+      padding: const EdgeInsets.only(bottom: 32),
       itemCount: items.length + offset,
       itemBuilder: (context, index) {
+        // The header runs full-bleed; it manages its own horizontal padding.
         if (index < offset) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: header!,
-          );
+          return header!;
         }
 
         final itemIndex = index - offset;

@@ -98,7 +98,7 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
                 DateTime.fromMillisecondsSinceEpoch(payment.timestamp),
               ),
           header: Padding(
-            padding: const EdgeInsets.only(bottom: 16),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
