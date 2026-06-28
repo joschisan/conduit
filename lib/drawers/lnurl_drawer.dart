@@ -1,9 +1,11 @@
-import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
+import 'package:conduit/bridge_generated.dart/events.dart';
 import 'package:conduit/bridge_generated.dart/factory.dart';
 import 'package:conduit/bridge_generated.dart/lnurl.dart';
 import 'package:conduit/widgets/drawer_shell_widget.dart';
+import 'package:conduit/widgets/bordered_list_widget.dart';
+import 'package:conduit/widgets/payment_summary_row_widget.dart';
 import 'package:conduit/widgets/async_button_widget.dart';
 import 'package:conduit/screens/lnurl_amount_screen.dart';
 import 'package:conduit/drawers/lightning_invoice_drawer.dart';
@@ -84,10 +86,17 @@ class _LnurlDrawerState extends State<LnurlDrawer> {
   @override
   Widget build(BuildContext context) {
     return DrawerShell(
-      icon: PhosphorIconsRegular.lightning,
-      title: 'Send Lightning',
       children: [
-        const SizedBox(height: 8),
+        BorderedList.column(
+          children: const [
+            PaymentSummaryRow(
+              paymentType: PaymentType.lightning,
+              incoming: false,
+              status: 'Send',
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
         AsyncButton(text: 'Continue', onPressed: _handleContinue),
       ],
     );

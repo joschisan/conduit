@@ -4,6 +4,7 @@ import 'package:conduit/bridge_generated.dart/lib.dart';
 import 'package:conduit/screens/confirm_recovery_phrase_screen.dart';
 import 'package:conduit/utils/styles.dart';
 import 'package:conduit/widgets/grouped_list_widget.dart';
+import 'package:conduit/widgets/icon_chip_widget.dart';
 import 'package:conduit/widgets/search_field_widget.dart';
 
 class InputRecoveryPhraseScreen extends StatefulWidget {
@@ -78,11 +79,7 @@ class _InputRecoveryPhraseScreenState extends State<InputRecoveryPhraseScreen> {
         itemBuilder:
             (context, word) => ListTile(
               contentPadding: listTilePadding,
-              leading: PhosphorIcon(
-                PhosphorIconsRegular.key,
-                color: Theme.of(context).colorScheme.primary,
-                size: mediumIconSize,
-              ),
+              leading: const IconChip(icon: PhosphorIconsRegular.key),
               title: Text(word, style: mediumStyle),
               onTap: () => _selectWord(word),
             ),

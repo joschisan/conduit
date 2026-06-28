@@ -8,6 +8,7 @@ import 'package:conduit/drawers/wallet_v2_wallet_details_drawer.dart';
 import 'package:conduit/widgets/async_icon_button_widget.dart';
 import 'package:conduit/widgets/qr_code_widget.dart';
 import 'package:conduit/widgets/bordered_list_widget.dart';
+import 'package:conduit/widgets/bleed_column_widget.dart';
 import 'package:conduit/widgets/shareable_row_widget.dart';
 
 class WalletV2ReceiveScreen extends StatelessWidget {
@@ -47,8 +48,8 @@ class WalletV2ReceiveScreen extends StatelessWidget {
       ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Column(
+          padding: EdgeInsets.zero,
+          child: BleedColumn(
             children: [
               const SizedBox(height: 16),
               QrCodeWidget(data: address),

@@ -2,12 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:conduit/bridge_generated.dart/lib.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
+import 'package:conduit/bridge_generated.dart/events.dart';
 import 'package:conduit/widgets/async_button_widget.dart';
 import 'package:conduit/widgets/bordered_list_widget.dart';
+import 'package:conduit/widgets/bleed_column_widget.dart';
+import 'package:conduit/widgets/payment_summary_row_widget.dart';
 import 'package:conduit/widgets/detail_row_widget.dart';
 import 'package:conduit/widgets/amount_rows.dart';
 import 'package:conduit/widgets/shareable_row_widget.dart';
-import 'package:conduit/widgets/warning_card_widget.dart';
 import 'package:conduit/utils/auth_utils.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
@@ -50,11 +52,16 @@ class _ConfirmOnchainSendScreenState extends State<ConfirmOnchainSendScreen> {
       appBar: AppBar(title: const Text('Send Onchain')),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: BleedColumn(
             children: [
               BorderedList.column(
                 children: [
+                  const PaymentSummaryRow(
+                    paymentType: PaymentType.bitcoin,
+                    incoming: false,
+                    status: 'Send',
+                  ),
                   ...amountRows(
                     client: widget.client,
                     amountSats: widget.amountSats,
@@ -64,6 +71,10 @@ class _ConfirmOnchainSendScreenState extends State<ConfirmOnchainSendScreen> {
                     label: 'Network Fee',
                     value:
                         '${NumberFormat('#,###').format(widget.feeSats)} sat · ${(widget.feeSats / widget.amountSats * 100).toStringAsFixed(1)}%',
+                    iconColor:
+                        widget.feeSats > widget.amountSats * 0.02
+                            ? Colors.amber
+                            : null,
                   ),
                   ShareableRow(
                     data: widget.address.toString(),
@@ -72,14 +83,6 @@ class _ConfirmOnchainSendScreenState extends State<ConfirmOnchainSendScreen> {
                 ],
               ),
               const Spacer(),
-              if (widget.feeSats > widget.amountSats * 0.02) ...[
-                WarningCard(
-                  icon: PhosphorIconsRegular.warning,
-                  text:
-                      'High Relative Fee of ${(widget.feeSats / widget.amountSats * 100).toStringAsFixed(1)}%',
-                ),
-                const SizedBox(height: 16),
-              ],
               AsyncButton(text: 'Confirm', onPressed: _handleConfirm),
             ],
           ),

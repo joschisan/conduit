@@ -1,4 +1,3 @@
-import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:conduit/widgets/drawer_shell_widget.dart';
 import 'package:conduit/widgets/async_button_widget.dart';
@@ -27,11 +26,9 @@ class GenerateOnchainAddressDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DrawerShell(
-      icon: PhosphorIconsRegular.plus,
-      title: 'Generate Onchain Address?',
       children: [
         AsyncButton(
-          text: 'Confirm',
+          text: 'Generate Onchain Address',
           onPressed: () async => _handleConfirm(context),
         ),
       ],

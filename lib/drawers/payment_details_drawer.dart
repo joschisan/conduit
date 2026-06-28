@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:conduit/bridge_generated.dart/events.dart';
 import 'package:conduit/widgets/drawer_shell_widget.dart';
 import 'package:conduit/widgets/bordered_list_widget.dart';
+import 'package:conduit/widgets/payment_summary_row_widget.dart';
 import 'package:conduit/widgets/detail_row_widget.dart';
 import 'package:conduit/widgets/shareable_row_widget.dart';
 import 'package:conduit/utils/payment_utils.dart';
@@ -25,16 +26,6 @@ class PaymentDetailsDrawer extends StatelessWidget {
     );
   }
 
-  String _title() {
-    final type = switch (event.paymentType) {
-      PaymentType.lightning => 'Lightning',
-      PaymentType.bitcoin => 'Onchain',
-      PaymentType.ecash => 'eCash',
-    };
-
-    return '$type ${event.incoming ? 'Receive' : 'Send'}';
-  }
-
   String _formatDateTime(int timestamp) {
     final dateTime = DateTime.fromMillisecondsSinceEpoch(timestamp);
     return DateFormat('EEEE d MMMM, HH:mm').format(dateTime);
@@ -48,21 +39,25 @@ class PaymentDetailsDrawer extends StatelessWidget {
     final fiat = historicalFiat(event);
 
     return DrawerShell(
-      icon: PaymentTypeUtils.getIcon(event.paymentType),
-      title: _title(),
-      subtitle: _formatDateTime(event.timestamp),
       children: [
         BorderedList.column(
           children: [
+            PaymentSummaryRow(
+              paymentType: event.paymentType,
+              incoming: event.incoming,
+              status:
+                  '${PaymentTypeUtils.getStatus(incoming: event.incoming, success: event.success)} · ${_formatDateTime(event.timestamp)}',
+              iconColor: event.success == false ? Colors.amber : null,
+            ),
             DetailRow(
               icon: PhosphorIconsRegular.currencyBtc,
-              label: 'Amount in Bitcoin',
+              label: 'Bitcoin',
               value: _sats(event.amountSats),
             ),
             if (fiat != null)
               DetailRow(
                 icon: PhosphorIconsRegular.currencyDollar,
-                label: 'Amount in ${fiat.currency}',
+                label: fiat.currency,
                 value: fiat.amount,
               ),
             if (fee != null)

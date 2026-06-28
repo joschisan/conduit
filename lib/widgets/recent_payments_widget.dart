@@ -4,11 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/bridge_generated.dart/events.dart';
-import 'package:conduit/widgets/bordered_list_widget.dart';
 import 'package:conduit/widgets/animated_entry_widget.dart';
 import 'package:conduit/widgets/payment_card_widget.dart';
+import 'package:conduit/widgets/section_header_widget.dart';
 import 'package:conduit/utils/notification_utils.dart';
-import 'package:conduit/utils/styles.dart';
 import 'package:conduit/screens/payment_history_screen.dart';
 
 class RecentPayments extends StatefulWidget {
@@ -46,18 +45,9 @@ class _RecentPaymentsState extends State<RecentPayments> {
   }
 
   void _showNotification(PaymentNotification notification) {
-    if (notification.success) {
-      if (notification.incoming) {
-        NotificationUtils.showReceive(
-          context,
-          notification.amountSats,
-          notification.paymentType,
-        );
-      } else {
-        HapticFeedback.heavyImpact();
-      }
-    } else {
-      HapticFeedback.heavyImpact();
+    HapticFeedback.heavyImpact();
+
+    if (!notification.success) {
       if (notification.incoming) {
         NotificationUtils.showError(context, 'Failed to receive payment');
       } else {
@@ -72,61 +62,44 @@ class _RecentPaymentsState extends State<RecentPayments> {
     super.dispose();
   }
 
+  Future<void> _openHistory() async {
+    final payments = await widget.client.getPaymentHistory();
+
+    if (!mounted) return;
+
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => PaymentHistoryScreen(payments: payments),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_payments.isEmpty) {
-      return Column(
-        children: [
-          const SizedBox(height: 64),
-          Text(
-            'You have no payments yet.',
-            textAlign: TextAlign.center,
-            style: smallStyle.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-          ),
-        ],
-      );
+      return const SizedBox.shrink();
     }
 
     return Column(
       children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: SectionHeader(
+            title: 'Recent Payments',
+            action: 'History',
+            onAction: _openHistory,
+          ),
+        ),
         for (var i = 0; i < _payments.length; i++)
           KeyedSubtree(
             key: ValueKey(_payments[i].operationId),
-            child: BorderedList.decorateItem(
-              context: context,
-              child: AnimatedEntry(
-                child: PaymentCard(
-                  event: _payments[i],
-                  onTap: () => widget.onTransactionTap(_payments[i]),
-                ),
-              ),
-              isFirst: i == 0,
-              isLast: i == _payments.length - 1,
-            ),
-          ),
-        Center(
-          child: TextButton(
-            onPressed: () async {
-              final payments = await widget.client.getPaymentHistory();
-
-              if (!context.mounted) return;
-
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => PaymentHistoryScreen(payments: payments),
-                ),
-              );
-            },
-            child: Text(
-              'Payment History',
-              style: mediumStyle.copyWith(
-                color: Theme.of(context).colorScheme.primary,
+            child: AnimatedEntry(
+              child: PaymentCard(
+                event: _payments[i],
+                onTap: () => widget.onTransactionTap(_payments[i]),
               ),
             ),
           ),
-        ),
       ],
     );
   }

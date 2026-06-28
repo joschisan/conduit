@@ -6,7 +6,10 @@ import 'package:conduit/screens/base_screen.dart';
 import 'package:conduit/widgets/async_button_widget.dart';
 import 'package:conduit/utils/notification_utils.dart';
 import 'package:conduit/utils/styles.dart';
+import 'package:conduit/utils/number_utils.dart';
 import 'package:conduit/widgets/bordered_list_widget.dart';
+import 'package:conduit/widgets/bleed_column_widget.dart';
+import 'package:conduit/widgets/icon_chip_widget.dart';
 
 class ConfirmRecoveryPhraseScreen extends StatelessWidget {
   final DatabaseWrapper db;
@@ -50,28 +53,35 @@ class ConfirmRecoveryPhraseScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Recovery Phrase')),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
-        child: Column(
+        padding: const EdgeInsets.fromLTRB(0, 16, 0, 32),
+        child: BleedColumn(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            for (int i = 0; i < seedPhrase.length; i++)
-              BorderedList.decorateItem(
-                context: context,
-                isFirst: i == 0,
-                isLast: i == seedPhrase.length - 1,
-                child: ListTile(
-                  contentPadding: listTilePadding,
-                  leading: PhosphorIcon(
-                    PhosphorIconsRegular.key,
-                    color: theme.colorScheme.primary,
-                    size: mediumIconSize,
+            BorderedList.column(
+              children: [
+                for (int i = 0; i < seedPhrase.length; i++)
+                  ListTile(
+                    contentPadding: listTilePadding,
+                    leading: const IconChip(icon: PhosphorIconsRegular.key),
+                    // Stack word/number in the title (not subtitle) to keep the
+                    // tile's single-line height instead of growing to two-line.
+                    title: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(seedPhrase[i], style: mediumStyle),
+                        Text(
+                          spellOutNumber(i + 1),
+                          style: smallStyle.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                  title: Text(
-                    '${i + 1} - ${seedPhrase[i]}',
-                    style: mediumStyle,
-                  ),
-                ),
-              ),
+              ],
+            ),
             const SizedBox(height: 16),
             AsyncButton(
               text: 'Confirm',

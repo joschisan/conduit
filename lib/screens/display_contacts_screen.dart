@@ -9,7 +9,7 @@ import 'package:conduit/screens/contact_name_entry_screen.dart';
 import 'package:conduit/utils/styles.dart';
 import 'package:conduit/widgets/search_field_widget.dart';
 import 'package:conduit/widgets/grouped_list_widget.dart';
-import 'package:conduit/widgets/loading_icon_widget.dart';
+import 'package:conduit/widgets/icon_chip_widget.dart';
 
 class _ContactTile extends StatefulWidget {
   final ConduitContact contact;
@@ -32,19 +32,46 @@ class _ContactTileState extends State<_ContactTile> with AsyncButtonMixin {
 
   @override
   Widget build(BuildContext context) {
-    final icon = Icon(
-      PhosphorIconsRegular.lightning,
-      size: mediumIconSize,
-      color: Theme.of(context).colorScheme.primary,
-    );
+    const icon = IconChip(icon: PhosphorIconsRegular.lightning);
+
+    // The lnurl payload is the decoded service URL, so its host is the
+    // provider domain (e.g. blink.sv) shown as the subheader.
+    final domain = Uri.tryParse(widget.contact.lnurl.field0)?.host;
 
     return ListTile(
       contentPadding: listTilePadding,
-      leading: switch (buttonState) {
-        AsyncButtonState.idle => icon,
-        AsyncButtonState.loading => LoadingIcon(icon: icon),
-      },
-      title: Text(widget.contact.name, style: mediumStyle),
+      leading: icon,
+      // Stack name (+ in-flight spinner) over the provider domain, keeping the
+      // single-line tile height. Spinner rides after the name for consistency
+      // with the payment tiles' in-flight indicator.
+      title: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(widget.contact.name, style: mediumStyle),
+              if (buttonState == AsyncButtonState.loading) ...[
+                const SizedBox(width: 8),
+                const SizedBox(
+                  width: 14,
+                  height: 14,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              ],
+            ],
+          ),
+          if (domain != null && domain.isNotEmpty)
+            Text(
+              domain,
+              style: smallStyle.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+        ],
+      ),
       onTap: switch (buttonState) {
         AsyncButtonState.idle => handlePress,
         AsyncButtonState.loading => null,

@@ -1,8 +1,10 @@
-import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:conduit/bridge_generated.dart/lib.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
+import 'package:conduit/bridge_generated.dart/events.dart';
 import 'package:conduit/widgets/drawer_shell_widget.dart';
+import 'package:conduit/widgets/bordered_list_widget.dart';
+import 'package:conduit/widgets/payment_summary_row_widget.dart';
 import 'package:conduit/widgets/async_button_widget.dart';
 import 'package:conduit/screens/onchain_amount_screen.dart';
 import 'package:conduit/utils/drawer_utils.dart';
@@ -31,10 +33,17 @@ class OnchainAddressDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DrawerShell(
-      icon: PhosphorIconsRegular.link,
-      title: 'Send Onchain',
       children: [
-        const SizedBox(height: 8),
+        BorderedList.column(
+          children: const [
+            PaymentSummaryRow(
+              paymentType: PaymentType.bitcoin,
+              incoming: false,
+              status: 'Send',
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
         AsyncButton(
           text: 'Continue',
           onPressed:

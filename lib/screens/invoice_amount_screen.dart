@@ -20,8 +20,7 @@ class InvoiceAmountScreen extends StatelessWidget {
     Navigator.of(context).pushReplacement(
       MaterialPageRoute(
         builder:
-            (_) =>
-                DisplayLnurlScreen(lnurl: lnurl, currencyCode: currencyCode),
+            (_) => DisplayLnurlScreen(lnurl: lnurl, currencyCode: currencyCode),
       ),
     );
   }

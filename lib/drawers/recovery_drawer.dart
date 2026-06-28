@@ -4,6 +4,8 @@ import 'package:conduit/utils/styles.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/bridge_generated.dart/factory.dart';
 import 'package:conduit/widgets/drawer_shell_widget.dart';
+import 'package:conduit/widgets/bordered_list_widget.dart';
+import 'package:conduit/widgets/icon_chip_widget.dart';
 import 'package:conduit/utils/drawer_utils.dart';
 import 'package:conduit/screens/federation_screen.dart';
 
@@ -78,61 +80,70 @@ class _RecoveryDrawerState extends State<RecoveryDrawer> {
     return FutureBuilder<void>(
       future: _recoveryFuture,
       builder: (context, snapshot) {
-        final hasError = snapshot.hasError;
-
         return DrawerShell(
-          icon: PhosphorIconsRegular.arrowsClockwise,
-          title: 'Recovering Funds...',
           children: [
-            if (hasError)
-              _buildErrorContent(snapshot.error.toString())
-            else
-              _buildRecoveringContent(),
+            BorderedList.column(
+              children: [
+                if (snapshot.hasError)
+                  _buildErrorRow(snapshot.error.toString())
+                else
+                  _buildRecoveringRow(),
+              ],
+            ),
           ],
         );
       },
     );
   }
 
-  Widget _buildRecoveringContent() {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        CircularProgressIndicator(color: Theme.of(context).colorScheme.primary),
-        const SizedBox(height: 24),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32),
-          child: Text(
-            'Keep this drawer open to progress the recovery.\nThis may take a few minutes.',
-            textAlign: TextAlign.center,
-            style: smallStyle.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
+  Widget _buildRecoveringRow() {
+    final subColor = Theme.of(context).colorScheme.onSurfaceVariant;
+
+    return ListTile(
+      contentPadding: listTilePadding,
+      leading: const IconChip(icon: PhosphorIconsRegular.arrowsClockwise),
+      title: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Text('Recovering Funds', style: mediumStyle),
+              const SizedBox(width: 8),
+              const SizedBox(
+                width: 14,
+                height: 14,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+            ],
           ),
-        ),
-      ],
+          Text(
+            'Keep this drawer open',
+            style: smallStyle.copyWith(color: subColor),
+          ),
+        ],
+      ),
     );
   }
 
-  Widget _buildErrorContent(String error) {
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(
-          PhosphorIconsRegular.warningCircle,
-          size: heroIconSize,
-          color: Theme.of(context).colorScheme.error,
-        ),
-        const SizedBox(height: 24),
-        Text(
-          'Recovery failed',
-          style: mediumStyle.copyWith(
-            color: Theme.of(context).colorScheme.error,
-          ),
-        ),
-        const SizedBox(height: 8),
-        Text(error, textAlign: TextAlign.center, style: smallStyle),
-      ],
+  Widget _buildErrorRow(String error) {
+    final subColor = Theme.of(context).colorScheme.onSurfaceVariant;
+
+    return ListTile(
+      contentPadding: listTilePadding,
+      leading: IconChip(
+        icon: PhosphorIconsRegular.warningCircle,
+        color: Theme.of(context).colorScheme.error,
+      ),
+      title: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Recovery Failed', style: mediumStyle),
+          Text(error, style: smallStyle.copyWith(color: subColor)),
+        ],
+      ),
     );
   }
 }

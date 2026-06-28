@@ -11,14 +11,18 @@ String formatFiat(
   double amount, {
   bool symbolLast = false,
 }) {
+  final number = _formatFiatNumber(currency, amount);
+  return symbolLast
+      ? '$number ${currency.symbol}'
+      : '${currency.symbol} $number';
+}
+
+String _formatFiatNumber(FiatCurrency currency, double amount) {
   final pattern =
       currency.decimalDigits > 0
           ? '#,##0.${'0' * currency.decimalDigits}'
           : '#,##0';
-  final number = NumberFormat(pattern).format(amount);
-  return symbolLast
-      ? '$number ${currency.symbol}'
-      : '${currency.symbol} $number';
+  return NumberFormat(pattern).format(amount);
 }
 
 /// Converts [amountSats] to the user's fiat currency using the cached exchange
@@ -54,5 +58,23 @@ String formatFiat(
   return (
     currency: currency.name,
     amount: formatFiat(currency, amount, symbolLast: symbolLast),
+  );
+}
+
+/// Splits the historical fiat value frozen against [event] into the formatted
+/// number and its lowercase currency code (e.g. `usd`), for the two-line
+/// trailing of the payment cards — keeping the unit consistent with `sat`.
+/// Returns `null` when no rate was recorded for the payment.
+({String number, String unit})? historicalFiatParts(ConduitPayment event) {
+  final amount = event.fiatAmount;
+  final code = event.fiatCurrencyCode;
+  if (amount == null || code == null) return null;
+
+  final currency = findFiatCurrency(code: code);
+  if (currency == null) return null;
+
+  return (
+    number: _formatFiatNumber(currency, amount),
+    unit: currency.code.toLowerCase(),
   );
 }

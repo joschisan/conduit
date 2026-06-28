@@ -3,12 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:conduit/bridge_generated.dart/lib.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
+import 'package:conduit/bridge_generated.dart/events.dart';
 import 'package:conduit/widgets/drawer_shell_widget.dart';
 import 'package:conduit/widgets/bordered_list_widget.dart';
+import 'package:conduit/widgets/payment_summary_row_widget.dart';
 import 'package:conduit/widgets/detail_row_widget.dart';
 import 'package:conduit/widgets/amount_rows.dart';
 import 'package:conduit/widgets/async_button_widget.dart';
-import 'package:conduit/widgets/warning_card_widget.dart';
 import 'package:conduit/utils/auth_utils.dart';
 import 'package:conduit/utils/drawer_utils.dart';
 
@@ -58,11 +59,14 @@ class ConfirmLightningSendDrawer extends StatelessWidget {
     final amountSats = invoice.amountSats();
 
     return DrawerShell(
-      icon: PhosphorIconsRegular.lightning,
-      title: 'Send Lightning',
       children: [
         BorderedList.column(
           children: [
+            const PaymentSummaryRow(
+              paymentType: PaymentType.lightning,
+              incoming: false,
+              status: 'Send',
+            ),
             ...amountRows(client: client, amountSats: amountSats),
             DetailRow(
               icon: PhosphorIconsRegular.network,
@@ -72,14 +76,6 @@ class ConfirmLightningSendDrawer extends StatelessWidget {
             ),
           ],
         ),
-        if (fees.feeSats > amountSats * 0.02) ...[
-          const SizedBox(height: 16),
-          WarningCard(
-            icon: PhosphorIconsRegular.warning,
-            text:
-                'High Relative Fee of ${(fees.feeSats / amountSats * 100).toStringAsFixed(1)}%',
-          ),
-        ],
         const SizedBox(height: 16),
         AsyncButton(text: 'Confirm', onPressed: () => _handleConfirm(context)),
       ],

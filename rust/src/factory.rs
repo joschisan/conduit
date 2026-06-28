@@ -15,10 +15,8 @@ use fedimint_client::{Client, ClientBuilder, ClientHandleArc, ModuleKind, RootSe
 use fedimint_client_module::meta::LegacyMetaSource;
 use fedimint_connectors::ConnectorRegistry;
 use fedimint_core::BitcoinHash;
-use fedimint_core::base32::{FEDIMINT_PREFIX, encode_prefixed};
 use fedimint_core::config::{ClientConfig, FederationId};
 use fedimint_core::db::{Database, IDatabaseTransactionOpsCore, IDatabaseTransactionOpsCoreTyped};
-use fedimint_core::invite_code::InviteCode;
 use fedimint_lnv2_client::LightningClientInit;
 use fedimint_lnv2_common::KIND as LIGHTNING_KIND;
 use fedimint_meta_client::{MetaClientInit, MetaModuleMetaSourceWithFallback};
@@ -42,7 +40,7 @@ pub struct ConduitClientFactory {
 pub struct FederationInfo {
     pub id: FederationId,
     pub name: String,
-    pub invite: String,
+    pub guardians: u32,
 }
 
 impl FederationInfo {
@@ -53,18 +51,13 @@ impl FederationInfo {
             .map(|name| name.to_string())
             .unwrap_or(id.to_prefix().to_string());
 
-        let api_endpoints = config
-            .global
-            .api_endpoints
-            .into_iter()
-            .map(|(id, peer)| (id, peer.url))
-            .collect();
+        let guardians = config.global.api_endpoints.len() as u32;
 
-        let invite = InviteCode::new_with_essential_num_guardians(&api_endpoints, id);
-
-        let invite = encode_prefixed(FEDIMINT_PREFIX, &invite);
-
-        Self { id, name, invite }
+        Self {
+            id,
+            name,
+            guardians,
+        }
     }
 }
 

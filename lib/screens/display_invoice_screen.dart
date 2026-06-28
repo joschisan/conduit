@@ -4,6 +4,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/widgets/qr_code_widget.dart';
 import 'package:conduit/widgets/bordered_list_widget.dart';
+import 'package:conduit/widgets/bleed_column_widget.dart';
 import 'package:conduit/widgets/shareable_row_widget.dart';
 import 'package:conduit/widgets/detail_row_widget.dart';
 import 'package:conduit/widgets/amount_rows.dart';
@@ -26,8 +27,8 @@ class DisplayInvoiceScreen extends StatelessWidget {
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(title: const Text('Receive Lightning')),
     body: Padding(
-      padding: const EdgeInsets.all(16),
-      child: Column(
+      padding: const EdgeInsets.symmetric(vertical: 16),
+      child: BleedColumn(
         children: [
           QrCodeWidget(data: invoice),
           const SizedBox(height: 16),

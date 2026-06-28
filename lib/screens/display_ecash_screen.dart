@@ -6,9 +6,9 @@ import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/bridge_generated.dart/fountain.dart';
 import 'package:conduit/widgets/qr_code_widget.dart';
 import 'package:conduit/widgets/bordered_list_widget.dart';
+import 'package:conduit/widgets/bleed_column_widget.dart';
 import 'package:conduit/widgets/shareable_row_widget.dart';
 import 'package:conduit/widgets/amount_rows.dart';
-import 'package:conduit/drawers/cancel_ecash_drawer.dart';
 
 Stream<String> _createFrameStream(ECashEncoder encoder) async* {
   while (true) {
@@ -29,8 +29,13 @@ class DisplayEcashScreen extends StatelessWidget {
     required this.encoder,
   });
 
-  void _showCancelDrawer(BuildContext context) {
-    CancelEcashDrawer.show(context, client: client, notes: notes);
+  Future<void> _handleCancel(BuildContext context) async {
+    // Reclaim the unsent eCash back into the balance, then return home.
+    await client.ecashReceive(notes: notes);
+
+    if (!context.mounted) return;
+
+    Navigator.of(context).pop();
   }
 
   @override
@@ -41,14 +46,14 @@ class DisplayEcashScreen extends StatelessWidget {
         actions: [
           IconButton(
             icon: const Icon(PhosphorIconsRegular.xCircle, size: smallIconSize),
-            onPressed: () => _showCancelDrawer(context),
+            onPressed: () => _handleCancel(context),
           ),
         ],
       ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
+          padding: const EdgeInsets.symmetric(vertical: 16.0),
+          child: BleedColumn(
             children: [
               StreamBuilder<String>(
                 stream: _createFrameStream(encoder),
