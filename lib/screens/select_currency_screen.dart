@@ -1,10 +1,10 @@
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:conduit/bridge_generated.dart/factory.dart';
-import 'package:conduit/drawers/confirm_currency_drawer.dart';
 import 'package:conduit/bridge_generated.dart/currency.dart';
 import 'package:conduit/utils/styles.dart';
 import 'package:conduit/widgets/grouped_list_widget.dart';
+import 'package:conduit/widgets/icon_chip_widget.dart';
 import 'package:conduit/widgets/search_field_widget.dart';
 
 class SelectCurrencyScreen extends StatefulWidget {
@@ -44,18 +44,31 @@ class _SelectCurrencyScreenState extends State<SelectCurrencyScreen> {
         itemBuilder:
             (context, currency) => ListTile(
               contentPadding: listTilePadding,
-              leading: PhosphorIcon(
-                PhosphorIconsRegular.currencyDollar,
-                color: Theme.of(context).colorScheme.primary,
-                size: mediumIconSize,
+              leading: const IconChip(
+                icon: PhosphorIconsRegular.currencyDollar,
               ),
-              title: Text(currency.name, style: mediumStyle),
-              onTap: () {
-                ConfirmCurrencyDrawer.show(
-                  context,
-                  currency: currency,
-                  clientFactory: widget.clientFactory,
+              // Stack name/code in the title (not subtitle) to keep the tile's
+              // single-line height instead of growing to two-line.
+              title: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(currency.name, style: mediumStyle),
+                  Text(
+                    currency.code,
+                    style: smallStyle.copyWith(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+              onTap: () async {
+                await widget.clientFactory.setCurrency(
+                  currencyCode: currency.code,
                 );
+
+                if (context.mounted) Navigator.of(context).pop();
               },
             ),
       ),

@@ -1,7 +1,8 @@
-import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:conduit/utils/styles.dart';
 
+/// A full-bleed, borderless search row sized to align with the list rows it
+/// sits above.
 class SearchField extends StatelessWidget {
   final TextEditingController? controller;
   final ValueChanged<String>? onChanged;
@@ -16,32 +17,23 @@ class SearchField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final inputBorder = OutlineInputBorder(
-      borderRadius: borderRadiusLarge,
-      borderSide: BorderSide(
-        color: Theme.of(context).colorScheme.outlineVariant,
-      ),
-    );
-
-    return TextField(
-      controller: controller,
-      autofocus: autofocus,
-      style: mediumStyle,
-      decoration: InputDecoration(
-        hintText: 'Search',
-        hintStyle: mediumStyle,
-        prefixIcon: Padding(
-          padding: const EdgeInsets.only(left: 8),
-          child: Icon(
-            PhosphorIconsRegular.magnifyingGlass,
-            size: mediumIconSize,
-            color: Theme.of(context).colorScheme.primary,
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
+      title: TextField(
+        controller: controller,
+        autofocus: autofocus,
+        style: mediumStyle,
+        decoration: InputDecoration(
+          hintText: 'Search',
+          hintStyle: mediumStyle.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
+          border: InputBorder.none,
+          isDense: true,
+          contentPadding: EdgeInsets.zero,
         ),
-        border: inputBorder,
-        enabledBorder: inputBorder,
+        onChanged: onChanged,
       ),
-      onChanged: onChanged,
     );
   }
 }

@@ -1,4 +1,3 @@
-import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:conduit/utils/styles.dart';
 import 'package:intl/intl.dart';
@@ -6,18 +5,7 @@ import 'package:conduit/bridge_generated.dart/events.dart';
 import 'package:conduit/utils/payment_utils.dart';
 import 'package:conduit/utils/currency_utils.dart';
 import 'package:conduit/widgets/amount_visibility.dart';
-import 'package:conduit/widgets/loading_icon_widget.dart';
-
-String _formatTime(DateTime dateTime) {
-  final difference = DateTime.now().difference(dateTime);
-
-  return switch (difference) {
-    _ when difference.inMinutes < 1 => 'Now',
-    _ when difference.inMinutes < 60 => '${difference.inMinutes}m ago',
-    _ when difference.inHours < 24 => '${difference.inHours}h ago',
-    _ => '${difference.inDays}d ago',
-  };
-}
+import 'package:conduit/widgets/icon_chip_widget.dart';
 
 class PaymentCard extends StatelessWidget {
   final ConduitPayment event;
@@ -33,51 +21,78 @@ class PaymentCard extends StatelessWidget {
 
     // In fiat mode show the value frozen at payment time, falling back to sats
     // for payments that carry no snapshot (predate the feature / no rate then).
-    final fiat = historicalFiat(event, symbolLast: true);
-    final title = switch (AmountDisplay.of(context)) {
-      BalanceDisplay.hidden => '$maskedAmount sat',
-      BalanceDisplay.fiat when fiat != null => '$sign${fiat.amount}',
-      _ => '$sign$formattedAmount sat',
+    final fiat = historicalFiatParts(event);
+    final (amountText, unitText) = switch (AmountDisplay.of(context)) {
+      BalanceDisplay.hidden => (maskedAmount, 'sat'),
+      BalanceDisplay.fiat when fiat != null => (
+        '$sign${fiat.number}',
+        fiat.unit,
+      ),
+      _ => ('$sign$formattedAmount', 'sat'),
     };
 
-    final icon = Icon(
-      PaymentTypeUtils.getIcon(event.paymentType),
-      size: mediumIconSize,
-      color: Theme.of(context).colorScheme.primary,
-    );
-
-    Color? titleColor;
-    if (event.success == false) {
-      titleColor = Colors.red;
-    } else if (event.incoming) {
-      titleColor = Theme.of(context).colorScheme.primary;
+    // Failed payments are flagged by tinting the leading chip amber; the rest of
+    // the row keeps its normal colours. Incoming funds show the amount in the
+    // primary tint.
+    final failed = event.success == false;
+    Color? amountColor;
+    if (!failed && event.incoming) {
+      amountColor = Theme.of(context).colorScheme.primary;
     }
 
-    Widget leading = switch (event.success) {
-      null => LoadingIcon(key: const ValueKey('loading'), icon: icon),
-      true => KeyedSubtree(key: const ValueKey('success'), child: icon),
-      false => const Icon(
-        PhosphorIconsRegular.warningCircle,
-        size: mediumIconSize,
-        color: Colors.red,
-      ),
-    };
+    final status = PaymentTypeUtils.getStatus(
+      incoming: event.incoming,
+      success: event.success,
+    );
+
+    final subColor = Theme.of(context).colorScheme.onSurfaceVariant;
 
     return ListTile(
       onTap: onTap,
       contentPadding: listTilePadding,
-      leading: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 500),
-        switchInCurve: Curves.easeIn,
-        switchOutCurve: Curves.easeOut,
-        child: leading,
+      leading: IconChip(
+        icon: PaymentTypeUtils.getDirectionIcon(event.incoming),
+        color: failed ? Colors.amber : null,
       ),
-      title: Text(title, style: mediumStyle.copyWith(color: titleColor)),
-      trailing: Text(
-        _formatTime(date),
-        style: smallStyle.copyWith(
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
-        ),
+      // Stack the header/subheader inside title (rather than using subtitle) so
+      // the tile keeps its original single-line height instead of growing into
+      // Material's taller two-line layout.
+      title: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                PaymentTypeUtils.getLabel(event.paymentType),
+                style: mediumStyle,
+              ),
+              if (event.success == null) ...[
+                const SizedBox(width: 8),
+                const SizedBox(
+                  width: 14,
+                  height: 14,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                ),
+              ],
+            ],
+          ),
+          Text(
+            '$status · ${formatRelativeTime(date)}',
+            style: smallStyle.copyWith(color: subColor),
+          ),
+        ],
+      ),
+      trailing: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(amountText, style: mediumStyle.copyWith(color: amountColor)),
+          Text(unitText, style: smallStyle.copyWith(color: subColor)),
+        ],
       ),
     );
   }

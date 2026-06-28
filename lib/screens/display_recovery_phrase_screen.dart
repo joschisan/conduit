@@ -1,7 +1,7 @@
-import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:conduit/utils/styles.dart';
-import 'package:conduit/widgets/bordered_list_widget.dart';
+import 'package:conduit/widgets/bleed_column_widget.dart';
+import 'package:conduit/widgets/seed_phrase_list_widget.dart';
 
 class DisplayRecoveryPhraseScreen extends StatelessWidget {
   final List<String> seedPhrase;
@@ -15,8 +15,8 @@ class DisplayRecoveryPhraseScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Recovery Phrase')),
       body: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
-        child: Column(
+        padding: const EdgeInsets.fromLTRB(0, 16, 0, 32),
+        child: BleedColumn(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Padding(
@@ -31,24 +31,7 @@ class DisplayRecoveryPhraseScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            for (int i = 0; i < seedPhrase.length; i++)
-              BorderedList.decorateItem(
-                context: context,
-                isFirst: i == 0,
-                isLast: i == seedPhrase.length - 1,
-                child: ListTile(
-                  contentPadding: listTilePadding,
-                  leading: PhosphorIcon(
-                    PhosphorIconsRegular.key,
-                    color: theme.colorScheme.primary,
-                    size: mediumIconSize,
-                  ),
-                  title: Text(
-                    '${i + 1} - ${seedPhrase[i]}',
-                    style: mediumStyle,
-                  ),
-                ),
-              ),
+            SeedPhraseList(seedPhrase: seedPhrase),
           ],
         ),
       ),

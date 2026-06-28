@@ -5,9 +5,8 @@ import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/utils/currency_utils.dart';
 import 'package:conduit/widgets/detail_row_widget.dart';
 
-/// Builds the amount rows for a bordered detail list: always an "Amount in
-/// Bitcoin" row, followed by an "Amount in `<currency>`" row when a cached
-/// exchange rate is available.
+/// Builds the amount rows for a bordered detail list: always a "Bitcoin" row,
+/// followed by a "`<currency>`" row when a cached exchange rate is available.
 ///
 /// The fiat row is converted from the cached rate without triggering a network
 /// fetch, and is omitted entirely (rather than left as an empty cell) when no
@@ -19,7 +18,7 @@ List<Widget> amountRows({
   final rows = <Widget>[
     DetailRow(
       icon: PhosphorIconsRegular.currencyBtc,
-      label: 'Amount in Bitcoin',
+      label: 'Bitcoin',
       value: '${NumberFormat('#,###').format(amountSats)} sat',
     ),
   ];
@@ -29,7 +28,7 @@ List<Widget> amountRows({
     rows.add(
       DetailRow(
         icon: PhosphorIconsRegular.currencyDollar,
-        label: 'Amount in ${fiat.currency}',
+        label: fiat.currency,
         value: fiat.amount,
       ),
     );

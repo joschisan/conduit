@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:conduit/utils/styles.dart';
+import 'package:conduit/widgets/icon_chip_widget.dart';
 
 /// A single labelled row for bordered detail lists: a leading icon with the
 /// value stacked over its label.
@@ -11,23 +12,21 @@ class DetailRow extends StatelessWidget {
   final IconData icon;
   final String label;
   final String value;
+  final Color? iconColor;
 
   const DetailRow({
     super.key,
     required this.icon,
     required this.label,
     required this.value,
+    this.iconColor,
   });
 
   @override
   Widget build(BuildContext context) {
     return ListTile(
       contentPadding: listTilePadding,
-      leading: Icon(
-        icon,
-        size: mediumIconSize,
-        color: Theme.of(context).colorScheme.primary,
-      ),
+      leading: IconChip(icon: icon, color: iconColor),
       title: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,

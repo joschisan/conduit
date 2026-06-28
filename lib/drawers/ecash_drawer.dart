@@ -1,9 +1,10 @@
-import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:conduit/bridge_generated.dart/lib.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
+import 'package:conduit/bridge_generated.dart/events.dart';
 import 'package:conduit/widgets/drawer_shell_widget.dart';
 import 'package:conduit/widgets/bordered_list_widget.dart';
+import 'package:conduit/widgets/payment_summary_row_widget.dart';
 import 'package:conduit/widgets/amount_rows.dart';
 import 'package:conduit/widgets/async_button_widget.dart';
 import 'package:conduit/utils/drawer_utils.dart';
@@ -41,11 +42,14 @@ class _EcashDrawerState extends State<EcashDrawer> {
   @override
   Widget build(BuildContext context) {
     return DrawerShell(
-      icon: PhosphorIconsRegular.coinVertical,
-      title: 'Receive eCash',
       children: [
         BorderedList.column(
           children: [
+            const PaymentSummaryRow(
+              paymentType: PaymentType.ecash,
+              incoming: true,
+              status: 'Receive',
+            ),
             ...amountRows(
               client: widget.client,
               amountSats: widget.notes.amountSats(),

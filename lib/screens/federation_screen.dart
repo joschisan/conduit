@@ -1,6 +1,7 @@
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:app_links/app_links.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/bridge_generated.dart/events.dart';
@@ -9,7 +10,7 @@ import 'package:conduit/bridge_generated.dart/lib.dart';
 import 'package:conduit/widgets/animated_balance_widget.dart';
 import 'package:conduit/widgets/amount_visibility.dart';
 import 'package:conduit/utils/currency_utils.dart';
-import 'package:conduit/widgets/warning_card_widget.dart';
+import 'package:conduit/widgets/settings_card_widget.dart';
 import 'package:conduit/widgets/recent_payments_widget.dart';
 import 'package:conduit/screens/invoice_amount_screen.dart';
 import 'package:conduit/screens/ecash_amount_screen.dart';
@@ -22,12 +23,13 @@ import 'package:conduit/bridge_generated.dart/lnurl.dart';
 import 'package:conduit/drawers/ecash_drawer.dart';
 import 'package:conduit/drawers/lightning_invoice_drawer.dart';
 import 'package:conduit/drawers/lnurl_drawer.dart';
-import 'package:conduit/drawers/onchain_address_drawer.dart';
+import 'package:conduit/screens/onchain_amount_screen.dart';
 import 'package:conduit/utils/notification_utils.dart';
 import 'package:conduit/utils/styles.dart';
 import 'package:conduit/screens/display_contacts_screen.dart';
 import 'package:conduit/screens/lightning_address_entry_screen.dart';
-import 'package:conduit/drawers/expiration_drawer.dart';
+import 'package:conduit/drawers/invite_drawer.dart';
+import 'package:conduit/drawers/recovery_drawer.dart';
 import 'package:flutter/services.dart';
 
 class FederationScreen extends StatefulWidget {
@@ -138,10 +140,12 @@ class _FederationScreenState extends State<FederationScreen> {
       ),
       (
         parseBitcoinAddress(address: input),
-        (dynamic result) => OnchainAddressDrawer.show(
-          context,
-          client: widget.client,
-          address: result,
+        (dynamic result) => Navigator.of(context).push(
+          MaterialPageRoute(
+            builder:
+                (_) =>
+                    OnchainAmountScreen(client: widget.client, address: result),
+          ),
         ),
       ),
       (
@@ -241,13 +245,66 @@ class _FederationScreenState extends State<FederationScreen> {
     );
   }
 
-  void _showExpirationDrawer() {
-    if (_expirationDate case final date?) {
-      ExpirationDrawer.show(
+  Widget _buildExpiryCard(int date) {
+    final formatted = DateFormat.MMMMd().format(
+      DateTime.fromMillisecondsSinceEpoch(date * 1000),
+    );
+    final successor = _expirationSuccessor;
+
+    return SettingsCard(
+      icon: PhosphorIconsRegular.moon,
+      iconColor: Colors.amber,
+      title: 'Expires on $formatted',
+      subtitle:
+          successor != null ? 'Tap to join successor' : 'Migrate your funds',
+      onTap:
+          successor != null
+              ? () => InviteDrawer.show(
+                context,
+                invite: successor,
+                onJoin: _joinSuccessor,
+                onRecover: _recoverSuccessor,
+              )
+              : null,
+    );
+  }
+
+  Future<void> _joinSuccessor(InviteCodeWrapper invite) async {
+    final client = await widget.clientFactory.join(invite: invite);
+
+    if (!mounted) return;
+
+    _openSuccessor(client);
+  }
+
+  Future<void> _recoverSuccessor(InviteCodeWrapper invite) async {
+    final client = await widget.clientFactory.recover(invite: invite);
+
+    if (!mounted) return;
+
+    _openSuccessor(client);
+  }
+
+  /// Closes the invite drawer and swaps the current federation screen for the
+  /// successor's, routing through the recovery drawer when it has recoveries.
+  void _openSuccessor(ConduitClient client) {
+    Navigator.of(context).pop();
+
+    if (client.hasPendingRecoveries()) {
+      RecoveryDrawer.show(
         context,
+        client: client,
         clientFactory: widget.clientFactory,
-        date: date,
-        successor: _expirationSuccessor,
+      );
+    } else {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(
+          builder:
+              (_) => FederationScreen(
+                client: client,
+                clientFactory: widget.clientFactory,
+              ),
+        ),
       );
     }
   }
@@ -328,57 +385,66 @@ class _FederationScreenState extends State<FederationScreen> {
       body: AmountDisplay(
         display: _balanceDisplay,
         child: SingleChildScrollView(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+          padding: const EdgeInsets.fromLTRB(0, 16, 0, 32),
           child: Column(
             children: [
-              // Tapping the balance cycles the display sats → fiat → hidden,
-              // the same control as the app-bar switcher.
-              GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: _cycleBalanceDisplay,
-                // One subscription to the single-subscription balance stream,
-                // lifted above the hero so toggling never re-listens to it.
-                child: StreamBuilder<int>(
-                  stream: _balanceStream,
-                  builder:
-                      (context, snapshot) => _BalanceHero(
-                        sats: snapshot.data ?? 0,
-                        client: widget.client,
-                        display: _balanceDisplay,
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                // Tapping the balance cycles display sats → fiat → hidden,
+                // the same control as the app-bar switcher.
+                child: GestureDetector(
+                  behavior: HitTestBehavior.opaque,
+                  onTap: _cycleBalanceDisplay,
+                  // One subscription to the single-subscription balance stream,
+                  // lifted above the hero so toggling never re-listens to it.
+                  child: StreamBuilder<int>(
+                    stream: _balanceStream,
+                    builder:
+                        (context, snapshot) => _BalanceHero(
+                          sats: snapshot.data ?? 0,
+                          client: widget.client,
+                          display: _balanceDisplay,
+                        ),
+                  ),
+                ),
+              ),
+              if (_expirationDate case final date?)
+                _buildExpiryCard(date)
+              else
+                const SizedBox(height: 16),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  decoration: BoxDecoration(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.primary.withValues(alpha: 0.05),
+                    borderRadius: borderRadiusLarge,
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _CircularActionButton(
+                        icon: PhosphorIconsRegular.lightning,
+                        label: 'Lightning',
+                        onTap: _onCreateInvoice,
                       ),
+                      _CircularActionButton(
+                        icon: PhosphorIconsRegular.link,
+                        label: 'Onchain',
+                        onTap: _onReceiveBitcoin,
+                      ),
+                      _CircularActionButton(
+                        icon: PhosphorIconsRegular.coinVertical,
+                        label: 'eCash',
+                        onTap: _onSendEcash,
+                      ),
+                    ],
+                  ),
                 ),
               ),
               const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _CircularActionButton(
-                    icon: PhosphorIconsRegular.lightning,
-                    label: 'Lightning',
-                    onTap: _onCreateInvoice,
-                  ),
-                  _CircularActionButton(
-                    icon: PhosphorIconsRegular.link,
-                    label: 'Onchain',
-                    onTap: _onReceiveBitcoin,
-                  ),
-                  _CircularActionButton(
-                    icon: PhosphorIconsRegular.coinVertical,
-                    label: 'eCash',
-                    onTap: _onSendEcash,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              if (_expirationDate != null)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: WarningCard(
-                    icon: PhosphorIconsRegular.moon,
-                    text: 'Federation Expiry',
-                    onTap: _showExpirationDrawer,
-                  ),
-                ),
               RecentPayments(
                 client: widget.client,
                 stream: _eventStream,

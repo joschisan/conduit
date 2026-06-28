@@ -4,6 +4,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:conduit/utils/styles.dart';
 import 'package:conduit/widgets/qr_code_widget.dart';
 import 'package:conduit/widgets/bordered_list_widget.dart';
+import 'package:conduit/widgets/bleed_column_widget.dart';
 import 'package:conduit/widgets/shareable_row_widget.dart';
 import 'package:conduit/widgets/async_icon_button_widget.dart';
 
@@ -40,8 +41,8 @@ class DisplayLnurlScreen extends StatelessWidget {
     ),
     body: SafeArea(
       child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
+        padding: const EdgeInsets.symmetric(vertical: 16.0),
+        child: BleedColumn(
           children: [
             QrCodeWidget(data: lnurl),
             const SizedBox(height: 16),

@@ -1,9 +1,10 @@
-import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:conduit/bridge_generated.dart/lib.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
+import 'package:conduit/bridge_generated.dart/events.dart';
 import 'package:conduit/widgets/drawer_shell_widget.dart';
 import 'package:conduit/widgets/bordered_list_widget.dart';
+import 'package:conduit/widgets/payment_summary_row_widget.dart';
 import 'package:conduit/widgets/amount_rows.dart';
 import 'package:conduit/widgets/async_button_widget.dart';
 import 'package:conduit/drawers/confirm_lightning_send_drawer.dart';
@@ -54,11 +55,14 @@ class _LightningInvoiceDrawerState extends State<LightningInvoiceDrawer> {
   @override
   Widget build(BuildContext context) {
     return DrawerShell(
-      icon: PhosphorIconsRegular.lightning,
-      title: 'Send Lightning',
       children: [
         BorderedList.column(
           children: [
+            const PaymentSummaryRow(
+              paymentType: PaymentType.lightning,
+              incoming: false,
+              status: 'Send',
+            ),
             ...amountRows(
               client: widget.client,
               amountSats: widget.invoice.amountSats(),

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:ellipsized_text/ellipsized_text.dart';
 import 'package:conduit/utils/styles.dart';
+import 'package:conduit/widgets/icon_chip_widget.dart';
 
 /// A tappable row that displays shareable data (address, invoice, eCash token,
 /// txid) middle-ellipsized in monospace over a [label] describing what it is,
@@ -21,11 +22,7 @@ class ShareableRow extends StatelessWidget {
         SharePlus.instance.share(ShareParams(text: data));
       },
       contentPadding: listTilePadding,
-      leading: Icon(
-        PhosphorIconsRegular.copy,
-        size: mediumIconSize,
-        color: Theme.of(context).colorScheme.primary,
-      ),
+      leading: const IconChip(icon: PhosphorIconsRegular.copy),
       title: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,

@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:conduit/bridge_generated.dart/events.dart';
 import 'package:conduit/utils/styles.dart';
+import 'package:conduit/utils/payment_utils.dart';
 import 'package:conduit/widgets/grouped_list_widget.dart';
 import 'package:conduit/widgets/payment_card_widget.dart';
 import 'package:conduit/widgets/amount_visibility.dart';
@@ -97,7 +98,7 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
                 DateTime.fromMillisecondsSinceEpoch(payment.timestamp),
               ),
           header: Padding(
-            padding: const EdgeInsets.only(bottom: 16),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
@@ -117,12 +118,12 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
                   onTap: () => setState(() => _ecash = !_ecash),
                 ),
                 _FilterButton(
-                  icon: PhosphorIconsRegular.plus,
+                  icon: PaymentTypeUtils.getDirectionIcon(true),
                   active: _incoming,
                   onTap: () => setState(() => _incoming = !_incoming),
                 ),
                 _FilterButton(
-                  icon: PhosphorIconsRegular.minus,
+                  icon: PaymentTypeUtils.getDirectionIcon(false),
                   active: _outgoing,
                   onTap: () => setState(() => _outgoing = !_outgoing),
                 ),

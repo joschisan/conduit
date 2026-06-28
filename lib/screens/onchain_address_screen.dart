@@ -4,6 +4,7 @@ import 'package:conduit/utils/styles.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/widgets/qr_code_widget.dart';
 import 'package:conduit/widgets/bordered_list_widget.dart';
+import 'package:conduit/widgets/bleed_column_widget.dart';
 import 'package:conduit/widgets/shareable_row_widget.dart';
 import 'package:conduit/drawers/generate_onchain_address_drawer.dart';
 import 'package:conduit/utils/notification_utils.dart';
@@ -123,8 +124,8 @@ class _OnchainAddressScreenState extends State<OnchainAddressScreen> {
       itemBuilder: (context, index) {
         final address = addresses[index].$2;
         return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Column(
+          padding: EdgeInsets.zero,
+          child: BleedColumn(
             children: [
               const SizedBox(height: 16),
               QrCodeWidget(data: address),

@@ -2,6 +2,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:conduit/bridge_generated.dart/lib.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
+import 'package:conduit/bridge_generated.dart/currency.dart';
 import 'package:conduit/bridge_generated.dart/factory.dart';
 import 'package:conduit/screens/federation_screen.dart';
 import 'package:conduit/screens/display_recovery_phrase_screen.dart';
@@ -13,6 +14,8 @@ import 'package:conduit/drawers/invite_scanner_drawer.dart';
 import 'package:conduit/drawers/leave_federation_drawer.dart';
 import 'package:conduit/drawers/recovery_drawer.dart';
 import 'package:conduit/widgets/bordered_list_widget.dart';
+import 'package:conduit/widgets/bleed_column_widget.dart';
+import 'package:conduit/widgets/section_header_widget.dart';
 import 'package:conduit/widgets/settings_card_widget.dart';
 
 class BaseScreen extends StatefulWidget {
@@ -26,12 +29,24 @@ class BaseScreen extends StatefulWidget {
 
 class _BaseScreenState extends State<BaseScreen> {
   List<FederationInfo> _federations = [];
+  String? _currencyName;
 
   @override
   void initState() {
     super.initState();
 
     _refreshFederations(autoNavigate: true);
+    _loadCurrency();
+  }
+
+  Future<void> _loadCurrency() async {
+    final code = await widget.clientFactory.getCurrency();
+
+    if (!mounted) return;
+
+    setState(() {
+      _currencyName = findFiatCurrency(code: code)?.name;
+    });
   }
 
   Future<void> _refreshFederations({bool autoNavigate = false}) async {
@@ -50,19 +65,15 @@ class _BaseScreenState extends State<BaseScreen> {
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(title: const Text('Conduit')),
     body: SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
-      child: Column(
+      padding: const EdgeInsets.fromLTRB(0, 16, 0, 32),
+      child: BleedColumn(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 8),
-            child: Text('Settings', style: mediumStyle),
-          ),
-          const SizedBox(height: 8),
+          const SectionHeader(title: 'Settings'),
           BorderedList.column(
             children: [_buildSeedPhraseCard(), _buildCurrencyCard()],
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 16),
           if (_federations.isEmpty)
             _buildOnboardingCard()
           else
@@ -100,14 +111,14 @@ class _BaseScreenState extends State<BaseScreen> {
   }
 
   Widget _buildFederationsListView() {
-    return Column(
+    return BleedColumn(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(
-          padding: const EdgeInsets.only(left: 8),
-          child: Text('Federations', style: mediumStyle),
+        SectionHeader(
+          title: 'Federations',
+          action: 'Add',
+          onAction: _showScannerDrawer,
         ),
-        const SizedBox(height: 8),
         BorderedList(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
@@ -116,17 +127,6 @@ class _BaseScreenState extends State<BaseScreen> {
             final federation = _federations[index];
             return _buildFederationCard(federation);
           },
-        ),
-        Center(
-          child: TextButton(
-            onPressed: _showScannerDrawer,
-            child: Text(
-              'Join Federation',
-              style: mediumStyle.copyWith(
-                color: Theme.of(context).colorScheme.primary,
-              ),
-            ),
-          ),
         ),
       ],
     );
@@ -191,6 +191,7 @@ class _BaseScreenState extends State<BaseScreen> {
     return SettingsCard(
       icon: PhosphorIconsRegular.key,
       title: 'Recovery Phrase',
+      subtitle: 'Backup your Wallet',
       onTap: _handleSeedPhraseTap,
     );
   }
@@ -199,14 +200,18 @@ class _BaseScreenState extends State<BaseScreen> {
     return SettingsCard(
       icon: PhosphorIconsRegular.currencyDollar,
       title: 'Select Currency',
+      subtitle: _currencyName,
       onTap: _handleCurrencyTap,
     );
   }
 
   Widget _buildFederationCard(FederationInfo federation) {
+    final guardians = federation.guardians;
+
     return SettingsCard(
       icon: PhosphorIconsRegular.wallet,
       title: federation.name,
+      subtitle: '$guardians ${guardians == 1 ? 'Guardian' : 'Guardians'}',
       onTap: () => _handleFederationTap(federation),
       onLongPress: () => _showLeaveFederationDrawer(federation),
     );
@@ -249,6 +254,8 @@ class _BaseScreenState extends State<BaseScreen> {
             (_) => SelectCurrencyScreen(clientFactory: widget.clientFactory),
       ),
     );
+
+    _loadCurrency();
   }
 
   Future<void> _handleSeedPhraseTap() async {

@@ -142,7 +142,10 @@ class _AmountEntryWidgetState extends State<AmountEntryWidget> {
         // Confirm button
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16.0),
-          child: AsyncButton(text: widget.buttonText, onPressed: _handleConfirm),
+          child: AsyncButton(
+            text: widget.buttonText,
+            onPressed: _handleConfirm,
+          ),
         ),
 
         const SizedBox(height: 16),

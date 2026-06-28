@@ -47,8 +47,6 @@ class WalletV2WalletDetailsDrawer extends StatelessWidget {
     final fiat = cachedFiatAmount(client, stats.totalValueSat);
 
     return DrawerShell(
-      icon: PhosphorIconsRegular.info,
-      title: 'Onchain Wallet Info',
       children: [
         BorderedList.column(
           children: [
