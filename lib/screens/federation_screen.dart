@@ -23,7 +23,7 @@ import 'package:conduit/bridge_generated.dart/lnurl.dart';
 import 'package:conduit/drawers/ecash_drawer.dart';
 import 'package:conduit/drawers/lightning_invoice_drawer.dart';
 import 'package:conduit/drawers/lnurl_drawer.dart';
-import 'package:conduit/drawers/onchain_address_drawer.dart';
+import 'package:conduit/screens/onchain_amount_screen.dart';
 import 'package:conduit/utils/notification_utils.dart';
 import 'package:conduit/utils/styles.dart';
 import 'package:conduit/screens/display_contacts_screen.dart';
@@ -140,10 +140,12 @@ class _FederationScreenState extends State<FederationScreen> {
       ),
       (
         parseBitcoinAddress(address: input),
-        (dynamic result) => OnchainAddressDrawer.show(
-          context,
-          client: widget.client,
-          address: result,
+        (dynamic result) => Navigator.of(context).push(
+          MaterialPageRoute(
+            builder:
+                (_) =>
+                    OnchainAmountScreen(client: widget.client, address: result),
+          ),
         ),
       ),
       (
@@ -253,7 +255,8 @@ class _FederationScreenState extends State<FederationScreen> {
       icon: PhosphorIconsRegular.moon,
       iconColor: Colors.amber,
       title: 'Expires on $formatted',
-      subtitle: successor != null ? 'Tap to join successor' : 'Migrate your funds',
+      subtitle:
+          successor != null ? 'Tap to join successor' : 'Migrate your funds',
       onTap:
           successor != null
               ? () => InviteDrawer.show(

@@ -10,7 +10,7 @@ import 'package:conduit/widgets/qr_scanner_widget.dart';
 import 'package:conduit/drawers/lightning_invoice_drawer.dart';
 import 'package:conduit/drawers/ecash_drawer.dart';
 import 'package:conduit/drawers/lnurl_drawer.dart';
-import 'package:conduit/drawers/onchain_address_drawer.dart';
+import 'package:conduit/screens/onchain_amount_screen.dart';
 
 class ScannerDrawer extends StatefulWidget {
   final ConduitClient client;
@@ -61,10 +61,12 @@ class _ScannerDrawerState extends State<ScannerDrawer> {
       ),
       (
         parseBitcoinAddress(address: input),
-        (dynamic result) => OnchainAddressDrawer.show(
-          context,
-          client: widget.client,
-          address: result,
+        (dynamic result) => Navigator.of(context).push(
+          MaterialPageRoute(
+            builder:
+                (_) =>
+                    OnchainAmountScreen(client: widget.client, address: result),
+          ),
         ),
       ),
       (
