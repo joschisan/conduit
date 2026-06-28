@@ -52,7 +52,7 @@ class _ConfirmLnurlSendScreenState extends State<ConfirmLnurlSendScreen> {
       appBar: AppBar(title: Text(widget.contactName ?? 'Send Lightning')),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 16),
+          padding: const EdgeInsets.only(bottom: 16),
           child: BleedColumn(
             children: [
               BorderedList.column(
