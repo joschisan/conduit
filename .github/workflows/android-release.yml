@@ -1,0 +1,92 @@
+name: Android Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write # Required for creating releases
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.38.7'
+          channel: 'stable'
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+          targets: aarch64-linux-android
+
+      - name: Install Android NDK
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "ndk;28.2.13676358"
+          echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/28.2.13676358" >> "$GITHUB_ENV"
+
+      - name: Install cargo-ndk
+        run: cargo install cargo-ndk
+
+      - name: Install Flutter Rust Bridge CLI
+        run: cargo install flutter_rust_bridge_codegen --version "2.10.0" --locked
+
+      - name: Install Flutter dependencies
+        run: flutter pub get
+
+      - name: Generate Flutter Rust Bridge bindings
+        run: flutter_rust_bridge_codegen generate
+
+      - name: Build Rust library for Android
+        run: |
+          ROOT="$(pwd)"
+          JNI_LIBS_DIR="$ROOT/android/app/src/main/jniLibs/arm64-v8a"
+          mkdir -p "$JNI_LIBS_DIR"
+
+          cd "$ROOT/rust"
+          # 16KB page alignment for Android 15+ compatibility; --crate-type=cdylib
+          # because Cargo.toml declares no [lib] crate-type.
+          RUSTFLAGS="-C link-arg=-Wl,-z,max-page-size=16384" \
+            cargo ndk -t arm64-v8a rustc --release --crate-type=cdylib
+
+          cp "$ROOT/rust/target/aarch64-linux-android/release/libconduit.so" "$JNI_LIBS_DIR/"
+
+          # Bundle the matching C++ shared library from the NDK.
+          cp "$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/lib/aarch64-linux-android/libc++_shared.so" "$JNI_LIBS_DIR/"
+
+      - name: Set up release keystore
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 -d > android/keystore.p12
+          cat > android/key.properties << EOF
+          storePassword=${{ secrets.KEYSTORE_PASSWORD }}
+          keyPassword=${{ secrets.KEY_PASSWORD }}
+          keyAlias=${{ secrets.KEY_ALIAS }}
+          storeFile=keystore.p12
+          EOF
+
+      - name: Build Flutter APK
+        run: flutter build apk --release
+
+      - name: Rename APK
+        run: mv build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/conduit.apk
+
+      - name: Upload to Release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: latest
+          name: "Latest Android Release"
+          artifacts: "build/app/outputs/flutter-apk/conduit.apk"
+          allowUpdates: true
+          replacesArtifacts: true
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
