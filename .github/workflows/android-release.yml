@@ -54,8 +54,11 @@ jobs:
           cd "$ROOT/rust"
           # 16KB page alignment for Android 15+ compatibility; --crate-type=cdylib
           # because Cargo.toml declares no [lib] crate-type.
+          # -p 24: build against Android API 24 (matches the app minSdk). The
+          # bundled RocksDB uses posix_madvise / POSIX_MADV_*, which only exist
+          # at API >= 23, so the cargo-ndk default of 21 fails to compile.
           RUSTFLAGS="-C link-arg=-Wl,-z,max-page-size=16384" \
-            cargo ndk -t arm64-v8a rustc --release --crate-type=cdylib
+            cargo ndk -t arm64-v8a -p 24 rustc --release --crate-type=cdylib
 
           cp "$ROOT/rust/target/aarch64-linux-android/release/libconduit.so" "$JNI_LIBS_DIR/"
 
