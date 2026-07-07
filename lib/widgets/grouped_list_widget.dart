@@ -20,6 +20,7 @@ class GroupedList<T> extends StatelessWidget {
     final offset = header != null ? 1 : 0;
 
     return ListView.builder(
+      physics: const BouncingScrollPhysics(),
       // Full-bleed rows: no horizontal padding on the list. The header manages
       // its own padding (top included) and rows carry their content padding.
       padding: const EdgeInsets.only(bottom: 32),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:conduit/widgets/scrollable_body_widget.dart';
 import 'package:intl/intl.dart';
 import 'package:conduit/bridge_generated.dart/lib.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
@@ -10,13 +11,19 @@ import 'package:conduit/widgets/payment_summary_row_widget.dart';
 import 'package:conduit/widgets/detail_row_widget.dart';
 import 'package:conduit/widgets/amount_rows.dart';
 import 'package:conduit/utils/auth_utils.dart';
+import 'package:conduit/utils/notification_utils.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
+/// Confirms an lnurl payment. The gateway is selected and its fee quoted as
+/// soon as the screen opens; the fee row shows a spinner until the quote
+/// arrives and the confirm button stays disabled without one. A failed quote
+/// pops the screen and surfaces an error notification. The quoted gateway is
+/// passed to [ConduitClient.lnSend] so the fee shown here matches what is
+/// charged.
 class ConfirmLnurlSendScreen extends StatefulWidget {
   final ConduitClient client;
   final Bolt11InvoiceWrapper invoice;
   final int amountSats;
-  final LnSendFees fees;
   final String? contactName;
 
   const ConfirmLnurlSendScreen({
@@ -24,7 +31,6 @@ class ConfirmLnurlSendScreen extends StatefulWidget {
     required this.client,
     required this.invoice,
     required this.amountSats,
-    required this.fees,
     this.contactName,
   });
 
@@ -33,12 +39,35 @@ class ConfirmLnurlSendScreen extends StatefulWidget {
 }
 
 class _ConfirmLnurlSendScreenState extends State<ConfirmLnurlSendScreen> {
-  Future<void> _handleConfirm() async {
+  LnSendFees? _fees;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadFees();
+  }
+
+  Future<void> _loadFees() async {
+    try {
+      final fees = await widget.client.lnCalculateFees(invoice: widget.invoice);
+
+      if (!mounted) return;
+
+      setState(() => _fees = fees);
+    } catch (error) {
+      if (!mounted) return;
+
+      Navigator.of(context).pop();
+      NotificationUtils.showError(context, error.toString());
+    }
+  }
+
+  Future<void> _handleConfirm(LnSendFees fees) async {
     await requireBiometricAuth(context);
 
     await widget.client.lnSend(
       invoice: widget.invoice,
-      gateway: widget.fees.gatewayUrl,
+      gateway: fees.gatewayUrl,
     );
 
     if (!mounted) return;
@@ -48,9 +77,11 @@ class _ConfirmLnurlSendScreenState extends State<ConfirmLnurlSendScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final fees = _fees;
+
     return Scaffold(
       appBar: AppBar(title: Text(widget.contactName ?? 'Send Lightning')),
-      body: SafeArea(
+      body: ScrollableBody(
         child: Padding(
           padding: const EdgeInsets.only(bottom: 16),
           child: BleedColumn(
@@ -70,12 +101,18 @@ class _ConfirmLnurlSendScreenState extends State<ConfirmLnurlSendScreen> {
                     icon: PhosphorIconsRegular.network,
                     label: 'Network Fee',
                     value:
-                        '${NumberFormat('#,###').format(widget.fees.feeSats)} sat · ${(widget.fees.feeSats / widget.amountSats * 100).toStringAsFixed(1)}%',
+                        fees == null
+                            ? null
+                            : '${NumberFormat('#,###').format(fees.feeSats)} sat · ${NumberFormat('#,##0.#').format(fees.feeSats / widget.amountSats * 100)}%',
                   ),
                 ],
               ),
               const Spacer(),
-              AsyncButton(text: 'Confirm', onPressed: _handleConfirm),
+              AsyncButton(
+                text: 'Confirm',
+                enabled: fees != null,
+                onPressed: () => _handleConfirm(fees!),
+              ),
             ],
           ),
         ),

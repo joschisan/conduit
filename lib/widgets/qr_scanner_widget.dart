@@ -7,8 +7,12 @@ import 'package:conduit/utils/notification_utils.dart';
 
 class QrScannerWidget extends StatefulWidget {
   final void Function(String input) onScan;
+  // When true the camera fills its parent edge-to-edge (full-bleed, for a
+  // full-screen scanner). When false it renders as the rounded square used
+  // inside bottom sheets.
+  final bool fill;
 
-  const QrScannerWidget({super.key, required this.onScan});
+  const QrScannerWidget({super.key, required this.onScan, this.fill = false});
 
   @override
   State<QrScannerWidget> createState() => _QrScannerWidgetState();
@@ -52,6 +56,12 @@ class _QrScannerWidgetState extends State<QrScannerWidget> {
 
   @override
   Widget build(BuildContext context) {
+    // Full-bleed preview only; the full-screen scanner supplies its own paste
+    // control in the app bar, aligned with the Close button.
+    if (widget.fill) {
+      return MobileScanner(controller: _controller, onDetect: _onDetect);
+    }
+
     return LayoutBuilder(
       builder: (context, constraints) {
         final size = constraints.maxWidth;
@@ -61,7 +71,7 @@ class _QrScannerWidgetState extends State<QrScannerWidget> {
           child: Stack(
             children: [
               ClipRRect(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: cornerRadius,
                 child: MobileScanner(
                   controller: _controller,
                   onDetect: _onDetect,

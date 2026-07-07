@@ -34,11 +34,13 @@ class _AddressTextController extends TextEditingController {
 class LightningAddressEntryScreen extends StatefulWidget {
   final ConduitClient client;
   final ConduitClientFactory clientFactory;
+  final bool fiat;
 
   const LightningAddressEntryScreen({
     super.key,
     required this.client,
     required this.clientFactory,
+    this.fiat = false,
   });
 
   @override
@@ -88,6 +90,7 @@ class _LightningAddressEntryScreenState
               lnurl: lnurl,
               payResponse: payResponse,
               contactName: contactName,
+              fiat: widget.fiat,
             ),
       ),
     );

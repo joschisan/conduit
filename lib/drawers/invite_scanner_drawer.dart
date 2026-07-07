@@ -4,8 +4,8 @@ import 'package:conduit/bridge_generated.dart/lib.dart';
 import 'package:conduit/bridge_generated.dart/factory.dart';
 import 'package:conduit/utils/notification_utils.dart';
 import 'package:conduit/widgets/qr_scanner_widget.dart';
+import 'package:conduit/widgets/scanner_overlay_widget.dart';
 import 'package:conduit/drawers/invite_drawer.dart';
-import 'package:conduit/utils/drawer_utils.dart';
 
 class InviteScannerDrawer extends StatefulWidget {
   final ConduitClientFactory clientFactory;
@@ -25,12 +25,15 @@ class InviteScannerDrawer extends StatefulWidget {
     required Future<void> Function(InviteCodeWrapper) onJoin,
     required Future<void> Function(InviteCodeWrapper) onRecover,
   }) {
-    return DrawerUtils.show(
-      context: context,
-      child: InviteScannerDrawer(
-        clientFactory: clientFactory,
-        onJoin: onJoin,
-        onRecover: onRecover,
+    return Navigator.of(context).push(
+      MaterialPageRoute(
+        fullscreenDialog: true,
+        builder:
+            (_) => InviteScannerDrawer(
+              clientFactory: clientFactory,
+              onJoin: onJoin,
+              onRecover: onRecover,
+            ),
       ),
     );
   }
@@ -68,6 +71,22 @@ class _InviteScannerDrawerState extends State<InviteScannerDrawer> {
 
   @override
   Widget build(BuildContext context) {
-    return QrScannerWidget(onScan: _processInput);
+    return Scaffold(
+      // Let the camera bleed behind a transparent app bar, which still carries
+      // the fullscreen-dialog Close (✕) over the preview.
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        foregroundColor: Colors.white,
+      ),
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          QrScannerWidget(onScan: _processInput, fill: true),
+          const IgnorePointer(child: ScannerOverlay()),
+        ],
+      ),
+    );
   }
 }

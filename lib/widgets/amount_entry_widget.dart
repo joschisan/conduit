@@ -14,6 +14,9 @@ class AmountEntryWidget extends StatefulWidget {
   final Future<void> Function(int amountSats) onConfirm;
   final void Function(int currentAmount)? onAmountChanged;
   final String buttonText;
+  // Whether the pad opens in fiat rather than sats — set from the home screen's
+  // current balance mode so entry continues in the unit the user was viewing.
+  final bool fiat;
 
   const AmountEntryWidget({
     super.key,
@@ -21,6 +24,7 @@ class AmountEntryWidget extends StatefulWidget {
     required this.onConfirm,
     this.onAmountChanged,
     this.buttonText = 'Confirm',
+    this.fiat = false,
   });
 
   @override
@@ -29,14 +33,24 @@ class AmountEntryWidget extends StatefulWidget {
 
 class _AmountEntryWidgetState extends State<AmountEntryWidget> {
   int _currentAmount = 0;
-  bool _enterFiat = false;
+  late bool _enterFiat = widget.fiat;
+
+  @override
+  void initState() {
+    super.initState();
+    // Rates back both rendering and conversion of the fiat figure; warm them
+    // when the pad opens already in fiat mode.
+    if (_enterFiat) widget.client.prefetchExchangeRates();
+  }
 
   FiatCurrency get _currency {
     return findFiatCurrency(code: widget.client.currencyCode())!;
   }
 
   void _onKeyboardTap(String value) {
-    if (_currentAmount.toString().length >= 8) return;
+    // The amount display auto-shrinks to fit, so up to 10 digits stay on one
+    // line — a 10th digit reaches 10 BTC in sats (1,000,000,000 sat).
+    if (_currentAmount.toString().length >= 10) return;
 
     setState(() {
       _currentAmount = _currentAmount * 10 + int.parse(value);
@@ -119,13 +133,23 @@ class _AmountEntryWidgetState extends State<AmountEntryWidget> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (_enterFiat)
-                    Text.rich(
-                      textAlign: TextAlign.center,
-                      TextSpan(text: _formatFiatAmount(), style: heroStyle),
-                    )
-                  else
-                    AmountDisplay(_currentAmount),
+                  // Scale down so short amounts render at the full amountStyle
+                  // size and long ones shrink to fit the width on one line.
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 24),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: _enterFiat
+                          ? Text.rich(
+                              textAlign: TextAlign.center,
+                              TextSpan(
+                                text: _formatFiatAmount(),
+                                style: amountStyle,
+                              ),
+                            )
+                          : AmountDisplay(_currentAmount),
+                    ),
+                  ),
                   const SizedBox(height: 8),
                   Text(
                     _enterFiat ? _currency.name : 'Bitcoin',
@@ -181,9 +205,9 @@ class _AmountEntryWidgetState extends State<AmountEntryWidget> {
   Widget _buildNumberButton(String number) {
     return Material(
       color: Colors.transparent,
-      borderRadius: borderRadiusLarge,
+      borderRadius: cornerRadius,
       child: InkWell(
-        borderRadius: borderRadiusLarge,
+        borderRadius: cornerRadius,
         onTap: () => _onKeyboardTap(number),
         child: Center(child: Text(number, style: largeStyle)),
       ),
@@ -193,9 +217,9 @@ class _AmountEntryWidgetState extends State<AmountEntryWidget> {
   Widget _buildActionButton(IconData icon, VoidCallback onTap) {
     return Material(
       color: Colors.transparent,
-      borderRadius: borderRadiusLarge,
+      borderRadius: cornerRadius,
       child: InkWell(
-        borderRadius: borderRadiusLarge,
+        borderRadius: cornerRadius,
         onTap: onTap,
         child: Center(child: Icon(icon, size: smallIconSize)),
       ),

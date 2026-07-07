@@ -9,7 +9,8 @@ import 'package:conduit/widgets/icon_chip_widget.dart';
 ///
 /// The federation is reachable once at least [_threshold] guardians are online,
 /// using fedimint's consensus threshold `n - ⌊(n-1)/3⌋` (e.g. 4→3, 7→5). The
-/// badge is green while reachable and turns amber when too few are connected.
+/// badge is the primary colour while reachable and turns amber when too few are
+/// connected.
 class ConnectionStatusHeader extends StatelessWidget {
   final String name;
   final int online;
@@ -27,23 +28,19 @@ class ConnectionStatusHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final operational = online >= _threshold;
-    final color = operational ? Colors.green : Colors.amber;
+    final color =
+        operational ? Theme.of(context).colorScheme.primary : Colors.amber;
 
     return ListTile(
       contentPadding: listTilePadding,
-      leading: IconChip(icon: PhosphorIconsRegular.broadcast, color: color),
+      leading: IconChip(icon: PhosphorIconsRegular.wallet, color: color),
       title: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(name, style: mediumStyle),
-          Text(
-            operational ? 'Online' : 'Offline',
-            style: smallStyle.copyWith(
-              color: operational ? Colors.green : null,
-            ),
-          ),
+          Text(operational ? 'Online' : 'Offline', style: smallStyle),
         ],
       ),
     );

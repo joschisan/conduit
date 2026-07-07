@@ -42,7 +42,7 @@ flutter_rust_bridge::frb_generated_boilerplate!(
     default_rust_auto_opaque = RustAutoOpaqueMoi,
 );
 pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_VERSION: &str = "2.10.0";
-pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -1759290631;
+pub(crate) const FLUTTER_RUST_BRIDGE_CODEGEN_CONTENT_HASH: i32 = -1187679874;
 
 // Section: executor
 
@@ -746,6 +746,64 @@ fn wire__crate__factory__ConduitClientFactory_load_impl(
         },
     )
 }
+fn wire__crate__factory__ConduitClientFactory_load_current_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "ConduitClientFactory_load_current",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<ConduitClientFactory>,
+            >>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, ()>(
+                    (move || async move {
+                        let mut api_that_guard = None;
+                        let decode_indices_ =
+                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
+                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                    &api_that, 0, false,
+                                )],
+                            );
+                        for i in decode_indices_ {
+                            match i {
+                                0 => {
+                                    api_that_guard =
+                                        Some(api_that.lockable_decode_async_ref().await)
+                                }
+                                _ => unreachable!(),
+                            }
+                        }
+                        let api_that_guard = api_that_guard.unwrap();
+                        let output_ok = Result::<_, ()>::Ok(
+                            crate::factory::ConduitClientFactory::load_current(&*api_that_guard)
+                                .await,
+                        )?;
+                        Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
 fn wire__crate__factory__ConduitClientFactory_recover_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
@@ -1056,6 +1114,54 @@ fn wire__crate__factory__ConduitClientFactory_try_load_impl(
                     .await,
                 )
             }
+        },
+    )
+}
+fn wire__crate__client__ConduitClient_all_modules_usable_impl(
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) -> flutter_rust_bridge::for_generated::WireSyncRust2DartSse {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_sync::<flutter_rust_bridge::for_generated::SseCodec, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "ConduitClient_all_modules_usable",
+            port: None,
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Sync,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<ConduitClient>,
+            >>::sse_decode(&mut deserializer);
+            deserializer.end();
+            transform_result_sse::<_, ()>((move || {
+                let mut api_that_guard = None;
+                let decode_indices_ =
+                    flutter_rust_bridge::for_generated::lockable_compute_decode_order(vec![
+                        flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                            &api_that, 0, false,
+                        ),
+                    ]);
+                for i in decode_indices_ {
+                    match i {
+                        0 => api_that_guard = Some(api_that.lockable_decode_sync_ref()),
+                        _ => unreachable!(),
+                    }
+                }
+                let api_that_guard = api_that_guard.unwrap();
+                let output_ok = Result::<_, ()>::Ok(
+                    crate::client::ConduitClient::all_modules_usable(&*api_that_guard),
+                )?;
+                Ok(output_ok)
+            })())
         },
     )
 }
@@ -2280,6 +2386,68 @@ fn wire__crate__client__ConduitClient_onchain_send_impl(
         },
     )
 }
+fn wire__crate__client__ConduitClient_operation_fee_msats_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "ConduitClient_operation_fee_msats",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<ConduitClient>,
+            >>::sse_decode(&mut deserializer);
+            let api_operation_id = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, ()>(
+                    (move || async move {
+                        let mut api_that_guard = None;
+                        let decode_indices_ =
+                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
+                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                    &api_that, 0, false,
+                                )],
+                            );
+                        for i in decode_indices_ {
+                            match i {
+                                0 => {
+                                    api_that_guard =
+                                        Some(api_that.lockable_decode_async_ref().await)
+                                }
+                                _ => unreachable!(),
+                            }
+                        }
+                        let api_that_guard = api_that_guard.unwrap();
+                        let output_ok = Result::<_, ()>::Ok(
+                            crate::client::ConduitClient::operation_fee_msats(
+                                &*api_that_guard,
+                                api_operation_id,
+                            )
+                            .await,
+                        )?;
+                        Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
+        },
+    )
+}
 fn wire__crate__client__ConduitClient_prefetch_exchange_rates_impl(
     port_: flutter_rust_bridge::for_generated::MessagePort,
     ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
@@ -2385,6 +2553,68 @@ fn wire__crate__client__ConduitClient_sats_to_fiat_impl(
                 ))?;
                 Ok(output_ok)
             })())
+        },
+    )
+}
+fn wire__crate__client__ConduitClient_set_currency_impl(
+    port_: flutter_rust_bridge::for_generated::MessagePort,
+    ptr_: flutter_rust_bridge::for_generated::PlatformGeneralizedUint8ListPtr,
+    rust_vec_len_: i32,
+    data_len_: i32,
+) {
+    FLUTTER_RUST_BRIDGE_HANDLER.wrap_async::<flutter_rust_bridge::for_generated::SseCodec, _, _, _>(
+        flutter_rust_bridge::for_generated::TaskInfo {
+            debug_name: "ConduitClient_set_currency",
+            port: Some(port_),
+            mode: flutter_rust_bridge::for_generated::FfiCallMode::Normal,
+        },
+        move || {
+            let message = unsafe {
+                flutter_rust_bridge::for_generated::Dart2RustMessageSse::from_wire(
+                    ptr_,
+                    rust_vec_len_,
+                    data_len_,
+                )
+            };
+            let mut deserializer =
+                flutter_rust_bridge::for_generated::SseDeserializer::new(message);
+            let api_that = <RustOpaqueMoi<
+                flutter_rust_bridge::for_generated::RustAutoOpaqueInner<ConduitClient>,
+            >>::sse_decode(&mut deserializer);
+            let api_currency_code = <String>::sse_decode(&mut deserializer);
+            deserializer.end();
+            move |context| async move {
+                transform_result_sse::<_, ()>(
+                    (move || async move {
+                        let mut api_that_guard = None;
+                        let decode_indices_ =
+                            flutter_rust_bridge::for_generated::lockable_compute_decode_order(
+                                vec![flutter_rust_bridge::for_generated::LockableOrderInfo::new(
+                                    &api_that, 0, false,
+                                )],
+                            );
+                        for i in decode_indices_ {
+                            match i {
+                                0 => {
+                                    api_that_guard =
+                                        Some(api_that.lockable_decode_async_ref().await)
+                                }
+                                _ => unreachable!(),
+                            }
+                        }
+                        let api_that_guard = api_that_guard.unwrap();
+                        let output_ok = Result::<_, ()>::Ok({
+                            crate::client::ConduitClient::set_currency(
+                                &*api_that_guard,
+                                api_currency_code,
+                            )
+                            .await;
+                        })?;
+                        Ok(output_ok)
+                    })()
+                    .await,
+                )
+            }
         },
     )
 }
@@ -2665,10 +2895,10 @@ fn wire__crate__client__ConduitClient_subscribe_recovery_progress_impl(
             let api_that = <RustOpaqueMoi<
                 flutter_rust_bridge::for_generated::RustAutoOpaqueInner<ConduitClient>,
             >>::sse_decode(&mut deserializer);
-            let api_sink = <StreamSink<
-                crate::client::ConduitRecoveryProgress,
-                flutter_rust_bridge::for_generated::SseCodec,
-            >>::sse_decode(&mut deserializer);
+            let api_sink =
+                <StreamSink<i64, flutter_rust_bridge::for_generated::SseCodec>>::sse_decode(
+                    &mut deserializer,
+                );
             deserializer.end();
             move |context| async move {
                 transform_result_sse::<_, ()>(
@@ -4497,19 +4727,6 @@ impl SseDecode
     }
 }
 
-impl SseDecode
-    for StreamSink<
-        crate::client::ConduitRecoveryProgress,
-        flutter_rust_bridge::for_generated::SseCodec,
-    >
-{
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
-        let mut inner = <String>::sse_decode(deserializer);
-        return StreamSink::deserialize(inner);
-    }
-}
-
 impl SseDecode for StreamSink<i64, flutter_rust_bridge::for_generated::SseCodec> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
@@ -4584,20 +4801,6 @@ impl SseDecode for crate::events::ConduitPayment {
             address: var_address,
             fiat_amount: var_fiatAmount,
             fiat_currency_code: var_fiatCurrencyCode,
-        };
-    }
-}
-
-impl SseDecode for crate::client::ConduitRecoveryProgress {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    fn sse_decode(deserializer: &mut flutter_rust_bridge::for_generated::SseDeserializer) -> Self {
-        let mut var_moduleId = <i64>::sse_decode(deserializer);
-        let mut var_complete = <i64>::sse_decode(deserializer);
-        let mut var_total = <i64>::sse_decode(deserializer);
-        return crate::client::ConduitRecoveryProgress {
-            module_id: var_moduleId,
-            complete: var_complete,
-            total: var_total,
         };
     }
 }
@@ -5089,163 +5292,178 @@ fn pde_ffi_dispatcher_primary_impl(
         11 => {
             wire__crate__factory__ConduitClientFactory_load_impl(port, ptr, rust_vec_len, data_len)
         }
-        12 => wire__crate__factory__ConduitClientFactory_recover_impl(
+        12 => wire__crate__factory__ConduitClientFactory_load_current_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        13 => wire__crate__factory__ConduitClientFactory_save_contact_impl(
+        13 => wire__crate__factory__ConduitClientFactory_recover_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        14 => wire__crate__factory__ConduitClientFactory_seed_phrase_impl(
+        14 => wire__crate__factory__ConduitClientFactory_save_contact_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        15 => wire__crate__factory__ConduitClientFactory_set_currency_impl(
+        15 => wire__crate__factory__ConduitClientFactory_seed_phrase_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        16 => wire__crate__factory__ConduitClientFactory_try_load_impl(
+        16 => wire__crate__factory__ConduitClientFactory_set_currency_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        18 => {
+        17 => wire__crate__factory__ConduitClientFactory_try_load_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        20 => {
             wire__crate__client__ConduitClient_ecash_receive_impl(port, ptr, rust_vec_len, data_len)
         }
-        19 => wire__crate__client__ConduitClient_ecash_send_impl(port, ptr, rust_vec_len, data_len),
-        20 => wire__crate__client__ConduitClient_expiration_date_impl(
+        21 => wire__crate__client__ConduitClient_ecash_send_impl(port, ptr, rust_vec_len, data_len),
+        22 => wire__crate__client__ConduitClient_expiration_date_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        21 => wire__crate__client__ConduitClient_expiration_successor_impl(
+        23 => wire__crate__client__ConduitClient_expiration_successor_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        23 => wire__crate__client__ConduitClient_federation_name_impl(
+        25 => wire__crate__client__ConduitClient_federation_name_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        24 => wire__crate__client__ConduitClient_federation_stats_impl(
+        26 => wire__crate__client__ConduitClient_federation_stats_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        25 => {
+        27 => {
             wire__crate__client__ConduitClient_fiat_to_sats_impl(port, ptr, rust_vec_len, data_len)
         }
-        26 => wire__crate__client__ConduitClient_get_payment_history_impl(
+        28 => wire__crate__client__ConduitClient_get_payment_history_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        28 => wire__crate__client__ConduitClient_ln_calculate_fees_impl(
+        30 => wire__crate__client__ConduitClient_ln_calculate_fees_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        29 => wire__crate__client__ConduitClient_ln_receive_impl(port, ptr, rust_vec_len, data_len),
-        30 => wire__crate__client__ConduitClient_ln_send_impl(port, ptr, rust_vec_len, data_len),
-        31 => wire__crate__client__ConduitClient_lnurl_impl(port, ptr, rust_vec_len, data_len),
-        32 => wire__crate__client__ConduitClient_onchain_calculate_fees_impl(
+        31 => wire__crate__client__ConduitClient_ln_receive_impl(port, ptr, rust_vec_len, data_len),
+        32 => wire__crate__client__ConduitClient_ln_send_impl(port, ptr, rust_vec_len, data_len),
+        33 => wire__crate__client__ConduitClient_lnurl_impl(port, ptr, rust_vec_len, data_len),
+        34 => wire__crate__client__ConduitClient_onchain_calculate_fees_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        33 => wire__crate__client__ConduitClient_onchain_list_addresses_impl(
+        35 => wire__crate__client__ConduitClient_onchain_list_addresses_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        34 => wire__crate__client__ConduitClient_onchain_receive_address_impl(
+        36 => wire__crate__client__ConduitClient_onchain_receive_address_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        35 => wire__crate__client__ConduitClient_onchain_recheck_address_impl(
+        37 => wire__crate__client__ConduitClient_onchain_recheck_address_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        36 => {
+        38 => {
             wire__crate__client__ConduitClient_onchain_send_impl(port, ptr, rust_vec_len, data_len)
         }
-        37 => wire__crate__client__ConduitClient_prefetch_exchange_rates_impl(
+        39 => wire__crate__client__ConduitClient_operation_fee_msats_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        39 => wire__crate__client__ConduitClient_shutdown_impl(port, ptr, rust_vec_len, data_len),
-        40 => wire__crate__client__ConduitClient_subscribe_balance_impl(
+        40 => wire__crate__client__ConduitClient_prefetch_exchange_rates_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        41 => wire__crate__client__ConduitClient_subscribe_connection_status_impl(
+        42 => {
+            wire__crate__client__ConduitClient_set_currency_impl(port, ptr, rust_vec_len, data_len)
+        }
+        43 => wire__crate__client__ConduitClient_shutdown_impl(port, ptr, rust_vec_len, data_len),
+        44 => wire__crate__client__ConduitClient_subscribe_balance_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        42 => wire__crate__client__ConduitClient_subscribe_event_log_impl(
+        45 => wire__crate__client__ConduitClient_subscribe_connection_status_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        43 => wire__crate__client__ConduitClient_subscribe_recovery_progress_impl(
+        46 => wire__crate__client__ConduitClient_subscribe_event_log_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        44 => wire__crate__client__ConduitClient_wait_for_all_recoveries_impl(
+        47 => wire__crate__client__ConduitClient_subscribe_recovery_progress_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        45 => wire__crate__client__ConduitClient_wallet_v2_receive_impl(
+        48 => wire__crate__client__ConduitClient_wait_for_all_recoveries_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        52 => wire__crate__fountain__ECashEncoder_next_fragment_impl(
+        49 => wire__crate__client__ConduitClient_wallet_v2_receive_impl(
             port,
             ptr,
             rust_vec_len,
             data_len,
         ),
-        65 => wire__crate__generate_mnemonic_impl(port, ptr, rust_vec_len, data_len),
-        67 => wire__crate__lnurl__lnurl_fetch_limits_impl(port, ptr, rust_vec_len, data_len),
-        68 => wire__crate__lnurl__lnurl_resolve_impl(port, ptr, rust_vec_len, data_len),
-        70 => wire__crate__open_database_impl(port, ptr, rust_vec_len, data_len),
-        76 => wire__crate__parse_mnemonic_impl(port, ptr, rust_vec_len, data_len),
+        56 => wire__crate__fountain__ECashEncoder_next_fragment_impl(
+            port,
+            ptr,
+            rust_vec_len,
+            data_len,
+        ),
+        69 => wire__crate__generate_mnemonic_impl(port, ptr, rust_vec_len, data_len),
+        71 => wire__crate__lnurl__lnurl_fetch_limits_impl(port, ptr, rust_vec_len, data_len),
+        72 => wire__crate__lnurl__lnurl_resolve_impl(port, ptr, rust_vec_len, data_len),
+        74 => wire__crate__open_database_impl(port, ptr, rust_vec_len, data_len),
+        80 => wire__crate__parse_mnemonic_impl(port, ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -5260,66 +5478,69 @@ fn pde_ffi_dispatcher_sync_impl(
     match func_id {
         1 => wire__crate__BitcoinAddressWrapper_to_string_impl(ptr, rust_vec_len, data_len),
         2 => wire__crate__Bolt11InvoiceWrapper_amount_sats_impl(ptr, rust_vec_len, data_len),
-        17 => wire__crate__client__ConduitClient_currency_code_impl(ptr, rust_vec_len, data_len),
-        22 => wire__crate__client__ConduitClient_federation_id_impl(ptr, rust_vec_len, data_len),
-        27 => wire__crate__client__ConduitClient_has_pending_recoveries_impl(
+        18 => {
+            wire__crate__client__ConduitClient_all_modules_usable_impl(ptr, rust_vec_len, data_len)
+        }
+        19 => wire__crate__client__ConduitClient_currency_code_impl(ptr, rust_vec_len, data_len),
+        24 => wire__crate__client__ConduitClient_federation_id_impl(ptr, rust_vec_len, data_len),
+        29 => wire__crate__client__ConduitClient_has_pending_recoveries_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        38 => wire__crate__client__ConduitClient_sats_to_fiat_impl(ptr, rust_vec_len, data_len),
-        46 => wire__crate__factory__ConduitContact_lnurl_impl(ptr, rust_vec_len, data_len),
-        47 => wire__crate__factory__ConduitContact_match_query_impl(ptr, rust_vec_len, data_len),
-        48 => wire__crate__factory__ConduitContact_name_impl(ptr, rust_vec_len, data_len),
-        49 => wire__crate__fountain__ECashDecoder_add_fragment_impl(ptr, rust_vec_len, data_len),
-        50 => wire__crate__fountain__ECashDecoder_new_impl(ptr, rust_vec_len, data_len),
-        51 => wire__crate__fountain__ECashEncoder_new_impl(ptr, rust_vec_len, data_len),
-        53 => wire__crate__ECashWrapper_amount_sats_impl(ptr, rust_vec_len, data_len),
-        54 => wire__crate__ECashWrapper_to_string_impl(ptr, rust_vec_len, data_len),
-        55 => wire__crate__factory__FederationInfo_auto_accessor_get_guardians_impl(
+        41 => wire__crate__client__ConduitClient_sats_to_fiat_impl(ptr, rust_vec_len, data_len),
+        50 => wire__crate__factory__ConduitContact_lnurl_impl(ptr, rust_vec_len, data_len),
+        51 => wire__crate__factory__ConduitContact_match_query_impl(ptr, rust_vec_len, data_len),
+        52 => wire__crate__factory__ConduitContact_name_impl(ptr, rust_vec_len, data_len),
+        53 => wire__crate__fountain__ECashDecoder_add_fragment_impl(ptr, rust_vec_len, data_len),
+        54 => wire__crate__fountain__ECashDecoder_new_impl(ptr, rust_vec_len, data_len),
+        55 => wire__crate__fountain__ECashEncoder_new_impl(ptr, rust_vec_len, data_len),
+        57 => wire__crate__ECashWrapper_amount_sats_impl(ptr, rust_vec_len, data_len),
+        58 => wire__crate__ECashWrapper_to_string_impl(ptr, rust_vec_len, data_len),
+        59 => wire__crate__factory__FederationInfo_auto_accessor_get_guardians_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        56 => wire__crate__factory__FederationInfo_auto_accessor_get_id_impl(
+        60 => wire__crate__factory__FederationInfo_auto_accessor_get_id_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        57 => wire__crate__factory__FederationInfo_auto_accessor_get_name_impl(
+        61 => wire__crate__factory__FederationInfo_auto_accessor_get_name_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        58 => wire__crate__factory__FederationInfo_auto_accessor_set_guardians_impl(
+        62 => wire__crate__factory__FederationInfo_auto_accessor_set_guardians_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        59 => wire__crate__factory__FederationInfo_auto_accessor_set_id_impl(
+        63 => wire__crate__factory__FederationInfo_auto_accessor_set_id_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        60 => wire__crate__factory__FederationInfo_auto_accessor_set_name_impl(
+        64 => wire__crate__factory__FederationInfo_auto_accessor_set_name_impl(
             ptr,
             rust_vec_len,
             data_len,
         ),
-        61 => {
+        65 => {
             wire__crate__lnurl__PayResponseWrapper_is_fixed_amount_impl(ptr, rust_vec_len, data_len)
         }
-        62 => wire__crate__lnurl__PayResponseWrapper_max_sats_impl(ptr, rust_vec_len, data_len),
-        63 => wire__crate__lnurl__PayResponseWrapper_min_sats_impl(ptr, rust_vec_len, data_len),
-        64 => wire__crate__currency__find_fiat_currency_impl(ptr, rust_vec_len, data_len),
-        66 => wire__crate__currency__list_fiat_currencies_impl(ptr, rust_vec_len, data_len),
-        69 => wire__crate__lnurl__lnurl_wrapper_encode_impl(ptr, rust_vec_len, data_len),
-        71 => wire__crate__parse_bitcoin_address_impl(ptr, rust_vec_len, data_len),
-        72 => wire__crate__parse_bolt11_invoice_impl(ptr, rust_vec_len, data_len),
-        73 => wire__crate__parse_ecash_impl(ptr, rust_vec_len, data_len),
-        74 => wire__crate__parse_invite_code_impl(ptr, rust_vec_len, data_len),
-        75 => wire__crate__lnurl__parse_lnurl_impl(ptr, rust_vec_len, data_len),
-        77 => wire__crate__word_list_impl(ptr, rust_vec_len, data_len),
+        66 => wire__crate__lnurl__PayResponseWrapper_max_sats_impl(ptr, rust_vec_len, data_len),
+        67 => wire__crate__lnurl__PayResponseWrapper_min_sats_impl(ptr, rust_vec_len, data_len),
+        68 => wire__crate__currency__find_fiat_currency_impl(ptr, rust_vec_len, data_len),
+        70 => wire__crate__currency__list_fiat_currencies_impl(ptr, rust_vec_len, data_len),
+        73 => wire__crate__lnurl__lnurl_wrapper_encode_impl(ptr, rust_vec_len, data_len),
+        75 => wire__crate__parse_bitcoin_address_impl(ptr, rust_vec_len, data_len),
+        76 => wire__crate__parse_bolt11_invoice_impl(ptr, rust_vec_len, data_len),
+        77 => wire__crate__parse_ecash_impl(ptr, rust_vec_len, data_len),
+        78 => wire__crate__parse_invite_code_impl(ptr, rust_vec_len, data_len),
+        79 => wire__crate__lnurl__parse_lnurl_impl(ptr, rust_vec_len, data_len),
+        81 => wire__crate__word_list_impl(ptr, rust_vec_len, data_len),
         _ => unreachable!(),
     }
 }
@@ -5591,28 +5812,6 @@ impl flutter_rust_bridge::IntoIntoDart<crate::events::ConduitPayment>
     for crate::events::ConduitPayment
 {
     fn into_into_dart(self) -> crate::events::ConduitPayment {
-        self
-    }
-}
-// Codec=Dco (DartCObject based), see doc to use other codecs
-impl flutter_rust_bridge::IntoDart for crate::client::ConduitRecoveryProgress {
-    fn into_dart(self) -> flutter_rust_bridge::for_generated::DartAbi {
-        [
-            self.module_id.into_into_dart().into_dart(),
-            self.complete.into_into_dart().into_dart(),
-            self.total.into_into_dart().into_dart(),
-        ]
-        .into_dart()
-    }
-}
-impl flutter_rust_bridge::for_generated::IntoDartExceptPrimitive
-    for crate::client::ConduitRecoveryProgress
-{
-}
-impl flutter_rust_bridge::IntoIntoDart<crate::client::ConduitRecoveryProgress>
-    for crate::client::ConduitRecoveryProgress
-{
-    fn into_into_dart(self) -> crate::client::ConduitRecoveryProgress {
         self
     }
 }
@@ -6065,18 +6264,6 @@ impl SseEncode
     }
 }
 
-impl SseEncode
-    for StreamSink<
-        crate::client::ConduitRecoveryProgress,
-        flutter_rust_bridge::for_generated::SseCodec,
-    >
-{
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
-        unimplemented!("")
-    }
-}
-
 impl SseEncode for StreamSink<i64, flutter_rust_bridge::for_generated::SseCodec> {
     // Codec=Sse (Serialization based), see doc to use other codecs
     fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
@@ -6133,15 +6320,6 @@ impl SseEncode for crate::events::ConduitPayment {
         <Option<String>>::sse_encode(self.address, serializer);
         <Option<f64>>::sse_encode(self.fiat_amount, serializer);
         <Option<String>>::sse_encode(self.fiat_currency_code, serializer);
-    }
-}
-
-impl SseEncode for crate::client::ConduitRecoveryProgress {
-    // Codec=Sse (Serialization based), see doc to use other codecs
-    fn sse_encode(self, serializer: &mut flutter_rust_bridge::for_generated::SseSerializer) {
-        <i64>::sse_encode(self.module_id, serializer);
-        <i64>::sse_encode(self.complete, serializer);
-        <i64>::sse_encode(self.total, serializer);
     }
 }
 

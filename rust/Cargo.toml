@@ -1,48 +1,44 @@
 [package]
 name = "conduit"
-version = "0.6.0"
+version = "0.7.0"
 edition = "2024"
 
 [lints.rust]
 unexpected_cfgs = { level = "allow", check-cfg = ['cfg(frb_expand)'] }
 
 [dependencies]
-fedimint-api-client = "0.11.0"
-fedimint-bip39 = "0.11.0"
-fedimint-core = "0.11.0"
-fedimint-connectors = "0.11.0"
-fedimint-client = "0.11.0"
-fedimint-eventlog = "0.11.0"
-fedimint-fountain = "0.11.0"
-fedimint-rocksdb = "0.11.0"
-fedimint-lnv2-client = "0.11.0"
-fedimint-lnv2-common = "0.11.0"
-fedimint-mint-client = "0.11.0"
-fedimint-wallet-client = "0.11.0"
-fedimint-client-module = "0.11.0"
-fedimint-meta-client = "0.11.0"
-fedimint-walletv2-client = "0.11.0"
-fedimint-walletv2-common = "0.11.0"
-fedimint-mintv2-client = "0.11.0"
-fedimint-mintv2-common = "0.11.0"
+fedimint-api-client = "0.12.0-rc.0"
+fedimint-bip39 = "0.12.0-rc.0"
+fedimint-core = "0.12.0-rc.0"
+fedimint-connectors = "0.12.0-rc.0"
+fedimint-client = "0.12.0-rc.0"
+fedimint-eventlog = "0.12.0-rc.0"
+fedimint-fountain = "0.12.0-rc.0"
+fedimint-rocksdb = "0.12.0-rc.0"
+fedimint-lnv2-client = "0.12.0-rc.0"
+fedimint-mint-client = "0.12.0-rc.0"
+fedimint-wallet-client = "0.12.0-rc.0"
+fedimint-client-module = "0.12.0-rc.0"
+fedimint-meta-client = "0.12.0-rc.0"
+fedimint-walletv2-client = "0.12.0-rc.0"
+fedimint-mintv2-client = "0.12.0-rc.0"
 bitcoin = "0.32.5"
 log = "0.4"
 flutter_rust_bridge = "=2.10.0"
 futures-util = "0.3.30"
 lightning-invoice = { version = "0.33.2", features = ["std"] }
-fedimint-lnurl = { git = "https://github.com/fedimint/fedimint" }
-# Pin versions to avoid netwatch/socket2 incompatibility in fedimint 0.9.0
-reqwest = { version = "=0.12.22", features = ["rustls-tls", "json"], default-features = false }
+fedimint-lnurl = "0.12.0-rc.0"
+reqwest = { version = "0.12.28", features = ["rustls-tls", "json"], default-features = false }
 serde = { version = "1.0.219", features = ["derive"] }
-tokio = "=1.48.0"
+tokio = "1.49"
 regex = "1"
-hyper-util = "=0.1.14"
-surge-ping = "=0.8.2"
-socket2 = "=0.5.9"
+hyper-util = "0.1.14"
+surge-ping = "0.8.2"
+# netwatch 0.5 (via iroh) needs socket2 0.5's "all" feature, which nothing else enables anymore
+socket2 = { version = "0.5.9", features = ["all"] }
 url = "2"
 
 [profile.dev.package]
-tikv-jemalloc-sys = { opt-level = 3 }
 librocksdb-sys = { opt-level = 3 }
 secp256k1 = { opt-level = 3}
 secp256k1-sys = { opt-level = 3}
@@ -55,7 +51,6 @@ strip = false
 debug = "line-tables-only"
 
 [profile.release.package]
-tikv-jemalloc-sys = { opt-level = 3 }
 librocksdb-sys = { opt-level = 3 }
 secp256k1 = { opt-level = 3}
 secp256k1-sys = { opt-level = 3}

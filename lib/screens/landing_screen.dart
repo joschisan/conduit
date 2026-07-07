@@ -1,6 +1,7 @@
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:conduit/widgets/scrollable_body_widget.dart';
 import 'package:conduit/utils/styles.dart';
 import 'package:conduit/screens/input_recovery_phrase_screen.dart';
 import 'package:conduit/screens/base_screen.dart';
@@ -48,7 +49,7 @@ class _LandingScreenState extends State<LandingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
+      body: ScrollableBody(
         child: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(

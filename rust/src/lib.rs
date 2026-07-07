@@ -28,7 +28,7 @@ pub use fedimint_client::OperationId;
 pub use fedimint_core::config::FederationId;
 
 // Re-export public API for FRB
-pub use client::{ConduitClient, ConduitRecoveryProgress};
+pub use client::ConduitClient;
 pub use currency::{FiatCurrency, find_fiat_currency, list_fiat_currencies};
 pub use events::{ConduitPayment, PaymentNotification, PaymentType, RecentPaymentsUpdate};
 pub use factory::{ConduitClientFactory, ConduitContact, FederationInfo};
@@ -70,7 +70,7 @@ pub async fn open_database(db_path: &str) -> DatabaseWrapper {
         .expect("Could not parse db path")
         .join("client.db");
 
-    RocksDb::open_blocking(db_path, None)
+    RocksDb::open_blocking(db_path)
         .map(|db| DatabaseWrapper(db.into()))
         .expect("Could not open database")
 }

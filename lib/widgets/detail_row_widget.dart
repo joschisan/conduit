@@ -3,7 +3,8 @@ import 'package:conduit/utils/styles.dart';
 import 'package:conduit/widgets/icon_chip_widget.dart';
 
 /// A single labelled row for bordered detail lists: a leading icon with the
-/// value stacked over its label.
+/// value stacked over its label. A null value renders "Loading" with a small
+/// spinner in the value slot until the value arrives.
 ///
 /// The value/label pair lives in the `title` slot (rather than using
 /// `ListTile.subtitle`) so the tile keeps the single-line height of the other
@@ -11,14 +12,14 @@ import 'package:conduit/widgets/icon_chip_widget.dart';
 class DetailRow extends StatelessWidget {
   final IconData icon;
   final String label;
-  final String value;
+  final String? value;
   final Color? iconColor;
 
   const DetailRow({
     super.key,
     required this.icon,
     required this.label,
-    required this.value,
+    this.value,
     this.iconColor,
   });
 
@@ -31,7 +32,17 @@ class DetailRow extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(value, style: mediumStyle),
+          if (value case final value?)
+            Text(value, style: mediumStyle)
+          else
+            const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('Loading', style: mediumStyle),
+                SizedBox(width: 8),
+                smallSpinner,
+              ],
+            ),
           Text(
             label,
             style: smallStyle.copyWith(

@@ -15,6 +15,7 @@ class LnurlAmountScreen extends StatefulWidget {
   final LnurlWrapper lnurl;
   final PayResponseWrapper payResponse;
   final String? contactName;
+  final bool fiat;
 
   const LnurlAmountScreen({
     super.key,
@@ -23,6 +24,7 @@ class LnurlAmountScreen extends StatefulWidget {
     required this.lnurl,
     required this.payResponse,
     this.contactName,
+    this.fiat = false,
   });
 
   @override
@@ -38,8 +40,6 @@ class _LnurlAmountScreenState extends State<LnurlAmountScreen> {
       amountSats: amountSats,
     );
 
-    final fees = await widget.client.lnCalculateFees(invoice: invoice);
-
     if (!mounted) return;
 
     Navigator.of(context).pushReplacement(
@@ -49,7 +49,6 @@ class _LnurlAmountScreenState extends State<LnurlAmountScreen> {
               client: widget.client,
               invoice: invoice,
               amountSats: amountSats,
-              fees: fees,
               contactName: _contactName,
             ),
       ),
@@ -102,6 +101,7 @@ class _LnurlAmountScreenState extends State<LnurlAmountScreen> {
         maintainBottomViewPadding: true,
         child: AmountEntryWidget(
           client: widget.client,
+          fiat: widget.fiat,
           onConfirm: _handleConfirm,
           buttonText: 'Continue',
         ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:conduit/widgets/scrollable_body_widget.dart';
 import 'package:intl/intl.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
@@ -26,25 +27,27 @@ class DisplayInvoiceScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(title: const Text('Receive Lightning')),
-    body: Padding(
-      padding: const EdgeInsets.symmetric(vertical: 16),
-      child: BleedColumn(
-        children: [
-          QrCodeWidget(data: invoice),
-          const SizedBox(height: 16),
-          BorderedList.column(
-            children: [
-              ShareableRow(data: invoice, label: 'Lightning Invoice'),
-              ...amountRows(client: client, amountSats: amount),
-              DetailRow(
-                icon: PhosphorIconsRegular.network,
-                label: 'Network Fee',
-                value:
-                    '${NumberFormat('#,###').format(feeSats)} sat · ${(feeSats / amount * 100).toStringAsFixed(1)}%',
-              ),
-            ],
-          ),
-        ],
+    body: ScrollableBody(
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        child: BleedColumn(
+          children: [
+            QrCodeWidget(data: invoice),
+            const SizedBox(height: 16),
+            BorderedList.column(
+              children: [
+                ShareableRow(data: invoice, label: 'Lightning Invoice'),
+                ...amountRows(client: client, amountSats: amount),
+                DetailRow(
+                  icon: PhosphorIconsRegular.network,
+                  label: 'Network Fee',
+                  value:
+                      '${NumberFormat('#,###').format(feeSats)} sat · ${NumberFormat('#,##0.#').format(feeSats / amount * 100)}%',
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     ),
   );

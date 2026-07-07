@@ -1,23 +1,28 @@
+import 'package:conduit/widgets/balanced_text_widget.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:conduit/bridge_generated.dart/lib.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
-import 'package:conduit/bridge_generated.dart/currency.dart';
 import 'package:conduit/bridge_generated.dart/factory.dart';
 import 'package:conduit/screens/federation_screen.dart';
-import 'package:conduit/screens/display_recovery_phrase_screen.dart';
-import 'package:conduit/screens/select_currency_screen.dart';
 import 'package:conduit/utils/notification_utils.dart';
 import 'package:conduit/utils/styles.dart';
-import 'package:conduit/utils/auth_utils.dart';
+import 'package:conduit/drawers/invite_drawer.dart';
 import 'package:conduit/drawers/invite_scanner_drawer.dart';
-import 'package:conduit/drawers/leave_federation_drawer.dart';
 import 'package:conduit/drawers/recovery_drawer.dart';
-import 'package:conduit/widgets/bordered_list_widget.dart';
-import 'package:conduit/widgets/bleed_column_widget.dart';
-import 'package:conduit/widgets/section_header_widget.dart';
-import 'package:conduit/widgets/settings_card_widget.dart';
+import 'package:conduit/widgets/circular_action_button_widget.dart';
 
+/// Observes page transitions so the home router can re-open the current
+/// federation whenever it becomes visible again. Registered on the app's
+/// [MaterialApp].
+final RouteObserver<PageRoute<dynamic>> routeObserver =
+    RouteObserver<PageRoute<dynamic>>();
+
+/// The app's root. With no federations it hosts onboarding (scan to join);
+/// with at least one it immediately opens the current federation, so the
+/// federation screen — not this screen — is what the user lands on and returns
+/// to. Settings and federation switching now live on the federation screen.
 class BaseScreen extends StatefulWidget {
   final ConduitClientFactory clientFactory;
 
@@ -27,112 +32,115 @@ class BaseScreen extends StatefulWidget {
   State<BaseScreen> createState() => _BaseScreenState();
 }
 
-class _BaseScreenState extends State<BaseScreen> {
+class _BaseScreenState extends State<BaseScreen> with RouteAware {
   List<FederationInfo> _federations = [];
-  String? _currencyName;
+  bool _loaded = false;
 
   @override
   void initState() {
     super.initState();
 
     _refreshFederations(autoNavigate: true);
-    _loadCurrency();
   }
 
-  Future<void> _loadCurrency() async {
-    final code = await widget.clientFactory.getCurrency();
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
 
-    if (!mounted) return;
+    final route = ModalRoute.of(context);
 
-    setState(() {
-      _currencyName = findFiatCurrency(code: code)?.name;
-    });
+    if (route is PageRoute) {
+      routeObserver.subscribe(this, route);
+    }
+  }
+
+  @override
+  void dispose() {
+    routeObserver.unsubscribe(this);
+    super.dispose();
+  }
+
+  // Re-open the current federation whenever this router is revealed again —
+  // e.g. after a recovery pushed a federation screen and the user popped back —
+  // so it only ever routes forward.
+  @override
+  void didPopNext() {
+    _refreshFederations(autoNavigate: true);
   }
 
   Future<void> _refreshFederations({bool autoNavigate = false}) async {
     final federations = await widget.clientFactory.listFederations();
 
+    if (!mounted) return;
+
     setState(() {
       _federations = federations;
+      _loaded = true;
     });
 
-    if (autoNavigate && federations.length == 1) {
-      _handleFederationTap(federations.first);
+    if (autoNavigate && federations.isNotEmpty) {
+      _openCurrentFederation(replace: true);
     }
   }
 
-  @override
-  Widget build(BuildContext context) => Scaffold(
-    appBar: AppBar(title: const Text('Conduit')),
-    body: SingleChildScrollView(
-      padding: const EdgeInsets.fromLTRB(0, 16, 0, 32),
-      child: BleedColumn(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const SectionHeader(title: 'Settings'),
-          BorderedList.column(
-            children: [_buildSeedPhraseCard(), _buildCurrencyCard()],
-          ),
-          const SizedBox(height: 16),
-          if (_federations.isEmpty)
-            _buildOnboardingCard()
-          else
-            _buildFederationsListView(),
-        ],
-      ),
-    ),
-  );
+  // Opens the persisted active federation (falling back to the first one when
+  // the stored selection is missing or gone). The screen resolves its own name.
+  Future<void> _openCurrentFederation({bool replace = false}) async {
+    try {
+      final client = await widget.clientFactory.loadCurrent();
 
-  Widget _buildOnboardingCard() {
-    return Column(
-      children: [
-        const SizedBox(height: 32),
-        TextButton(
-          onPressed: _showScannerDrawer,
-          child: Text(
-            'Join Federation',
-            style: mediumStyle.copyWith(
-              color: Theme.of(context).colorScheme.primary,
-            ),
-          ),
-        ),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 32),
-          child: Text(
-            'The federation cannot link payments to you or deduce your balance.',
-            textAlign: TextAlign.center,
-            style: smallStyle.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-            ),
-          ),
-        ),
-      ],
-    );
+      if (!mounted) {
+        client?.shutdown();
+        return;
+      }
+
+      if (client == null) {
+        NotificationUtils.showError(context, 'Failed to load mint');
+        return;
+      }
+
+      _navigateToClientScreen(client, replace: replace);
+    } catch (e) {
+      if (mounted) NotificationUtils.showError(context, e.toString());
+    }
   }
 
-  Widget _buildFederationsListView() {
-    return BleedColumn(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SectionHeader(
-          title: 'Federations',
-          action: 'Add',
-          onAction: _showScannerDrawer,
-        ),
-        BorderedList(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: _federations.length,
-          itemBuilder: (context, index) {
-            final federation = _federations[index];
-            return _buildFederationCard(federation);
-          },
-        ),
-      ],
+  void _navigateToClientScreen(
+    ConduitClient client, {
+    String? name,
+    bool replace = false,
+  }) {
+    if (!mounted) return;
+
+    // Only block on the recovery drawer when a module can't be used until its
+    // recovery finishes. Otherwise open the wallet now and let it show recovery
+    // progress on the federation row (see FederationScreen).
+    if (client.hasPendingRecoveries() && !client.allModulesUsable()) {
+      RecoveryDrawer.show(
+        context,
+        client: client,
+        clientFactory: widget.clientFactory,
+      );
+      return;
+    }
+
+    final route = MaterialPageRoute<void>(
+      builder:
+          (_) => FederationScreen(
+            client: client,
+            clientFactory: widget.clientFactory,
+            federationName: name,
+          ),
     );
+
+    if (replace) {
+      Navigator.of(context).pushReplacement(route);
+    } else {
+      Navigator.of(context).push(route);
+    }
   }
 
-  void _showScannerDrawer() {
+  Future<void> _showScannerDrawer() async {
     InviteScannerDrawer.show(
       context,
       clientFactory: widget.clientFactory,
@@ -141,142 +149,95 @@ class _BaseScreenState extends State<BaseScreen> {
     );
   }
 
-  void _navigateToClientScreen(ConduitClient client) {
+  // Onboarding paste: read the clipboard and, if it holds an invite code, open
+  // the join/restore drawer — the keyboard-less alternative to scanning.
+  Future<void> _handlePasteInvite() async {
+    final clipboardData = await Clipboard.getData(Clipboard.kTextPlain);
+    final text = clipboardData?.text;
+
     if (!mounted) return;
 
-    if (client.hasPendingRecoveries()) {
-      RecoveryDrawer.show(
-        context,
-        client: client,
-        clientFactory: widget.clientFactory,
-      );
-    } else {
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder:
-              (_) => FederationScreen(
-                client: client,
-                clientFactory: widget.clientFactory,
-              ),
-        ),
-      );
+    if (text == null || text.isEmpty) {
+      NotificationUtils.showError(context, 'Failed to access clipboard');
+      return;
     }
+
+    final inviteCode = parseInviteCode(invite: text);
+
+    if (inviteCode == null) {
+      NotificationUtils.showError(context, 'Failed to parse invite code');
+      return;
+    }
+
+    InviteDrawer.show(
+      context,
+      invite: inviteCode,
+      onJoin: _handleJoinFederation,
+      onRecover: _handleRecoverFederation,
+    );
   }
 
   Future<void> _handleJoinFederation(InviteCodeWrapper invite) async {
     final client = await widget.clientFactory.join(invite: invite);
 
-    _refreshFederations();
-
     if (!mounted) return;
 
     Navigator.of(context).popUntil((route) => route.isFirst);
 
-    _navigateToClientScreen(client);
+    _navigateToClientScreen(client, replace: true);
   }
 
   Future<void> _handleRecoverFederation(InviteCodeWrapper invite) async {
     final client = await widget.clientFactory.recover(invite: invite);
 
-    _refreshFederations();
-
     if (!mounted) return;
 
     Navigator.of(context).popUntil((route) => route.isFirst);
 
-    _navigateToClientScreen(client);
+    _navigateToClientScreen(client, replace: true);
   }
 
-  Widget _buildSeedPhraseCard() {
-    return SettingsCard(
-      icon: PhosphorIconsRegular.key,
-      title: 'Recovery Phrase',
-      subtitle: 'Backup your Wallet',
-      onTap: _handleSeedPhraseTap,
-    );
-  }
+  @override
+  Widget build(BuildContext context) => Scaffold(
+    appBar: AppBar(
+      title: const Text('Conduit'),
+      // Only offer paste on the onboarding view; otherwise this screen is a
+      // blank router forwarding to the current federation.
+      actions: [
+        if (_loaded && _federations.isEmpty)
+          IconButton(
+            onPressed: _handlePasteInvite,
+            icon: const Icon(PhosphorIconsRegular.clipboardText),
+          ),
+      ],
+    ),
+    // Blank until loaded, and while routing forward to a federation; the
+    // onboarding card only shows once we know there are no federations.
+    body:
+        _loaded && _federations.isEmpty
+            ? Center(child: _buildOnboardingCard())
+            : const SizedBox.shrink(),
+  );
 
-  Widget _buildCurrencyCard() {
-    return SettingsCard(
-      icon: PhosphorIconsRegular.currencyDollar,
-      title: 'Select Currency',
-      subtitle: _currencyName,
-      onTap: _handleCurrencyTap,
-    );
-  }
-
-  Widget _buildFederationCard(FederationInfo federation) {
-    final guardians = federation.guardians;
-
-    return SettingsCard(
-      icon: PhosphorIconsRegular.wallet,
-      title: federation.name,
-      subtitle: '$guardians ${guardians == 1 ? 'Guardian' : 'Guardians'}',
-      onTap: () => _handleFederationTap(federation),
-      onLongPress: () => _showLeaveFederationDrawer(federation),
-    );
-  }
-
-  Future<void> _handleFederationTap(FederationInfo federation) async {
-    try {
-      final client = await widget.clientFactory.load(
-        federationId: federation.id,
-      );
-
-      if (client == null) {
-        if (mounted) {
-          NotificationUtils.showError(context, 'Failed to load federation');
-        }
-        return;
-      }
-
-      _navigateToClientScreen(client);
-    } catch (e) {
-      if (mounted) {
-        NotificationUtils.showError(context, e.toString());
-      }
-    }
-  }
-
-  void _showLeaveFederationDrawer(FederationInfo federation) {
-    LeaveFederationDrawer.show(
-      context,
-      federation: federation,
-      clientFactory: widget.clientFactory,
-      onSuccess: _refreshFederations,
-    );
-  }
-
-  Future<void> _handleCurrencyTap() async {
-    await Navigator.of(context).push(
-      MaterialPageRoute(
-        builder:
-            (_) => SelectCurrencyScreen(clientFactory: widget.clientFactory),
-      ),
-    );
-
-    _loadCurrency();
-  }
-
-  Future<void> _handleSeedPhraseTap() async {
-    try {
-      await requireBiometricAuth(context);
-
-      if (!mounted) return;
-
-      final seedPhrase = await widget.clientFactory.seedPhrase();
-
-      if (!mounted) return;
-
-      Navigator.of(context).push(
-        MaterialPageRoute(
-          builder: (_) => DisplayRecoveryPhraseScreen(seedPhrase: seedPhrase),
+  Widget _buildOnboardingCard() {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32),
+          child: BalancedText(
+            'Add a mint to transact.',
+            textAlign: TextAlign.center,
+            style: smallStyle,
+          ),
         ),
-      );
-    } catch (e) {
-      if (mounted) {
-        NotificationUtils.showError(context, e.toString());
-      }
-    }
+        const SizedBox(height: 16),
+        CircularActionButton(
+          icon: PhosphorIconsRegular.qrCode,
+          label: 'Scan',
+          onTap: _showScannerDrawer,
+        ),
+      ],
+    );
   }
 }

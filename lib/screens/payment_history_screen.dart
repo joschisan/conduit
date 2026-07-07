@@ -2,6 +2,7 @@ import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/bridge_generated.dart/events.dart';
 import 'package:conduit/utils/styles.dart';
 import 'package:conduit/utils/payment_utils.dart';
@@ -11,9 +12,18 @@ import 'package:conduit/widgets/amount_visibility.dart';
 import 'package:conduit/drawers/payment_details_drawer.dart';
 
 class PaymentHistoryScreen extends StatefulWidget {
+  final ConduitClient client;
   final List<ConduitPayment> payments;
+  // Whether the list opens in fiat rather than sats — set from the home screen's
+  // current balance mode so history continues in the unit the user was viewing.
+  final bool fiat;
 
-  const PaymentHistoryScreen({super.key, required this.payments});
+  const PaymentHistoryScreen({
+    super.key,
+    required this.client,
+    required this.payments,
+    this.fiat = false,
+  });
 
   @override
   State<PaymentHistoryScreen> createState() => _PaymentHistoryScreenState();
@@ -27,8 +37,10 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
   bool _outgoing = false;
 
   // A single control toggles the list between sats and fiat (no hidden step);
-  // cards without a snapshotted rate stay in sats even in fiat mode.
-  BalanceDisplay _display = BalanceDisplay.sats;
+  // cards without a snapshotted rate stay in sats even in fiat mode. Opens in
+  // whichever unit the home screen was showing.
+  late BalanceDisplay _display =
+      widget.fiat ? BalanceDisplay.fiat : BalanceDisplay.sats;
 
   void _toggleDisplay() {
     setState(() {
@@ -99,33 +111,44 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
               ),
           header: Padding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+            // Each button gets an equal share of the row, so the five
+            // filters can never overflow the screen width.
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _FilterButton(
-                  icon: PhosphorIconsRegular.lightning,
-                  active: _lightning,
-                  onTap: () => setState(() => _lightning = !_lightning),
+                Expanded(
+                  child: _FilterButton(
+                    icon: PhosphorIconsRegular.lightning,
+                    active: _lightning,
+                    onTap: () => setState(() => _lightning = !_lightning),
+                  ),
                 ),
-                _FilterButton(
-                  icon: PhosphorIconsRegular.link,
-                  active: _bitcoin,
-                  onTap: () => setState(() => _bitcoin = !_bitcoin),
+                Expanded(
+                  child: _FilterButton(
+                    icon: PhosphorIconsRegular.link,
+                    active: _bitcoin,
+                    onTap: () => setState(() => _bitcoin = !_bitcoin),
+                  ),
                 ),
-                _FilterButton(
-                  icon: PhosphorIconsRegular.coinVertical,
-                  active: _ecash,
-                  onTap: () => setState(() => _ecash = !_ecash),
+                Expanded(
+                  child: _FilterButton(
+                    icon: PhosphorIconsRegular.coinVertical,
+                    active: _ecash,
+                    onTap: () => setState(() => _ecash = !_ecash),
+                  ),
                 ),
-                _FilterButton(
-                  icon: PaymentTypeUtils.getDirectionIcon(true),
-                  active: _incoming,
-                  onTap: () => setState(() => _incoming = !_incoming),
+                Expanded(
+                  child: _FilterButton(
+                    icon: PaymentTypeUtils.getDirectionIcon(true),
+                    active: _incoming,
+                    onTap: () => setState(() => _incoming = !_incoming),
+                  ),
                 ),
-                _FilterButton(
-                  icon: PaymentTypeUtils.getDirectionIcon(false),
-                  active: _outgoing,
-                  onTap: () => setState(() => _outgoing = !_outgoing),
+                Expanded(
+                  child: _FilterButton(
+                    icon: PaymentTypeUtils.getDirectionIcon(false),
+                    active: _outgoing,
+                    onTap: () => setState(() => _outgoing = !_outgoing),
+                  ),
                 ),
               ],
             ),
@@ -134,7 +157,12 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
               (context, payment) => PaymentCard(
                 key: ValueKey(payment.operationId),
                 event: payment,
-                onTap: () => PaymentDetailsDrawer.show(context, event: payment),
+                onTap:
+                    () => PaymentDetailsDrawer.show(
+                      context,
+                      event: payment,
+                      client: widget.client,
+                    ),
               ),
         ),
       ),
@@ -157,26 +185,29 @@ class _FilterButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
 
-    return InkWell(
-      onTap: () {
-        HapticFeedback.lightImpact();
-        onTap();
-      },
-      borderRadius: BorderRadius.circular(24),
-      child: Container(
-        width: 48,
-        height: 48,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color:
-              active
-                  ? colorScheme.primary
-                  : colorScheme.surfaceContainerHighest,
-        ),
-        child: Icon(
-          icon,
-          size: smallIconSize,
-          color: active ? colorScheme.onPrimary : colorScheme.onSurfaceVariant,
+    // Center so the button hugs its circle instead of stretching to the
+    // full width of the Expanded slot.
+    return Center(
+      child: GestureDetector(
+        onTap: () {
+          HapticFeedback.lightImpact();
+          onTap();
+        },
+        child: Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color:
+                active
+                    ? colorScheme.primary
+                    : colorScheme.primary.withValues(alpha: 0.1),
+          ),
+          child: Icon(
+            icon,
+            size: smallIconSize,
+            color: active ? colorScheme.onPrimary : colorScheme.primary,
+          ),
         ),
       ),
     );

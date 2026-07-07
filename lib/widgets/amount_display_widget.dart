@@ -15,8 +15,8 @@ class AmountDisplay extends StatelessWidget {
       textAlign: TextAlign.center,
       TextSpan(
         children: [
-          TextSpan(text: displayAmount, style: heroStyle),
-          TextSpan(text: ' sat', style: largeStyle),
+          TextSpan(text: displayAmount, style: amountStyle),
+          TextSpan(text: ' sat', style: amountUnitStyle),
         ],
       ),
     );

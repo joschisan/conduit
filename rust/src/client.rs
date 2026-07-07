@@ -7,7 +7,7 @@ use fedimint_core::module::serde_json;
 use fedimint_core::util::SafeUrl;
 use fedimint_eventlog::EventLogId;
 use fedimint_lnv2_client::LightningClientModule;
-use fedimint_lnv2_common::Bolt11InvoiceDescription;
+use fedimint_lnv2_client::common::Bolt11InvoiceDescription;
 use fedimint_mint_client::MintClientModule;
 use fedimint_mintv2_client::MintClientModule as MintV2ClientModule;
 use fedimint_wallet_client::client_db::TweakIdx;
@@ -17,6 +17,7 @@ use flutter_rust_bridge::frb;
 use futures_util::StreamExt;
 
 use std::str::FromStr;
+use std::sync::{Arc, Mutex};
 
 use crate::db::{EventLogEntryKey, EventLogEntryPrefix, OperationFiatKey};
 use crate::events::{
@@ -28,13 +29,6 @@ use crate::frb_generated::StreamSink;
 use crate::{
     BitcoinAddressWrapper, Bolt11InvoiceWrapper, ECashWrapper, EcashToken, InviteCodeWrapper,
 };
-
-#[frb]
-pub struct ConduitRecoveryProgress {
-    pub module_id: i64,
-    pub complete: i64,
-    pub total: i64,
-}
 
 #[frb]
 pub struct FederationStats {
@@ -66,7 +60,7 @@ pub struct ConduitClient {
     pub(crate) client: ClientHandleArc,
     pub(crate) db: Database,
     pub(crate) federation_id: FederationId,
-    pub(crate) currency_code: String,
+    pub(crate) currency_code: Arc<Mutex<String>>,
     pub(crate) exchange_rate_cache: ExchangeRateCache,
 }
 
@@ -88,7 +82,16 @@ impl ConduitClient {
 
     #[frb(sync)]
     pub fn currency_code(&self) -> String {
-        self.currency_code.clone()
+        self.currency_code.lock().unwrap().clone()
+    }
+
+    /// Switches the currency used for live fiat conversion and clears the cached
+    /// rate so the next fetch is for the new currency. The persisted setting is
+    /// written separately via the factory.
+    #[frb]
+    pub async fn set_currency(&self, currency_code: String) {
+        *self.currency_code.lock().unwrap() = currency_code;
+        *self.exchange_rate_cache.lock().await = None;
     }
 
     #[frb]
@@ -108,13 +111,14 @@ impl ConduitClient {
     /// best-effort prefetch.
     #[frb]
     pub async fn prefetch_exchange_rates(&self) {
-        let _ = fetch_exchange_rate(self.exchange_rate_cache.clone(), self.currency_code.clone())
-            .await;
+        let currency_code = self.currency_code.lock().unwrap().clone();
+        let _ = fetch_exchange_rate(self.exchange_rate_cache.clone(), currency_code).await;
     }
 
     #[frb]
     pub async fn fiat_to_sats(&self, amount_fiat: f64) -> Result<i64, String> {
-        fetch_exchange_rate(self.exchange_rate_cache.clone(), self.currency_code.clone())
+        let currency_code = self.currency_code.lock().unwrap().clone();
+        fetch_exchange_rate(self.exchange_rate_cache.clone(), currency_code)
             .await
             .map(|r| ((amount_fiat / r) * 100_000_000.0).round() as i64)
     }
@@ -152,12 +156,14 @@ impl ConduitClient {
             }
         };
 
+        let currency_code = self.currency_code.lock().unwrap().clone();
+
         let mut dbtx = self.db.begin_transaction().await;
 
         if dbtx.get_value(&OperationFiatKey(operation_id)).await.is_none() {
             dbtx.insert_entry(
                 &OperationFiatKey(operation_id),
-                &(self.currency_code.clone(), rate.to_be_bytes()),
+                &(currency_code, rate.to_be_bytes()),
             )
             .await;
 
@@ -217,7 +223,12 @@ impl ConduitClient {
             let statuses: Vec<(String, bool)> = names
                 .iter()
                 .zip(status_map.into_values())
-                .map(|(name, status)| (name.clone(), status))
+                .map(|(name, status)| {
+                    (
+                        name.clone(),
+                        matches!(status, fedimint_connectors::PeerStatus::Connected(_)),
+                    )
+                })
                 .collect();
 
             if sink.add(statuses).is_err() {
@@ -229,6 +240,15 @@ impl ConduitClient {
     #[frb(sync)]
     pub fn has_pending_recoveries(&self) -> bool {
         self.client.has_pending_recoveries()
+    }
+
+    /// Whether every module can be used right now. `false` while a module that
+    /// cannot operate mid-recovery is held out of the registry, in which case
+    /// the app must wait for the recovery and reopen; `true` when a recovery is
+    /// running but the wallet is already usable (e.g. mintv2/walletv2).
+    #[frb(sync)]
+    pub fn all_modules_usable(&self) -> bool {
+        self.client.all_modules_usable()
     }
 
     #[frb]
@@ -260,18 +280,34 @@ impl ConduitClient {
             .map_err(|e| e.to_string())
     }
 
+    /// Streams the overall recovery progress as a percentage (0..=100).
+    ///
+    /// Each module reports its own scan progress; the overall figure is the
+    /// least-advanced module, so it never runs ahead of the slowest recovery.
+    /// The underlying stream re-emits every recovering module on each tick, so
+    /// the minimum is taken over the full set rather than a single module.
     #[frb]
-    pub async fn subscribe_recovery_progress(&self, sink: StreamSink<ConduitRecoveryProgress>) {
+    pub async fn subscribe_recovery_progress(&self, sink: StreamSink<i64>) {
+        let mut latest: std::collections::HashMap<u16, (u32, u32)> =
+            std::collections::HashMap::new();
+
         let mut stream = self.client.subscribe_to_recovery_progress();
 
         while let Some((module_id, progress)) = stream.next().await {
-            let conduit_progress = ConduitRecoveryProgress {
-                module_id: module_id as i64,
-                complete: progress.complete as i64,
-                total: progress.total as i64,
-            };
+            latest.insert(module_id, (progress.complete, progress.total));
 
-            if sink.add(conduit_progress).is_err() {
+            let percent = latest
+                .values()
+                .map(|(complete, total)| match total {
+                    // A module reports (0, 0) before its scan bound is known, so
+                    // treat a not-yet-started module as 0%, not complete.
+                    0 => 0,
+                    total => (*complete as u64 * 100 / *total as u64) as i64,
+                })
+                .min()
+                .unwrap_or(0);
+
+            if sink.add(percent).is_err() {
                 break;
             }
         }
@@ -283,9 +319,9 @@ impl ConduitClient {
 
         if let Ok(module) = self.client.get_first_module::<MintV2ClientModule>() {
             return module
-                .send(amount, serde_json::Value::Null)
+                .send(amount, serde_json::Value::Null, false)
                 .await
-                .map(|ecash| ECashWrapper(EcashToken::V2(ecash)))
+                .map(|(_, ecash)| ECashWrapper(EcashToken::V2(ecash)))
                 .map_err(|e| e.to_string());
         }
 
@@ -481,7 +517,7 @@ impl ConduitClient {
 
         if let Ok(module) = self.client.get_first_module::<WalletV2ClientModule>() {
             return module
-                .send(address.0.clone(), amount, None)
+                .send(address.0.clone(), amount, None, serde_json::Value::Null)
                 .await
                 .map(|_| ())
                 .map_err(|e| e.to_string());
@@ -517,12 +553,12 @@ impl ConduitClient {
             .get_first_module::<WalletClientModule>()
             .map_err(|e| e.to_string())?;
 
-        let (_, address, _) = wallet_module
+        let info = wallet_module
             .safe_allocate_deposit_address(())
             .await
             .map_err(|e| e.to_string())?;
 
-        Ok(address.to_string())
+        Ok(info.address.to_string())
     }
 
     #[frb]
@@ -650,6 +686,26 @@ impl ConduitClient {
         payments.reverse();
 
         payments
+    }
+
+    /// Federation fees paid over the course of an operation, excluding fees
+    /// paid to service providers like the lightning gateway. Returns None for
+    /// unknown operations and operations recorded before the federation
+    /// tracked fee data. The amount may still increase while the operation is
+    /// active.
+    #[frb]
+    pub async fn operation_fee_msats(&self, operation_id: String) -> Option<i64> {
+        let operation_id = OperationId::from_str(&operation_id).ok()?;
+
+        self.client
+            .get_operation_fees(operation_id)
+            .await
+            .ok()
+            .flatten()
+            .map(|fees| {
+                fees.get(&AmountUnit::BITCOIN)
+                    .map_or(0, |amount| amount.msats as i64)
+            })
     }
 
     #[frb]

@@ -47,11 +47,12 @@ class ConfirmRecoveryPhraseScreen extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Recovery Phrase')),
       body: SingleChildScrollView(
+        physics: const BouncingScrollPhysics(),
         padding: const EdgeInsets.fromLTRB(0, 0, 0, 32),
         child: BleedColumn(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            SeedPhraseList(seedPhrase: seedPhrase),
+            seedPhraseList(context, seedPhrase),
             const SizedBox(height: 16),
             AsyncButton(
               text: 'Confirm',

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:conduit/widgets/scrollable_body_widget.dart';
 import 'package:intl/intl.dart';
 import 'package:conduit/bridge_generated.dart/lib.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
@@ -50,7 +51,7 @@ class _ConfirmOnchainSendScreenState extends State<ConfirmOnchainSendScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Send Onchain')),
-      body: SafeArea(
+      body: ScrollableBody(
         child: Padding(
           padding: const EdgeInsets.only(bottom: 16),
           child: BleedColumn(
@@ -70,7 +71,7 @@ class _ConfirmOnchainSendScreenState extends State<ConfirmOnchainSendScreen> {
                     icon: PhosphorIconsRegular.network,
                     label: 'Network Fee',
                     value:
-                        '${NumberFormat('#,###').format(widget.feeSats)} sat · ${(widget.feeSats / widget.amountSats * 100).toStringAsFixed(1)}%',
+                        '${NumberFormat('#,###').format(widget.feeSats)} sat · ${NumberFormat('#,##0.#').format(widget.feeSats / widget.amountSats * 100)}%',
                     iconColor:
                         widget.feeSats > widget.amountSats * 0.02
                             ? Colors.amber

@@ -14,8 +14,7 @@ pub(crate) enum DbKeyPrefix {
     #[allow(dead_code)]
     EventLogStartPosition = 0x03, // Deprecated
     SelectedCurrency = 0x04,
-    #[allow(dead_code)]
-    SelectedFederation = 0x05, // Deprecated
+    SelectedFederation = 0x05,
     EventLogEntry = 0x06,
     Contact = 0x07,
     OperationFiat = 0x08,
@@ -53,7 +52,6 @@ impl_db_record!(
     db_prefix = DbKeyPrefix::SelectedCurrency,
 );
 
-#[allow(dead_code)]
 #[derive(Clone, Debug, Encodable, Decodable)]
 pub(crate) struct SelectedFederationKey;
 

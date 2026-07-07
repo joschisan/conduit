@@ -71,11 +71,7 @@ class PaymentCard extends StatelessWidget {
               ),
               if (event.success == null) ...[
                 const SizedBox(width: 8),
-                const SizedBox(
-                  width: 14,
-                  height: 14,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                ),
+                smallSpinner,
               ],
             ],
           ),

@@ -2,17 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:conduit/utils/notification_utils.dart';
 import 'package:flutter/services.dart';
 
-Widget buildSmallSpinner(BuildContext context) => SizedBox(
-  width: 20,
-  height: 20,
-  child: CircularProgressIndicator(
-    strokeWidth: 2,
-    valueColor: AlwaysStoppedAnimation<Color>(
-      Theme.of(context).colorScheme.primary,
-    ),
-  ),
-);
-
 enum AsyncButtonState { idle, loading }
 
 mixin AsyncButtonMixin<T extends StatefulWidget> on State<T> {

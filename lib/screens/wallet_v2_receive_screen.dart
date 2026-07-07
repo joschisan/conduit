@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter/material.dart';
+import 'package:conduit/widgets/scrollable_body_widget.dart';
 import 'package:conduit/utils/styles.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/drawers/wallet_v2_wallet_details_drawer.dart';
@@ -10,6 +11,7 @@ import 'package:conduit/widgets/qr_code_widget.dart';
 import 'package:conduit/widgets/bordered_list_widget.dart';
 import 'package:conduit/widgets/bleed_column_widget.dart';
 import 'package:conduit/widgets/shareable_row_widget.dart';
+import 'package:conduit/widgets/balanced_text_widget.dart';
 
 class WalletV2ReceiveScreen extends StatelessWidget {
   final String address;
@@ -41,12 +43,12 @@ class WalletV2ReceiveScreen extends StatelessWidget {
         title: const Text('Receive Onchain'),
         actions: [
           AsyncIconButton(
-            icon: PhosphorIconsRegular.info,
+            icon: PhosphorIconsRegular.dotsThreeVertical,
             onPressed: () => _showDetails(context),
           ),
         ],
       ),
-      body: SafeArea(
+      body: ScrollableBody(
         child: Padding(
           padding: EdgeInsets.zero,
           child: BleedColumn(
@@ -63,7 +65,7 @@ class WalletV2ReceiveScreen extends StatelessWidget {
                 child: Center(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 32.0),
-                    child: Text(
+                    child: BalancedText(
                       'Confirmed onchain payments will take about two hours to appear.',
                       style: smallStyle.copyWith(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,

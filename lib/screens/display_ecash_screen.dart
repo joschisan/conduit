@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:conduit/utils/styles.dart';
 import 'package:conduit/bridge_generated.dart/lib.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
@@ -9,6 +8,8 @@ import 'package:conduit/widgets/bordered_list_widget.dart';
 import 'package:conduit/widgets/bleed_column_widget.dart';
 import 'package:conduit/widgets/shareable_row_widget.dart';
 import 'package:conduit/widgets/amount_rows.dart';
+import 'package:conduit/widgets/async_button_widget.dart';
+import 'package:conduit/widgets/scrollable_body_widget.dart';
 
 Stream<String> _createFrameStream(ECashEncoder encoder) async* {
   while (true) {
@@ -41,16 +42,8 @@ class DisplayEcashScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Send eCash'),
-        actions: [
-          IconButton(
-            icon: const Icon(PhosphorIconsRegular.xCircle, size: smallIconSize),
-            onPressed: () => _handleCancel(context),
-          ),
-        ],
-      ),
-      body: SafeArea(
+      appBar: AppBar(title: const Text('Send eCash')),
+      body: ScrollableBody(
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 16.0),
           child: BleedColumn(
@@ -59,10 +52,15 @@ class DisplayEcashScreen extends StatelessWidget {
                 stream: _createFrameStream(encoder),
                 builder: (context, snapshot) {
                   if (!snapshot.hasData) {
-                    return const Center(child: CircularProgressIndicator());
+                    return const Center(child: smallSpinner);
                   }
                   return QrCodeWidget(data: snapshot.data!);
                 },
+              ),
+              const SizedBox(height: 16),
+              AsyncButton(
+                text: 'Cancel',
+                onPressed: () => _handleCancel(context),
               ),
               const SizedBox(height: 16),
               BorderedList.column(

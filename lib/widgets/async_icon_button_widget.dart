@@ -29,7 +29,7 @@ class _AsyncIconButtonState extends State<AsyncIconButton>
         AsyncButtonState.loading => null,
       },
       icon: switch (buttonState) {
-        AsyncButtonState.loading => buildSmallSpinner(context),
+        AsyncButtonState.loading => smallSpinner,
         AsyncButtonState.idle => Icon(widget.icon, size: smallIconSize),
       },
     );

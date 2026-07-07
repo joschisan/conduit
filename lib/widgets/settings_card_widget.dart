@@ -7,6 +7,7 @@ class SettingsCard extends StatelessWidget {
   final Color? iconColor;
   final String title;
   final String? subtitle;
+  final Widget? trailing;
   final VoidCallback? onTap;
   final VoidCallback? onLongPress;
 
@@ -16,6 +17,7 @@ class SettingsCard extends StatelessWidget {
     this.iconColor,
     required this.title,
     this.subtitle,
+    this.trailing,
     this.onTap,
     this.onLongPress,
   });
@@ -44,6 +46,7 @@ class SettingsCard extends StatelessWidget {
             ),
         ],
       ),
+      trailing: trailing,
       onTap: onTap,
       onLongPress: onLongPress,
     );

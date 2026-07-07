@@ -1,3 +1,4 @@
+import 'package:conduit/widgets/balanced_text_widget.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
@@ -32,7 +33,7 @@ class _ContactTileState extends State<_ContactTile> with AsyncButtonMixin {
 
   @override
   Widget build(BuildContext context) {
-    const icon = IconChip(icon: PhosphorIconsRegular.lightning);
+    const icon = IconChip(icon: PhosphorIconsRegular.user);
 
     // The lnurl payload is the decoded service URL, so its host is the
     // provider domain (e.g. blink.sv) shown as the subheader.
@@ -55,11 +56,7 @@ class _ContactTileState extends State<_ContactTile> with AsyncButtonMixin {
               Text(widget.contact.name, style: mediumStyle),
               if (buttonState == AsyncButtonState.loading) ...[
                 const SizedBox(width: 8),
-                const SizedBox(
-                  width: 14,
-                  height: 14,
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                ),
+                smallSpinner,
               ],
             ],
           ),
@@ -84,11 +81,13 @@ class _ContactTileState extends State<_ContactTile> with AsyncButtonMixin {
 class DisplayContactsScreen extends StatefulWidget {
   final ConduitClient client;
   final ConduitClientFactory clientFactory;
+  final bool fiat;
 
   const DisplayContactsScreen({
     super.key,
     required this.client,
     required this.clientFactory,
+    this.fiat = false,
   });
 
   @override
@@ -138,6 +137,7 @@ class _DisplayContactsScreenState extends State<DisplayContactsScreen> {
               lnurl: contact.lnurl,
               payResponse: payResponse,
               contactName: contact.name,
+              fiat: widget.fiat,
             ),
       ),
     );
@@ -168,7 +168,7 @@ class _DisplayContactsScreenState extends State<DisplayContactsScreen> {
       child: Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 32),
-          child: Text(
+          child: BalancedText(
             'You have no contacts yet.',
             textAlign: TextAlign.center,
             style: smallStyle.copyWith(
@@ -185,7 +185,7 @@ class _DisplayContactsScreenState extends State<DisplayContactsScreen> {
     final filtered = _filteredContacts;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Lightning Contacts')),
+      appBar: AppBar(title: const Text('Contacts')),
       body: SafeArea(
         child: Column(
           children: [

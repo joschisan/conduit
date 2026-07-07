@@ -152,7 +152,9 @@ pub(crate) fn parse_event_log_entry(entry: &EventLogEntry) -> Option<ParsedEvent
                 incoming: true,
                 payment_type: PaymentType::Lightning,
                 amount_sats: (receive.amount.msats / 1000) as i64,
-                fee_sats: None,
+                // Zero means the event predates the fee field, so hide it
+                // rather than claim the receive was free.
+                fee_sats: (receive.fee.msats > 0).then_some((receive.fee.msats / 1000) as i64),
                 timestamp: (entry.ts_usecs / 1000) as i64,
                 success: Some(true),
                 ecash: None,
@@ -374,7 +376,7 @@ pub(crate) fn parse_event_log_entry(entry: &EventLogEntry) -> Option<ParsedEvent
                 timestamp: (entry.ts_usecs / 1000) as i64,
                 success: None,
                 ecash: None,
-                txid: None,
+                txid: receive.outpoint.map(|o| o.txid.to_string()),
                 address: Some(receive.address.clone().assume_checked().to_string()),
                 fiat_amount: None,
                 fiat_currency_code: None,
@@ -398,7 +400,7 @@ pub(crate) fn parse_event_log_entry(entry: &EventLogEntry) -> Option<ParsedEvent
 }
 
 fn parse<T: Event>(entry: &EventLogEntry) -> Option<T> {
-    if entry.module.clone().map(|m| m.0) != T::MODULE {
+    if entry.module.clone().map(|m| m.kind) != T::MODULE {
         return None;
     }
 

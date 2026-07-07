@@ -7,11 +7,13 @@ import 'package:conduit/screens/confirm_onchain_send_screen.dart';
 class OnchainAmountScreen extends StatefulWidget {
   final ConduitClient client;
   final BitcoinAddressWrapper address;
+  final bool fiat;
 
   const OnchainAmountScreen({
     super.key,
     required this.client,
     required this.address,
+    this.fiat = false,
   });
 
   @override
@@ -47,6 +49,7 @@ class _OnchainAmountScreenState extends State<OnchainAmountScreen> {
       body: SafeArea(
         child: AmountEntryWidget(
           client: widget.client,
+          fiat: widget.fiat,
           onConfirm: _handleConfirm,
           buttonText: 'Continue',
         ),

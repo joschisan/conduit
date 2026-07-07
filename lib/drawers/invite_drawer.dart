@@ -1,7 +1,10 @@
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:conduit/utils/styles.dart';
 import 'package:conduit/bridge_generated.dart/lib.dart';
 import 'package:conduit/widgets/drawer_shell_widget.dart';
+import 'package:conduit/widgets/bordered_list_widget.dart';
+import 'package:conduit/widgets/settings_card_widget.dart';
 import 'package:conduit/widgets/async_button_widget.dart';
 import 'package:conduit/utils/drawer_utils.dart';
 
@@ -43,21 +46,12 @@ class InviteDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DrawerShell(
-      children: [
-        AsyncButton(text: 'Join Federation', onPressed: () => onJoin(invite)),
-        const SizedBox(height: 24),
-        GestureDetector(
-          onTap: () => _showRecoverDrawer(context),
-          child: Text(
-            'Already used this federation before?',
-            style: mediumStyle.copyWith(
-              color: Theme.of(context).colorScheme.primary,
-            ),
-            textAlign: TextAlign.center,
-          ),
-        ),
-      ],
+    return _InviteActionDrawer(
+      title: 'Add Mint',
+      subtitle: 'Add a new mint',
+      onConfirm: () => onJoin(invite),
+      linkText: 'Previously added this mint?',
+      onLink: () => _showRecoverDrawer(context),
     );
   }
 }
@@ -85,17 +79,53 @@ class _RecoverDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return _InviteActionDrawer(
+      title: 'Restore Mint',
+      subtitle: 'Restore unspent eCash',
+      onConfirm: () => onRecover(invite),
+      linkText: 'New to this mint?',
+      onLink: () => _showJoinDrawer(context),
+    );
+  }
+}
+
+/// Shared layout for the add/restore pair: the standard mint row above a
+/// confirm button, with a text link that toggles to the other variant.
+class _InviteActionDrawer extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final Future<void> Function() onConfirm;
+  final String linkText;
+  final VoidCallback onLink;
+
+  const _InviteActionDrawer({
+    required this.title,
+    required this.subtitle,
+    required this.onConfirm,
+    required this.linkText,
+    required this.onLink,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return DrawerShell(
       children: [
-        AsyncButton(
-          text: 'Recover Federation',
-          onPressed: () => onRecover(invite),
+        BorderedList.column(
+          children: [
+            SettingsCard(
+              icon: PhosphorIconsRegular.wallet,
+              title: title,
+              subtitle: subtitle,
+            ),
+          ],
         ),
+        const SizedBox(height: 16),
+        AsyncButton(text: 'Confirm', onPressed: onConfirm),
         const SizedBox(height: 24),
         GestureDetector(
-          onTap: () => _showJoinDrawer(context),
+          onTap: onLink,
           child: Text(
-            'New to this federation?',
+            linkText,
             style: mediumStyle.copyWith(
               color: Theme.of(context).colorScheme.primary,
             ),

@@ -3,7 +3,7 @@ use std::sync::Arc;
 use crate::client::ConduitClient;
 use crate::db::{
     ClientConfigKey, ClientConfigPrefix, ContactKey, ContactPrefix, DbKeyPrefix,
-    EventLogEntryPrefix, RootEntropyKey, SelectedCurrencyKey,
+    EventLogEntryPrefix, RootEntropyKey, SelectedCurrencyKey, SelectedFederationKey,
 };
 use crate::lnurl::LnurlWrapper;
 use crate::{DatabaseWrapper, InviteCodeWrapper, MnemonicWrapper};
@@ -18,14 +18,14 @@ use fedimint_core::BitcoinHash;
 use fedimint_core::config::{ClientConfig, FederationId};
 use fedimint_core::db::{Database, IDatabaseTransactionOpsCore, IDatabaseTransactionOpsCoreTyped};
 use fedimint_lnv2_client::LightningClientInit;
-use fedimint_lnv2_common::KIND as LIGHTNING_KIND;
+use fedimint_lnv2_client::common::KIND as LIGHTNING_KIND;
 use fedimint_meta_client::{MetaClientInit, MetaModuleMetaSourceWithFallback};
 use fedimint_mint_client::{KIND as MINT_KIND, MintClientInit};
 use fedimint_mintv2_client::MintClientInit as MintV2ClientInit;
-use fedimint_mintv2_common::KIND as MINTV2_KIND;
+use fedimint_mintv2_client::common::KIND as MINTV2_KIND;
 use fedimint_wallet_client::{KIND as WALLET_KIND, WalletClientInit};
 use fedimint_walletv2_client::WalletClientInit as WalletV2ClientInit;
-use fedimint_walletv2_common::KIND as WALLETV2_KIND;
+use fedimint_walletv2_client::common::KIND as WALLETV2_KIND;
 use flutter_rust_bridge::frb;
 use futures_util::StreamExt;
 use tokio::sync::Mutex;
@@ -34,6 +34,10 @@ use tokio::sync::Mutex;
 pub struct ConduitClientFactory {
     db: Database,
     mnemonic: fedimint_bip39::Mnemonic,
+    // Bound once and shared (cheaply cloned) across every client, so switching
+    // federations reuses the same endpoints instead of rebinding the iroh
+    // endpoint on each load.
+    connectors: ConnectorRegistry,
 }
 
 #[frb]
@@ -118,20 +122,26 @@ impl ConduitClientFactory {
         Ok(Self {
             db: db.0.clone(),
             mnemonic: mnemonic.0.clone(),
+            connectors: Self::build_connectors().await,
         })
     }
 
     #[frb]
     pub async fn try_load(db: &DatabaseWrapper) -> Option<Self> {
-        db.0.begin_transaction_nc()
+        let entropy = db
+            .0
+            .begin_transaction_nc()
             .await
             .get_value(&RootEntropyKey)
-            .await
-            .map(|entropy| fedimint_bip39::Mnemonic::from_entropy(&entropy).unwrap())
-            .map(|mnemonic| Self {
-                db: db.0.clone(),
-                mnemonic,
-            })
+            .await?;
+
+        let mnemonic = fedimint_bip39::Mnemonic::from_entropy(&entropy).unwrap();
+
+        Some(Self {
+            db: db.0.clone(),
+            mnemonic,
+            connectors: Self::build_connectors().await,
+        })
     }
 
     #[frb]
@@ -178,12 +188,17 @@ impl ConduitClientFactory {
             .collect::<Vec<u8>>()
     }
 
-    async fn connectors(&self) -> ConnectorRegistry {
+    /// Builds and binds the connector registry. Called once per factory; the
+    /// resulting registry is then shared across all clients.
+    async fn build_connectors() -> ConnectorRegistry {
         ConnectorRegistry::build_from_client_defaults()
-            .iroh_next(false)
             .bind()
             .await
             .expect("Failed to bind connector registry")
+    }
+
+    fn connectors(&self) -> ConnectorRegistry {
+        self.connectors.clone()
     }
 
     #[frb]
@@ -195,7 +210,7 @@ impl ConduitClientFactory {
         let preview = self
             .client_builder()
             .await
-            .preview(self.connectors().await, &invite.0)
+            .preview(self.connectors(), &invite.0)
             .await
             .map_err(|e| e.to_string())?;
 
@@ -224,7 +239,7 @@ impl ConduitClientFactory {
         let preview = self
             .client_builder()
             .await
-            .preview(self.connectors().await, &invite.0)
+            .preview(self.connectors(), &invite.0)
             .await
             .map_err(|e| e.to_string())?;
 
@@ -258,7 +273,7 @@ impl ConduitClientFactory {
             .client_builder()
             .await
             .open(
-                self.connectors().await,
+                self.connectors(),
                 self.client_database(*federation_id),
                 self.root_secret(),
             )
@@ -268,6 +283,29 @@ impl ConduitClientFactory {
         self.save_config(&client.config().await).await;
 
         Some(self.create_client(Arc::new(client), *federation_id).await)
+    }
+
+    /// Opens the persisted active federation, falling back to the first
+    /// available one when nothing is stored or the stored federation is gone
+    /// (e.g. it was left). Returns `None` only when no federations remain.
+    #[frb]
+    pub async fn load_current(&self) -> Option<ConduitClient> {
+        let selected = self
+            .db
+            .begin_transaction_nc()
+            .await
+            .get_value(&SelectedFederationKey)
+            .await;
+
+        if let Some(federation_id) = selected {
+            if let Some(client) = self.load(&federation_id).await {
+                return Some(client);
+            }
+        }
+
+        let first = self.list_federations().await.into_iter().next()?;
+
+        self.load(&first.id).await
     }
 
     async fn save_config(&self, config: &ClientConfig) {
@@ -292,11 +330,17 @@ impl ConduitClientFactory {
             .await
             .unwrap_or_else(|| "USD".to_string());
 
+        // Remember this as the active federation so it is reopened on next
+        // launch. Every open funnels through here (load/join/recover).
+        let mut dbtx = self.db.begin_transaction().await;
+        dbtx.insert_entry(&SelectedFederationKey, &federation_id).await;
+        dbtx.commit_tx().await;
+
         ConduitClient {
             client,
             db: self.db.clone(),
             federation_id,
-            currency_code,
+            currency_code: Arc::new(std::sync::Mutex::new(currency_code)),
             exchange_rate_cache: Arc::new(Mutex::new(None)),
         }
     }

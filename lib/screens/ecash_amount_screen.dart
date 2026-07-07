@@ -7,8 +7,9 @@ import 'package:conduit/utils/auth_utils.dart';
 
 class EcashAmountScreen extends StatelessWidget {
   final ConduitClient client;
+  final bool fiat;
 
-  const EcashAmountScreen({super.key, required this.client});
+  const EcashAmountScreen({super.key, required this.client, this.fiat = false});
 
   Future<void> _handleConfirm(BuildContext context, int amountSats) async {
     await requireBiometricAuth(context);
@@ -36,6 +37,7 @@ class EcashAmountScreen extends StatelessWidget {
       body: SafeArea(
         child: AmountEntryWidget(
           client: client,
+          fiat: fiat,
           onConfirm: (amountSats) => _handleConfirm(context, amountSats),
         ),
       ),

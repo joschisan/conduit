@@ -27,6 +27,18 @@ class BorderedList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // A non-scrolling shrink-wrapped list is just a column. Building it as
+    // one lets ancestors probe intrinsic sizes (e.g. IntrinsicHeight), which
+    // a ListView's viewport cannot answer. Stretch mirrors the tight
+    // cross-axis constraint a ListView imposes on its rows.
+    if (shrinkWrap && physics is NeverScrollableScrollPhysics) {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [for (var i = 0; i < itemCount; i++) itemBuilder(context, i)],
+      );
+    }
+
     return ListView.builder(
       padding: EdgeInsets.zero,
       shrinkWrap: shrinkWrap,

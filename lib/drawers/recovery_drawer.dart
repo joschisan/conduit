@@ -57,7 +57,10 @@ class _RecoveryDrawerState extends State<RecoveryDrawer> {
 
       Navigator.of(context).pop(); // Close drawer
 
-      Navigator.of(context).push(
+      // Replace the host the drawer was shown over (the federation recovered
+      // from, or the home router) so the recovered wallet takes its place
+      // instead of stacking on top of it.
+      Navigator.of(context).pushReplacement(
         MaterialPageRoute(
           builder:
               (_) => FederationScreen(
@@ -111,11 +114,7 @@ class _RecoveryDrawerState extends State<RecoveryDrawer> {
             children: [
               const Text('Recovering Funds', style: mediumStyle),
               const SizedBox(width: 8),
-              const SizedBox(
-                width: 14,
-                height: 14,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
+              smallSpinner,
             ],
           ),
           Text(
