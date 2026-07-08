@@ -51,7 +51,7 @@ class ConfirmRecoveryPhraseScreen extends StatelessWidget {
         child: BleedColumn(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            SeedPhraseList(seedPhrase: seedPhrase),
+            seedPhraseList(context, seedPhrase),
             const SizedBox(height: 16),
             AsyncButton(
               text: 'Confirm',

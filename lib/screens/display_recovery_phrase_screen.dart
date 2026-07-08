@@ -31,7 +31,7 @@ class DisplayRecoveryPhraseScreen extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
-            SeedPhraseList(seedPhrase: seedPhrase),
+            seedPhraseList(context, seedPhrase),
           ],
         ),
       ),
