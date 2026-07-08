@@ -32,7 +32,7 @@ class _ContactTileState extends State<_ContactTile> with AsyncButtonMixin {
 
   @override
   Widget build(BuildContext context) {
-    const icon = IconChip(icon: PhosphorIconsRegular.lightning);
+    const icon = IconChip(icon: PhosphorIconsRegular.user);
 
     // The lnurl payload is the decoded service URL, so its host is the
     // provider domain (e.g. blink.sv) shown as the subheader.
@@ -185,7 +185,7 @@ class _DisplayContactsScreenState extends State<DisplayContactsScreen> {
     final filtered = _filteredContacts;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Lightning Contacts')),
+      appBar: AppBar(title: const Text('Contacts')),
       body: SafeArea(
         child: Column(
           children: [
