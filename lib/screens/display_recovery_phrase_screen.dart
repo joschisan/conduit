@@ -1,3 +1,4 @@
+import 'package:balanced_text/balanced_text.dart';
 import 'package:flutter/material.dart';
 import 'package:conduit/utils/styles.dart';
 import 'package:conduit/widgets/bleed_column_widget.dart';
@@ -21,7 +22,7 @@ class DisplayRecoveryPhraseScreen extends StatelessWidget {
           children: [
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 32.0),
-              child: Text(
+              child: BalancedText(
                 'Your recovery phrase is the only way to restore your wallet '
                 'if you lose access to this device.',
                 textAlign: TextAlign.center,

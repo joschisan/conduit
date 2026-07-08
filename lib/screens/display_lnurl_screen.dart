@@ -1,3 +1,4 @@
+import 'package:balanced_text/balanced_text.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -53,7 +54,7 @@ class DisplayLnurlScreen extends StatelessWidget {
               child: Center(
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 32),
-                  child: Text(
+                  child: BalancedText(
                     'This is a reusable payment code.',
                     style: smallStyle.copyWith(
                       color: Theme.of(context).colorScheme.onSurfaceVariant,

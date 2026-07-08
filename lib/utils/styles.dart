@@ -11,6 +11,7 @@ const largeIconSize = 40.0;
 const heroIconSize = 56.0;
 
 const listTilePadding = EdgeInsets.symmetric(horizontal: 16, vertical: 8);
+
 /// The single corner radius shared by every rounded corner in the app —
 /// components (buttons, cards, chips, QR surfaces) and edge-attached
 /// sheets (drawers, notifications), which round only their free corners.

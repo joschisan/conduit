@@ -1,3 +1,4 @@
+import 'package:balanced_text/balanced_text.dart';
 import 'package:flutter/material.dart';
 import 'package:conduit/utils/styles.dart';
 
@@ -47,7 +48,11 @@ class OnboardingCard extends StatelessWidget {
                 ],
               ),
               const SizedBox(height: 16),
-              Text(description, textAlign: TextAlign.center, style: smallStyle),
+              BalancedText(
+                description,
+                textAlign: TextAlign.center,
+                style: smallStyle,
+              ),
             ],
           ),
         ),

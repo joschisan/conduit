@@ -1,3 +1,4 @@
+import 'package:balanced_text/balanced_text.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
@@ -168,7 +169,7 @@ class _DisplayContactsScreenState extends State<DisplayContactsScreen> {
       child: Center(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 32),
-          child: Text(
+          child: BalancedText(
             'You have no contacts yet.',
             textAlign: TextAlign.center,
             style: smallStyle.copyWith(

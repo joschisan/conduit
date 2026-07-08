@@ -10,10 +10,7 @@ class QrCodeWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
     padding: const EdgeInsets.all(16),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: cornerRadius,
-    ),
+    decoration: BoxDecoration(color: Colors.white, borderRadius: cornerRadius),
     child: PrettyQrView.data(
       key: ValueKey(data),
       data: data.toUpperCase(),

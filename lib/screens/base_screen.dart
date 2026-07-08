@@ -1,3 +1,4 @@
+import 'package:balanced_text/balanced_text.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:conduit/bridge_generated.dart/lib.dart';
@@ -98,7 +99,7 @@ class _BaseScreenState extends State<BaseScreen> {
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 32),
-          child: Text(
+          child: BalancedText(
             'The federation cannot link payments to you or deduce your balance.',
             textAlign: TextAlign.center,
             style: smallStyle.copyWith(

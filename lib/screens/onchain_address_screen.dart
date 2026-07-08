@@ -1,3 +1,4 @@
+import 'package:balanced_text/balanced_text.dart';
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:conduit/utils/styles.dart';
@@ -146,7 +147,7 @@ class _OnchainAddressScreenState extends State<OnchainAddressScreen> {
                 child: Center(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 32.0),
-                    child: Text(
+                    child: BalancedText(
                       'Confirmed onchain payments may take a few hours to appear. A reused address must be manually checked for payments.',
                       style: smallStyle.copyWith(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,

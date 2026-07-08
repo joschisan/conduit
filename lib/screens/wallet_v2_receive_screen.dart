@@ -10,6 +10,7 @@ import 'package:conduit/widgets/qr_code_widget.dart';
 import 'package:conduit/widgets/bordered_list_widget.dart';
 import 'package:conduit/widgets/bleed_column_widget.dart';
 import 'package:conduit/widgets/shareable_row_widget.dart';
+import 'package:balanced_text/balanced_text.dart';
 
 class WalletV2ReceiveScreen extends StatelessWidget {
   final String address;
@@ -63,7 +64,7 @@ class WalletV2ReceiveScreen extends StatelessWidget {
                 child: Center(
                   child: Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 32.0),
-                    child: Text(
+                    child: BalancedText(
                       'Confirmed onchain payments will take about two hours to appear.',
                       style: smallStyle.copyWith(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
