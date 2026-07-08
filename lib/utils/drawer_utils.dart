@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:conduit/utils/styles.dart';
 
 class DrawerUtils {
   DrawerUtils._();
@@ -11,7 +12,7 @@ class DrawerUtils {
       context: context,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        borderRadius: BorderRadius.vertical(top: cornerRadiusValue),
       ),
       builder: (_) => child,
     );

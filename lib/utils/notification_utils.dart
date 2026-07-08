@@ -29,7 +29,7 @@ class NotificationUtils {
               Theme.of(overlayContext).colorScheme.surface,
             ),
             borderRadius: const BorderRadius.vertical(
-              bottom: Radius.circular(16),
+              bottom: cornerRadiusValue,
             ),
           ),
           child: SafeArea(

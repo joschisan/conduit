@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:conduit/widgets/bordered_list_widget.dart';
+import 'package:conduit/utils/styles.dart';
 
 /// Bottom-sheet scaffold. Lists run full-bleed to the sheet edges: a
 /// [BorderedList] child gets no horizontal inset, while every other child
@@ -25,7 +26,7 @@ class DrawerShell extends StatelessWidget {
       padding: EdgeInsets.only(top: topPadding, bottom: bottomPadding),
       decoration: BoxDecoration(
         color: Theme.of(context).scaffoldBackgroundColor,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+        borderRadius: const BorderRadius.vertical(top: cornerRadiusValue),
       ),
       child: SafeArea(
         child: Column(
