@@ -26,7 +26,7 @@ class OnboardingCard extends StatelessWidget {
           width: double.infinity,
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            borderRadius: borderRadiusLarge,
+            borderRadius: cornerRadius,
             border: Border.all(
               color: Theme.of(context).colorScheme.outlineVariant,
             ),

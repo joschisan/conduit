@@ -25,7 +25,7 @@ class IconChip extends StatelessWidget {
       padding: EdgeInsets.all(iconSize * 0.25),
       decoration: BoxDecoration(
         color: background,
-        borderRadius: BorderRadius.circular(iconSize * 0.28),
+        borderRadius: cornerRadius,
       ),
       child: Icon(icon, size: iconSize, color: foreground),
     );

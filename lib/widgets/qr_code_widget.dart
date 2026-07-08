@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pretty_qr_code/pretty_qr_code.dart';
+import 'package:conduit/utils/styles.dart';
 
 class QrCodeWidget extends StatelessWidget {
   final String data;
@@ -11,7 +12,7 @@ class QrCodeWidget extends StatelessWidget {
     padding: const EdgeInsets.all(16),
     decoration: BoxDecoration(
       color: Colors.white,
-      borderRadius: BorderRadius.circular(10),
+      borderRadius: cornerRadius,
     ),
     child: PrettyQrView.data(
       key: ValueKey(data),

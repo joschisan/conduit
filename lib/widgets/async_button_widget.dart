@@ -29,7 +29,7 @@ class _AsyncButtonState extends State<AsyncButton> with AsyncButtonMixin {
           backgroundColor: Theme.of(context).colorScheme.primary,
           foregroundColor: Theme.of(context).colorScheme.onPrimary,
           padding: const EdgeInsets.symmetric(vertical: 16),
-          shape: RoundedRectangleBorder(borderRadius: borderRadiusLarge),
+          shape: const RoundedRectangleBorder(borderRadius: cornerRadius),
         ),
         child: switch (buttonState) {
           AsyncButtonState.loading => buildSmallSpinner(context),

@@ -336,7 +336,7 @@ class _FederationScreenState extends State<FederationScreen> {
             final fraction = connected / statuses.length;
             final color = Theme.of(context).colorScheme.primary;
             return InkWell(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: cornerRadius,
               onTap:
                   () => Navigator.of(context).push(
                     MaterialPageRoute(
@@ -420,7 +420,7 @@ class _FederationScreenState extends State<FederationScreen> {
                     color: Theme.of(
                       context,
                     ).colorScheme.primary.withValues(alpha: 0.05),
-                    borderRadius: borderRadiusLarge,
+                    borderRadius: cornerRadius,
                   ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceEvenly,

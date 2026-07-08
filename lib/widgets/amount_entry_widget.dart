@@ -181,9 +181,9 @@ class _AmountEntryWidgetState extends State<AmountEntryWidget> {
   Widget _buildNumberButton(String number) {
     return Material(
       color: Colors.transparent,
-      borderRadius: borderRadiusLarge,
+      borderRadius: cornerRadius,
       child: InkWell(
-        borderRadius: borderRadiusLarge,
+        borderRadius: cornerRadius,
         onTap: () => _onKeyboardTap(number),
         child: Center(child: Text(number, style: largeStyle)),
       ),
@@ -193,9 +193,9 @@ class _AmountEntryWidgetState extends State<AmountEntryWidget> {
   Widget _buildActionButton(IconData icon, VoidCallback onTap) {
     return Material(
       color: Colors.transparent,
-      borderRadius: borderRadiusLarge,
+      borderRadius: cornerRadius,
       child: InkWell(
-        borderRadius: borderRadiusLarge,
+        borderRadius: cornerRadius,
         onTap: onTap,
         child: Center(child: Icon(icon, size: smallIconSize)),
       ),

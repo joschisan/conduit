@@ -61,7 +61,7 @@ class _QrScannerWidgetState extends State<QrScannerWidget> {
           child: Stack(
             children: [
               ClipRRect(
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: cornerRadius,
                 child: MobileScanner(
                   controller: _controller,
                   onDetect: _onDetect,

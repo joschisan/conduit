@@ -11,4 +11,6 @@ const largeIconSize = 40.0;
 const heroIconSize = 56.0;
 
 const listTilePadding = EdgeInsets.symmetric(horizontal: 16, vertical: 8);
-const borderRadiusLarge = BorderRadius.all(Radius.circular(12));
+/// The single corner radius shared by all rounded-rectangle components
+/// (buttons, cards, chips, QR surfaces).
+const cornerRadius = BorderRadius.all(Radius.circular(8));
