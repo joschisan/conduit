@@ -376,10 +376,6 @@ class _FederationScreenState extends State<FederationScreen> {
             icon: const Icon(PhosphorIconsRegular.users, size: smallIconSize),
             onPressed: _onContacts,
           ),
-          IconButton(
-            icon: const Icon(PhosphorIconsRegular.qrCode, size: smallIconSize),
-            onPressed: _onScan,
-          ),
         ],
       ),
       body: AmountDisplay(
@@ -422,23 +418,37 @@ class _FederationScreenState extends State<FederationScreen> {
                     ).colorScheme.primary.withValues(alpha: 0.05),
                     borderRadius: cornerRadius,
                   ),
+                  // Each button gets an equal share of the row, so the four
+                  // actions can never overflow the screen width.
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                     children: [
-                      _CircularActionButton(
-                        icon: PhosphorIconsRegular.lightning,
-                        label: 'Lightning',
-                        onTap: _onCreateInvoice,
+                      Expanded(
+                        child: _CircularActionButton(
+                          icon: PhosphorIconsRegular.lightning,
+                          label: 'Lightning',
+                          onTap: _onCreateInvoice,
+                        ),
                       ),
-                      _CircularActionButton(
-                        icon: PhosphorIconsRegular.link,
-                        label: 'Onchain',
-                        onTap: _onReceiveBitcoin,
+                      Expanded(
+                        child: _CircularActionButton(
+                          icon: PhosphorIconsRegular.link,
+                          label: 'Onchain',
+                          onTap: _onReceiveBitcoin,
+                        ),
                       ),
-                      _CircularActionButton(
-                        icon: PhosphorIconsRegular.coinVertical,
-                        label: 'eCash',
-                        onTap: _onSendEcash,
+                      Expanded(
+                        child: _CircularActionButton(
+                          icon: PhosphorIconsRegular.coinVertical,
+                          label: 'eCash',
+                          onTap: _onSendEcash,
+                        ),
+                      ),
+                      Expanded(
+                        child: _CircularActionButton(
+                          icon: PhosphorIconsRegular.qrCode,
+                          label: 'Scan',
+                          onTap: _onScan,
+                        ),
                       ),
                     ],
                   ),
@@ -543,32 +553,37 @@ class _CircularActionButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () {
-        HapticFeedback.lightImpact();
-        onTap();
-      },
-      borderRadius: BorderRadius.circular(32),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 64,
-            height: 64,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Theme.of(context).colorScheme.primary,
-            ),
-            child: Icon(
-              icon,
-              size: mediumIconSize,
-              color: Theme.of(context).colorScheme.onPrimary,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Material(
+          color: Theme.of(context).colorScheme.primary,
+          shape: const CircleBorder(),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: () {
+              HapticFeedback.lightImpact();
+              onTap();
+            },
+            child: SizedBox(
+              width: 64,
+              height: 64,
+              child: Icon(
+                icon,
+                size: mediumIconSize,
+                color: Theme.of(context).colorScheme.onPrimary,
+              ),
             ),
           ),
-          const SizedBox(height: 8),
-          Text(label, style: smallStyle),
-        ],
-      ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          label,
+          style: smallStyle,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ],
     );
   }
 }
