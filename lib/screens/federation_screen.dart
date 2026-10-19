@@ -283,10 +283,8 @@ class _FederationScreenState extends State<FederationScreen> {
   Future<void> _onSendEcash() async {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => EcashAmountScreen(
-          client: widget.client,
-          fiat: _fiatMode,
-        ),
+        builder:
+            (_) => EcashAmountScreen(client: widget.client, fiat: _fiatMode),
       ),
     );
   }
@@ -812,31 +810,33 @@ class _BalanceHero extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: FittedBox(
               fit: BoxFit.scaleDown,
-              child: hidden
-                  ? Text.rich(
-                      textAlign: TextAlign.center,
-                      const TextSpan(
-                        children: [
-                          TextSpan(text: maskedAmount, style: amountStyle),
-                          TextSpan(text: ' sat', style: amountUnitStyle),
-                        ],
+              child:
+                  hidden
+                      ? Text.rich(
+                        textAlign: TextAlign.center,
+                        const TextSpan(
+                          children: [
+                            TextSpan(text: maskedAmount, style: amountStyle),
+                            TextSpan(text: ' sat', style: amountUnitStyle),
+                          ],
+                        ),
+                      )
+                      : fiat != null
+                      ? AnimatedBalance(
+                        sats: sats,
+                        style: amountStyle,
+                        textAlign: TextAlign.center,
+                        // Convert each tweened sats value to fiat so it counts up
+                        // on the same tween as the sats view.
+                        formatter:
+                            (s) => cachedFiatAmount(client, s)?.amount ?? '',
+                      )
+                      : AnimatedBalance(
+                        sats: sats,
+                        style: amountStyle,
+                        unitStyle: amountUnitStyle,
+                        textAlign: TextAlign.center,
                       ),
-                    )
-                  : fiat != null
-                  ? AnimatedBalance(
-                      sats: sats,
-                      style: amountStyle,
-                      textAlign: TextAlign.center,
-                      // Convert each tweened sats value to fiat so it counts up
-                      // on the same tween as the sats view.
-                      formatter: (s) => cachedFiatAmount(client, s)?.amount ?? '',
-                    )
-                  : AnimatedBalance(
-                      sats: sats,
-                      style: amountStyle,
-                      unitStyle: amountUnitStyle,
-                      textAlign: TextAlign.center,
-                    ),
             ),
           ),
           const SizedBox(height: 8),

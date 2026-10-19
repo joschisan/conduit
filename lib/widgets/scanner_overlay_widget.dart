@@ -57,34 +57,36 @@ class _ScannerOverlayPainter extends CustomPainter {
     // Rounded L-brackets on each corner, matching the window's radius.
     const arm = 28.0;
     final r = radius.x;
-    final bracket = Paint()
-      ..color = Colors.white
-      ..strokeWidth = 3
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round
-      ..style = PaintingStyle.stroke;
+    final bracket =
+        Paint()
+          ..color = Colors.white
+          ..strokeWidth = 3
+          ..strokeCap = StrokeCap.round
+          ..strokeJoin = StrokeJoin.round
+          ..style = PaintingStyle.stroke;
 
-    final corners = Path()
-      // top-left
-      ..moveTo(window.left, window.top + arm)
-      ..lineTo(window.left, window.top + r)
-      ..arcToPoint(Offset(window.left + r, window.top), radius: radius)
-      ..lineTo(window.left + arm, window.top)
-      // top-right
-      ..moveTo(window.right - arm, window.top)
-      ..lineTo(window.right - r, window.top)
-      ..arcToPoint(Offset(window.right, window.top + r), radius: radius)
-      ..lineTo(window.right, window.top + arm)
-      // bottom-right
-      ..moveTo(window.right, window.bottom - arm)
-      ..lineTo(window.right, window.bottom - r)
-      ..arcToPoint(Offset(window.right - r, window.bottom), radius: radius)
-      ..lineTo(window.right - arm, window.bottom)
-      // bottom-left
-      ..moveTo(window.left + arm, window.bottom)
-      ..lineTo(window.left + r, window.bottom)
-      ..arcToPoint(Offset(window.left, window.bottom - r), radius: radius)
-      ..lineTo(window.left, window.bottom - arm);
+    final corners =
+        Path()
+          // top-left
+          ..moveTo(window.left, window.top + arm)
+          ..lineTo(window.left, window.top + r)
+          ..arcToPoint(Offset(window.left + r, window.top), radius: radius)
+          ..lineTo(window.left + arm, window.top)
+          // top-right
+          ..moveTo(window.right - arm, window.top)
+          ..lineTo(window.right - r, window.top)
+          ..arcToPoint(Offset(window.right, window.top + r), radius: radius)
+          ..lineTo(window.right, window.top + arm)
+          // bottom-right
+          ..moveTo(window.right, window.bottom - arm)
+          ..lineTo(window.right, window.bottom - r)
+          ..arcToPoint(Offset(window.right - r, window.bottom), radius: radius)
+          ..lineTo(window.right - arm, window.bottom)
+          // bottom-left
+          ..moveTo(window.left + arm, window.bottom)
+          ..lineTo(window.left + r, window.bottom)
+          ..arcToPoint(Offset(window.left, window.bottom - r), radius: radius)
+          ..lineTo(window.left, window.bottom - arm);
     canvas.drawPath(corners, bracket);
   }
 

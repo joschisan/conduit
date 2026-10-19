@@ -1,0 +1,104 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main ]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  # cargo fmt is deliberately absent: rustfmt walks the module tree from
+  # lib.rs, so it always reaches the generated frb_generated.rs, which frb
+  # emits with pre-edition-2024 import ordering. Excluding it needs nightly.
+  sort:
+    name: Cargo Sort
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: dtolnay/rust-toolchain@stable
+    - uses: taiki-e/install-action@v2
+      with:
+        tool: cargo-sort
+    - run: cargo sort --check
+      working-directory: rust
+
+  machete:
+    name: Cargo Machete
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: dtolnay/rust-toolchain@stable
+    - uses: taiki-e/install-action@v2
+      with:
+        tool: cargo-machete
+    - run: cargo machete
+      working-directory: rust
+
+  # Flutter is pinned everywhere below rather than tracking latest stable:
+  # both `dart format` and `flutter analyze` change behaviour between
+  # releases, so an unpinned toolchain turns CI red with no repo change.
+  # Bump this in step with the local SDK.
+  format:
+    name: Dart Format
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: subosito/flutter-action@v2
+      with:
+        flutter-version: 3.38.7
+        cache: true
+
+    # Without package_config.json the formatter cannot read the package's
+    # language version and falls back to the newest, which reformats.
+    - run: flutter pub get
+
+    - run: dart format --set-exit-if-changed --output=none lib
+
+  check:
+    name: Bridge and Dart
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+    - uses: actions/checkout@v4
+    - uses: dtolnay/rust-toolchain@stable
+      with:
+        components: clippy, rustfmt
+    - uses: Swatinem/rust-cache@v2
+      with:
+        workspaces: rust
+
+    # Pinned to the version the bridge's generated code is written against.
+    # Cached because building it from source takes minutes.
+    - id: frb-cache
+      uses: actions/cache@v4
+      with:
+        path: ~/.cargo/bin/flutter_rust_bridge_codegen
+        key: frb-codegen-2.10.0-${{ runner.os }}
+
+    - if: steps.frb-cache.outputs.cache-hit != 'true'
+      run: cargo install --locked flutter_rust_bridge_codegen@2.10.0
+
+    - uses: subosito/flutter-action@v2
+      with:
+        flutter-version: 3.38.7
+        cache: true
+
+    - run: flutter pub get
+
+    # Neither generated tree is committed, so this is what makes the bridge
+    # compile and the Dart bindings exist at all.
+    - name: Generate bridge bindings
+      run: flutter_rust_bridge_codegen generate
+
+    - name: Clippy bridge
+      run: cargo clippy --all-targets -- -D warnings
+      working-directory: rust
+
+    - run: flutter analyze

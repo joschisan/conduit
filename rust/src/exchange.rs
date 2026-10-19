@@ -28,10 +28,10 @@ pub(crate) async fn fetch_exchange_rate(
 ) -> Result<f64, String> {
     let mut guard = cache.lock().await;
 
-    if let Some((rate, timestamp)) = guard.as_ref() {
-        if timestamp.elapsed() < EXCHANGE_RATE_TTL {
-            return Ok(*rate);
-        }
+    if let Some((rate, timestamp)) = guard.as_ref()
+        && timestamp.elapsed() < EXCHANGE_RATE_TTL
+    {
+        return Ok(*rate);
     }
 
     let response = reqwest::get("https://price-feed.dev.fedibtc.com/latest")

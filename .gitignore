@@ -61,6 +61,7 @@ ios/Frameworks/
 
 # Flutter Rust Bridge generated files
 lib/bridge_generated.dart/
+rust/src/frb_generated.rs
 
 # Built library files
 *.dylib
