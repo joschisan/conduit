@@ -64,7 +64,10 @@ jobs:
   check:
     name: Bridge and Dart
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    # A cold build of fedimint (RocksDB included) runs past 20 minutes, and
+    # a timed-out run never saves the Rust cache, so a tight limit never
+    # warms up. Cached runs finish well inside this.
+    timeout-minutes: 60
     steps:
     - uses: actions/checkout@v4
     - uses: dtolnay/rust-toolchain@stable
