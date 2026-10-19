@@ -904,7 +904,6 @@ name = "conduit"
 version = "0.7.0"
 dependencies = [
  "bitcoin",
- "fedimint-api-client",
  "fedimint-bip39",
  "fedimint-client",
  "fedimint-client-module",
@@ -922,14 +921,11 @@ dependencies = [
  "fedimint-walletv2-client",
  "flutter_rust_bridge",
  "futures-util",
- "hyper-util",
  "lightning-invoice",
- "log",
  "regex",
  "reqwest 0.12.28",
  "serde",
  "socket2 0.5.10",
- "surge-ping",
  "tokio",
  "url",
 ]
