@@ -36,7 +36,8 @@ class _AsyncButtonState extends State<AsyncButton> with AsyncButtonMixin {
           AsyncButtonState.loading => null,
         },
         style: ElevatedButton.styleFrom(
-          backgroundColor: widget.color ?? Theme.of(context).colorScheme.primary,
+          backgroundColor:
+              widget.color ?? Theme.of(context).colorScheme.primary,
           foregroundColor: Theme.of(context).colorScheme.onPrimary,
           padding: const EdgeInsets.symmetric(vertical: 16),
           shape: const RoundedRectangleBorder(borderRadius: cornerRadius),

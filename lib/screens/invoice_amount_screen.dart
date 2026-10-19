@@ -7,7 +7,11 @@ class InvoiceAmountScreen extends StatelessWidget {
   final ConduitClient client;
   final bool fiat;
 
-  const InvoiceAmountScreen({super.key, required this.client, this.fiat = false});
+  const InvoiceAmountScreen({
+    super.key,
+    required this.client,
+    this.fiat = false,
+  });
 
   Future<void> _handleConfirm(BuildContext context, int amountSats) async {
     final receive = await client.lnReceive(amountSat: amountSats);

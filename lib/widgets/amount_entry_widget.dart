@@ -139,15 +139,16 @@ class _AmountEntryWidgetState extends State<AmountEntryWidget> {
                     padding: const EdgeInsets.symmetric(horizontal: 24),
                     child: FittedBox(
                       fit: BoxFit.scaleDown,
-                      child: _enterFiat
-                          ? Text.rich(
-                              textAlign: TextAlign.center,
-                              TextSpan(
-                                text: _formatFiatAmount(),
-                                style: amountStyle,
-                              ),
-                            )
-                          : AmountDisplay(_currentAmount),
+                      child:
+                          _enterFiat
+                              ? Text.rich(
+                                textAlign: TextAlign.center,
+                                TextSpan(
+                                  text: _formatFiatAmount(),
+                                  style: amountStyle,
+                                ),
+                              )
+                              : AmountDisplay(_currentAmount),
                     ),
                   ),
                   const SizedBox(height: 8),
