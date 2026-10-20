@@ -1,3 +1,4 @@
+mod account;
 mod client;
 mod currency;
 mod db;
@@ -28,6 +29,7 @@ pub use fedimint_client::OperationId;
 pub use fedimint_core::config::FederationId;
 
 // Re-export public API for FRB
+pub use account::Account;
 pub use client::ConduitClient;
 pub use currency::{FiatCurrency, find_fiat_currency, list_fiat_currencies};
 pub use events::{ConduitPayment, PaymentNotification, PaymentType, RecentPaymentsUpdate};

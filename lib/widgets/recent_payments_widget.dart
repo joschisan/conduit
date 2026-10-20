@@ -1,25 +1,25 @@
-import 'dart:async';
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/bridge_generated.dart/events.dart';
 import 'package:conduit/widgets/animated_entry_widget.dart';
 import 'package:conduit/widgets/payment_card_widget.dart';
 import 'package:conduit/widgets/section_header_widget.dart';
 import 'package:conduit/widgets/amount_visibility.dart';
-import 'package:conduit/utils/notification_utils.dart';
 import 'package:conduit/screens/payment_history_screen.dart';
 
+/// The last few payments of one account, read from a value its owner keeps
+/// up to date rather than from the event stream itself, which is
+/// single-subscription and listened to once per account above this widget.
 class RecentPayments extends StatefulWidget {
   final ConduitClient client;
-  final Stream<RecentPaymentsUpdate> stream;
+  final ValueListenable<List<ConduitPayment>> payments;
   final void Function(ConduitPayment) onTransactionTap;
 
   const RecentPayments({
     super.key,
     required this.client,
-    required this.stream,
+    required this.payments,
     required this.onTransactionTap,
   });
 
@@ -28,45 +28,11 @@ class RecentPayments extends StatefulWidget {
 }
 
 class _RecentPaymentsState extends State<RecentPayments> {
-  List<ConduitPayment> _payments = [];
-  StreamSubscription<RecentPaymentsUpdate>? _subscription;
-
   /// Payments in the first snapshot render without the entry animation; only
-  /// payments appearing after the screen opened grow in.
-  Set<String>? _initialIds;
-
-  @override
-  void initState() {
-    super.initState();
-    _subscription = widget.stream.listen(_onSnapshot);
-  }
-
-  void _onSnapshot(RecentPaymentsUpdate update) {
-    if (!mounted) return;
-    _initialIds ??= {for (final p in update.payments) p.operationId};
-    setState(() => _payments = update.payments);
-    if (update.notification case final notification?) {
-      _showNotification(notification);
-    }
-  }
-
-  void _showNotification(PaymentNotification notification) {
-    HapticFeedback.heavyImpact();
-
-    if (!notification.success) {
-      if (notification.incoming) {
-        NotificationUtils.showError(context, 'Failed to receive payment');
-      } else {
-        NotificationUtils.showError(context, 'Failed to send payment');
-      }
-    }
-  }
-
-  @override
-  void dispose() {
-    _subscription?.cancel();
-    super.dispose();
-  }
+  /// payments appearing after the widget mounted grow in.
+  late final Set<String> _initialIds = {
+    for (final p in widget.payments.value) p.operationId,
+  };
 
   Future<void> _openHistory() async {
     // Read the home screen's current unit before awaiting so history opens in
@@ -90,32 +56,37 @@ class _RecentPaymentsState extends State<RecentPayments> {
 
   @override
   Widget build(BuildContext context) {
-    if (_payments.isEmpty) {
-      return const SizedBox.shrink();
-    }
+    return ValueListenableBuilder<List<ConduitPayment>>(
+      valueListenable: widget.payments,
+      builder: (context, payments, _) {
+        if (payments.isEmpty) {
+          return const SizedBox.shrink();
+        }
 
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: SectionHeader(
-            title: 'Recent Payments',
-            action: 'History',
-            onAction: _openHistory,
-          ),
-        ),
-        for (var i = 0; i < _payments.length; i++)
-          KeyedSubtree(
-            key: ValueKey(_payments[i].operationId),
-            child: AnimatedEntry(
-              animate: !_initialIds!.contains(_payments[i].operationId),
-              child: PaymentCard(
-                event: _payments[i],
-                onTap: () => widget.onTransactionTap(_payments[i]),
+        return Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: SectionHeader(
+                title: 'Recent Payments',
+                action: 'History',
+                onAction: _openHistory,
               ),
             ),
-          ),
-      ],
+            for (final payment in payments)
+              KeyedSubtree(
+                key: ValueKey(payment.operationId),
+                child: AnimatedEntry(
+                  animate: !_initialIds.contains(payment.operationId),
+                  child: PaymentCard(
+                    event: payment,
+                    onTap: () => widget.onTransactionTap(payment),
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
     );
   }
 }

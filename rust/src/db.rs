@@ -4,6 +4,7 @@ use fedimint_core::{impl_db_lookup, impl_db_record};
 use fedimint_eventlog::{EventLogEntry, EventLogId};
 
 use crate::OperationId;
+use crate::account::Account;
 
 #[repr(u8)]
 #[derive(Clone, Debug)]
@@ -14,10 +15,14 @@ pub(crate) enum DbKeyPrefix {
     #[allow(dead_code)]
     EventLogStartPosition = 0x03, // Deprecated
     SelectedCurrency = 0x04,
-    SelectedFederation = 0x05,
+    #[allow(dead_code)]
+    SelectedFederation = 0x05, // Deprecated, read once as a fallback
     EventLogEntry = 0x06,
     Contact = 0x07,
     OperationFiat = 0x08,
+    AccountClientDatabase = 0x09,
+    AccountEventLogEntry = 0x0a,
+    SelectedAccount = 0x0b,
 }
 
 #[derive(Clone, Debug, Encodable, Decodable)]
@@ -52,6 +57,8 @@ impl_db_record!(
     db_prefix = DbKeyPrefix::SelectedCurrency,
 );
 
+/// Superseded by [`SelectedAccountKey`]; read only so a wallet from before
+/// accounts reopens on the federation it had selected.
 #[derive(Clone, Debug, Encodable, Decodable)]
 pub(crate) struct SelectedFederationKey;
 
@@ -74,6 +81,46 @@ impl_db_record!(
 );
 
 impl_db_lookup!(key = EventLogEntryKey, query_prefix = EventLogEntryPrefix);
+
+/// The event log of every account but Primary, which keeps writing to
+/// [`EventLogEntryKey`] so its history from before accounts stays where it is.
+/// Separate from it because each account is its own client with its own log
+/// positions, which would collide under one federation-scoped key.
+#[derive(Clone, Debug, Encodable, Decodable)]
+pub(crate) struct AccountEventLogEntryKey(
+    pub(crate) FederationId,
+    pub(crate) Account,
+    pub(crate) EventLogId,
+);
+
+#[derive(Clone, Debug, Encodable, Decodable)]
+pub(crate) struct AccountEventLogEntryPrefix(pub(crate) FederationId, pub(crate) Account);
+
+#[derive(Clone, Debug, Encodable, Decodable)]
+pub(crate) struct AccountEventLogEntryFederationPrefix(pub(crate) FederationId);
+
+impl_db_record!(
+    key = AccountEventLogEntryKey,
+    value = EventLogEntry,
+    db_prefix = DbKeyPrefix::AccountEventLogEntry,
+);
+
+impl_db_lookup!(
+    key = AccountEventLogEntryKey,
+    query_prefix = AccountEventLogEntryPrefix,
+    query_prefix = AccountEventLogEntryFederationPrefix,
+);
+
+/// The account in view when the home pager last settled, so the wallet
+/// reopens where it was left.
+#[derive(Clone, Debug, Encodable, Decodable)]
+pub(crate) struct SelectedAccountKey;
+
+impl_db_record!(
+    key = SelectedAccountKey,
+    value = (FederationId, Account),
+    db_prefix = DbKeyPrefix::SelectedAccount,
+);
 
 /// Exchange rate snapshotted against an operation when its payment is first
 /// observed live, so history can show the fiat value as of the time of the
