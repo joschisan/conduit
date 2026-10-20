@@ -9,9 +9,9 @@ import 'package:conduit/widgets/async_button_widget.dart';
 import 'package:conduit/utils/auth_utils.dart';
 import 'package:conduit/utils/drawer_utils.dart';
 
-/// Confirmation sheet for removing the federation currently open. Shuts the live
-/// client down before wiping its database, then hands control back to
-/// [onSuccess] to route away from the now-defunct federation.
+/// Confirmation sheet for removing the mint in view — every account of it at
+/// once. The factory shuts the live clients down before wiping their
+/// databases, then [onSuccess] runs for whatever the caller wants afterwards.
 class RemoveFederationDrawer extends StatefulWidget {
   final ConduitClient client;
   final ConduitClientFactory clientFactory;
@@ -45,15 +45,7 @@ class RemoveFederationDrawer extends StatefulWidget {
 }
 
 class _RemoveFederationDrawerState extends State<RemoveFederationDrawer> {
-  String _federationName = 'Mint';
-
-  @override
-  void initState() {
-    super.initState();
-    widget.client.federationName().then((name) {
-      if (mounted && name != null) setState(() => _federationName = name);
-    });
-  }
+  late final String _federationName = widget.client.federationName();
 
   Future<void> _handleRemoveFederation() async {
     // Gate the destructive wipe behind the same biometric check as the seed
@@ -61,10 +53,6 @@ class _RemoveFederationDrawerState extends State<RemoveFederationDrawer> {
     await requireBiometricAuth(context);
 
     if (!mounted) return;
-
-    // Stop the client's streams before removing its database, so nothing reads
-    // the storage out from under itself.
-    await widget.client.shutdown();
 
     await widget.clientFactory.leave(
       federationId: widget.client.federationId(),

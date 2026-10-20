@@ -19,7 +19,11 @@ use futures_util::StreamExt;
 use std::str::FromStr;
 use std::sync::{Arc, Mutex};
 
-use crate::db::{EventLogEntryKey, EventLogEntryPrefix, OperationFiatKey};
+use crate::account::Account;
+use crate::db::{
+    AccountEventLogEntryKey, AccountEventLogEntryPrefix, EventLogEntryKey, EventLogEntryPrefix,
+    OperationFiatKey,
+};
 use crate::events::{
     ConduitPayment, ParsedEvent, PaymentNotification, RecentPaymentsUpdate, apply_update,
     parse_event_log_entry, snapshot,
@@ -29,6 +33,7 @@ use crate::frb_generated::StreamSink;
 use crate::{
     BitcoinAddressWrapper, Bolt11InvoiceWrapper, ECashWrapper, EcashToken, InviteCodeWrapper,
 };
+use fedimint_eventlog::EventLogEntry;
 
 #[frb]
 pub struct FederationStats {
@@ -60,19 +65,18 @@ pub struct ConduitClient {
     pub(crate) client: ClientHandleArc,
     pub(crate) db: Database,
     pub(crate) federation_id: FederationId,
+    pub(crate) account: Account,
+    /// The mint's name from its config, or its id prefix when it has none.
+    pub(crate) name: String,
+    pub(crate) instance_id: u64,
     pub(crate) currency_code: Arc<Mutex<String>>,
     pub(crate) exchange_rate_cache: ExchangeRateCache,
 }
 
 impl ConduitClient {
-    #[frb]
-    pub async fn federation_name(&self) -> Option<String> {
-        self.client
-            .config()
-            .await
-            .global
-            .federation_name()
-            .map(|name| name.to_string())
+    #[frb(sync)]
+    pub fn federation_name(&self) -> String {
+        self.name.clone()
     }
 
     #[frb(sync)]
@@ -81,17 +85,29 @@ impl ConduitClient {
     }
 
     #[frb(sync)]
-    pub fn currency_code(&self) -> String {
-        self.currency_code.lock().unwrap().clone()
+    pub fn account(&self) -> Account {
+        self.account
     }
 
-    /// Switches the currency used for live fiat conversion and clears the cached
-    /// rate so the next fetch is for the new currency. The persisted setting is
-    /// written separately via the factory.
-    #[frb]
-    pub async fn set_currency(&self, currency_code: String) {
-        *self.currency_code.lock().unwrap() = currency_code;
-        *self.exchange_rate_cache.lock().await = None;
+    /// The federation id as hex, for keying by federation on the Dart side,
+    /// where the id itself is opaque.
+    #[frb(sync)]
+    pub fn federation_id_hex(&self) -> String {
+        self.federation_id.to_string()
+    }
+
+    /// Tells one open of an account from the next. Every `clients()`
+    /// snapshot hands Dart fresh handles, so this is how the home screen
+    /// knows a client was reopened (after a recovery) rather than re-listed,
+    /// and that its streams need re-subscribing.
+    #[frb(sync)]
+    pub fn instance_id(&self) -> u64 {
+        self.instance_id
+    }
+
+    #[frb(sync)]
+    pub fn currency_code(&self) -> String {
+        self.currency_code.lock().unwrap().clone()
     }
 
     #[frb]
@@ -160,7 +176,11 @@ impl ConduitClient {
 
         let mut dbtx = self.db.begin_transaction().await;
 
-        if dbtx.get_value(&OperationFiatKey(operation_id)).await.is_none() {
+        if dbtx
+            .get_value(&OperationFiatKey(operation_id))
+            .await
+            .is_none()
+        {
             dbtx.insert_entry(
                 &OperationFiatKey(operation_id),
                 &(currency_code, rate.to_be_bytes()),
@@ -203,6 +223,52 @@ impl ConduitClient {
                 break;
             }
         }
+    }
+
+    /// Every event log entry stored for this account, in log order. Primary
+    /// reads the federation-scoped key from before accounts, so its history
+    /// carries over; the others read their own.
+    async fn stored_event_log(&self) -> Vec<(EventLogId, EventLogEntry)> {
+        let mut dbtx = self.db.begin_transaction_nc().await;
+
+        match self.account {
+            Account::Primary => {
+                dbtx.find_by_prefix(&EventLogEntryPrefix(self.federation_id))
+                    .await
+                    .map(|(key, entry)| (key.1, entry))
+                    .collect()
+                    .await
+            }
+            account => {
+                dbtx.find_by_prefix(&AccountEventLogEntryPrefix(self.federation_id, account))
+                    .await
+                    .map(|(key, entry)| (key.2, entry))
+                    .collect()
+                    .await
+            }
+        }
+    }
+
+    /// Stores an event log entry under this account's key. Fails only when
+    /// the database is shutting down.
+    async fn store_event_log_entry(&self, id: EventLogId, entry: &EventLogEntry) -> bool {
+        let mut dbtx = self.db.begin_transaction().await;
+
+        match self.account {
+            Account::Primary => {
+                dbtx.insert_entry(&EventLogEntryKey(self.federation_id, id), entry)
+                    .await;
+            }
+            account => {
+                dbtx.insert_entry(
+                    &AccountEventLogEntryKey(self.federation_id, account, id),
+                    entry,
+                )
+                .await;
+            }
+        }
+
+        dbtx.commit_tx_result().await.is_ok()
     }
 
     #[frb]
@@ -334,6 +400,43 @@ impl ConduitClient {
             .map_err(|e| e.to_string())
     }
 
+    /// Everything the account holds, as one bundle of the notes themselves.
+    ///
+    /// Not `ecash_send` with the balance as its amount: `send` rounds up to a
+    /// whole denomination and takes its fee-free fast path only when the
+    /// notes sum to that amount exactly, which a figure in whole sats
+    /// generally isn't; missing it builds a reissue transaction whose fee
+    /// comes out of the account being emptied, so asking for the balance
+    /// fails. The exact millisat total of the notes is a multiple of the
+    /// smallest denomination, and the exact-change selector takes every note
+    /// that fits, largest first, so asking for the total hands over every
+    /// note with no transaction and no fee. Mint v2 only: a legacy mint
+    /// cannot offer it and says so.
+    #[frb]
+    pub async fn ecash_send_max(&self) -> Result<ECashWrapper, String> {
+        let module = self
+            .client
+            .get_first_module::<MintV2ClientModule>()
+            .map_err(|_| "This mint does not support sending the full balance".to_string())?;
+
+        let total: Amount = module
+            .get_count_by_denomination()
+            .await
+            .into_iter()
+            .map(|(denomination, count)| denomination.amount().mul_u64(count))
+            .sum();
+
+        if total == Amount::ZERO {
+            return Err("This account is empty".to_string());
+        }
+
+        module
+            .send(total, serde_json::Value::Null, false)
+            .await
+            .map(|(_, ecash)| ECashWrapper(EcashToken::V2(ecash)))
+            .map_err(|e| e.to_string())
+    }
+
     #[frb]
     pub async fn ecash_receive(&self, notes: &ECashWrapper) -> Result<(), String> {
         match &notes.0 {
@@ -367,8 +470,10 @@ impl ConduitClient {
             .get_first_module::<LightningClientModule>()
             .unwrap();
 
-        let (gateway, routing_info) =
-            module.select_gateway(None).await.map_err(|e| e.to_string())?;
+        let (gateway, routing_info) = module
+            .select_gateway(None)
+            .await
+            .map_err(|e| e.to_string())?;
 
         let amount = Amount::from_sats(amount_sat as u64);
 
@@ -427,8 +532,7 @@ impl ConduitClient {
 
         // A direct swap settles between fedimints when the invoice's payee is
         // the gateway's own lightning node; otherwise it routes over lightning.
-        let is_direct =
-            invoice.0.recover_payee_pub_key() == routing_info.lightning_public_key;
+        let is_direct = invoice.0.recover_payee_pub_key() == routing_info.lightning_public_key;
 
         Ok(LnSendFees {
             gateway_url: gateway.to_string(),
@@ -646,17 +750,8 @@ impl ConduitClient {
     pub async fn get_payment_history(&self) -> Vec<ConduitPayment> {
         let mut payments = Vec::new();
 
-        let entries = self
-            .db
-            .begin_transaction_nc()
-            .await
-            .find_by_prefix(&EventLogEntryPrefix(self.federation_id))
-            .await
-            .collect::<Vec<_>>()
-            .await;
-
-        for entry in entries {
-            if let Some(parsed) = parse_event_log_entry(&entry.1) {
+        for (_, entry) in self.stored_event_log().await {
+            if let Some(parsed) = parse_event_log_entry(&entry) {
                 match parsed {
                     ParsedEvent::Payment {
                         mut payment,
@@ -671,13 +766,7 @@ impl ConduitClient {
                         txid,
                         preimage,
                     } => {
-                        apply_update(
-                            &mut payments,
-                            &operation_id,
-                            success,
-                            txid,
-                            preimage,
-                        );
+                        apply_update(&mut payments, &operation_id, success, txid, preimage);
                     }
                 }
             }
@@ -714,17 +803,8 @@ impl ConduitClient {
         let mut payments = Vec::new();
 
         // Load historical events from our database
-        let entries = self
-            .db
-            .begin_transaction_nc()
-            .await
-            .find_by_prefix(&EventLogEntryPrefix(self.federation_id))
-            .await
-            .collect::<Vec<_>>()
-            .await;
-
-        for (key, entry) in entries {
-            position = key.1.saturating_add(1);
+        for (id, entry) in self.stored_event_log().await {
+            position = id.saturating_add(1);
 
             if let Some(parsed) = parse_event_log_entry(&entry) {
                 match parsed {
@@ -741,13 +821,7 @@ impl ConduitClient {
                         txid,
                         preimage,
                     } => {
-                        apply_update(
-                            &mut payments,
-                            &operation_id,
-                            success,
-                            txid,
-                            preimage,
-                        );
+                        apply_update(&mut payments, &operation_id, success, txid, preimage);
                     }
                 }
             }
@@ -806,13 +880,7 @@ impl ConduitClient {
                         success,
                         txid,
                         preimage,
-                    } => apply_update(
-                        &mut payments,
-                        &operation_id,
-                        success,
-                        txid,
-                        preimage,
-                    ),
+                    } => apply_update(&mut payments, &operation_id, success, txid, preimage),
                 };
 
                 if sink
@@ -825,15 +893,10 @@ impl ConduitClient {
                     return;
                 }
 
-                let mut dbtx = self.db.begin_transaction().await;
-
-                dbtx.insert_entry(
-                    &EventLogEntryKey(self.federation_id, persisted_entry.id()),
-                    persisted_entry.as_raw(),
-                )
-                .await;
-
-                if dbtx.commit_tx_result().await.is_err() {
+                if !self
+                    .store_event_log_entry(persisted_entry.id(), persisted_entry.as_raw())
+                    .await
+                {
                     return;
                 }
             }
