@@ -5,9 +5,8 @@ use std::sync::{Arc, Mutex as StdMutex};
 use crate::account::Account;
 use crate::client::ConduitClient;
 use crate::db::{
-    AccountEventLogEntryFederationPrefix, ClientConfigKey, ClientConfigPrefix, ContactKey,
-    ContactPrefix, DbKeyPrefix, EventLogEntryPrefix, RootEntropyKey, SelectedAccountKey,
-    SelectedCurrencyKey, SelectedFederationKey,
+    ClientConfigKey, ClientConfigPrefix, ContactKey, ContactPrefix, DbKeyPrefix,
+    EventLogEntryPrefix, RootEntropyKey, SelectedAccountKey, SelectedCurrencyKey,
 };
 use crate::exchange::ExchangeRateCache;
 use crate::frb_generated::StreamSink;
@@ -17,15 +16,12 @@ use fedimint_bip39::Bip39RootSecretStrategy;
 use fedimint_client::meta::MetaService;
 use fedimint_client::module_init::ClientModuleInitRegistry;
 use fedimint_client::secret::RootSecretStrategy;
-use fedimint_client::{
-    Client, ClientBuilder, ClientHandleArc, ClientPreview, ModuleKind, RootSecret,
-};
+use fedimint_client::{Client, ClientBuilder, ClientHandleArc, ModuleKind, RootSecret};
 use fedimint_client_module::meta::LegacyMetaSource;
 use fedimint_connectors::ConnectorRegistry;
 use fedimint_core::BitcoinHash;
 use fedimint_core::config::{ClientConfig, FederationId};
 use fedimint_core::db::{Database, IDatabaseTransactionOpsCore, IDatabaseTransactionOpsCoreTyped};
-use fedimint_derive_secret::DerivableSecret;
 use fedimint_lnv2_client::LightningClientInit;
 use fedimint_lnv2_client::common::KIND as LIGHTNING_KIND;
 use fedimint_meta_client::{MetaClientInit, MetaModuleMetaSourceWithFallback};
@@ -37,11 +33,12 @@ use fedimint_walletv2_client::WalletClientInit as WalletV2ClientInit;
 use fedimint_walletv2_client::common::KIND as WALLETV2_KIND;
 use flutter_rust_bridge::frb;
 use futures_util::StreamExt;
-use futures_util::future::join_all;
 use tokio::sync::{Mutex, Notify};
 
 /// Every open client, one per `(federation, account)` of every added mint,
 /// ordered mint-major and account-minor — the order the home pager swipes in.
+/// The five of a mint are views onto the mint's one fedimint client, which
+/// holds every account's balance itself.
 type Clients = BTreeMap<(FederationId, Account), ConduitClient>;
 
 #[frb]
@@ -49,8 +46,8 @@ pub struct ConduitClientFactory {
     db: Database,
     mnemonic: fedimint_bip39::Mnemonic,
     // Bound once and shared (cheaply cloned) across every client, so every
-    // account of every mint reuses the same endpoints instead of each binding
-    // an iroh endpoint of its own.
+    // mint reuses the same endpoints instead of each binding an iroh endpoint
+    // of its own.
     connectors: ConnectorRegistry,
     /// Every client stays open for as long as its mint is added, so a
     /// balance is always live and switching accounts is a change of view
@@ -214,30 +211,24 @@ impl ConduitClientFactory {
         client_builder
     }
 
-    fn root_secret(&self, federation_id: FederationId, account: Account) -> RootSecret {
-        let root: DerivableSecret = Bip39RootSecretStrategy::<12>::to_root_secret(&self.mnemonic);
-
-        account.root_secret(&root, federation_id)
+    /// Fedimint's standard per-federation secret. Primary derives from it
+    /// exactly where the wallet did before accounts, so an existing balance
+    /// opens as Primary unchanged; the other accounts branch off below the
+    /// module secrets inside fedimint.
+    fn root_secret(&self) -> RootSecret {
+        RootSecret::StandardDoubleDerive(Bip39RootSecretStrategy::<12>::to_root_secret(
+            &self.mnemonic,
+        ))
     }
 
-    fn client_database(&self, federation_id: FederationId, account: Account) -> Database {
-        self.db
-            .with_prefix(self.client_prefix(federation_id, account))
+    fn client_database(&self, federation_id: FederationId) -> Database {
+        self.db.with_prefix(self.client_prefix(federation_id))
     }
 
-    /// Primary keeps the prefix from before accounts, so a wallet that
-    /// predates them opens its existing client as Primary; the others get a
-    /// prefix of their own under a new top-level byte.
-    fn client_prefix(&self, federation_id: FederationId, account: Account) -> Vec<u8> {
-        match account {
-            Account::Primary => std::iter::once(DbKeyPrefix::ClientDatabase as u8)
-                .chain(federation_id.0.to_byte_array())
-                .collect(),
-            account => std::iter::once(DbKeyPrefix::AccountClientDatabase as u8)
-                .chain(federation_id.0.to_byte_array())
-                .chain(std::iter::once(account.wallet_number()))
-                .collect(),
-        }
+    fn client_prefix(&self, federation_id: FederationId) -> Vec<u8> {
+        std::iter::once(DbKeyPrefix::ClientDatabase as u8)
+            .chain(federation_id.0.to_byte_array())
+            .collect()
     }
 
     /// Builds and binds the connector registry. Called once per factory; the
@@ -260,23 +251,9 @@ impl ConduitClientFactory {
             .contains_key(&(federation_id, Account::Primary))
     }
 
-    /// A preview of `config` to open one more account's client from: nothing
-    /// is downloaded, the config is the one Primary saved. The invite's api
-    /// secret, if the mint had one, is not carried over: only Primary's
-    /// client database holds it.
-    async fn preview_config(&self, config: ClientConfig) -> Result<ClientPreview, String> {
-        self.client_builder()
-            .await
-            .preview_with_existing_config(self.connectors(), config, None)
-            .await
-            .map_err(|e| e.to_string())
-    }
-
-    /// Adds a mint: every account is joined, since accounts are a split of
-    /// one mint's seed rather than something added one by one.
-    ///
-    /// Returns once every client is open, and inserts them all at once, so
-    /// the pager never sees a mint with some of its accounts missing.
+    /// Adds a mint: one client, which carries every account from the moment
+    /// it is built, since accounts are a split of the mint's seed rather
+    /// than something added one by one.
     #[frb]
     pub async fn join(&self, invite: &InviteCodeWrapper) -> Result<(), String> {
         let federation_id = invite.0.federation_id();
@@ -296,56 +273,25 @@ impl ConduitClientFactory {
 
         ensure_supported(&config)?;
 
-        let mut clients = Vec::with_capacity(Account::ALL.len());
-
-        // The invite's preview goes to Primary, which carries the api secret
-        // and the prefetched announcements; the rest are opened from the
-        // config it downloaded.
-        let primary = preview
-            .join(
-                self.client_database(federation_id, Account::Primary),
-                self.root_secret(federation_id, Account::Primary),
-            )
+        let client = preview
+            .join(self.client_database(federation_id), self.root_secret())
             .await
             .map_err(|e| e.to_string())?;
 
-        clients.push(
-            self.create_client(Arc::new(primary), federation_id, Account::Primary)
-                .await,
-        );
-
-        for account in Account::ALL.into_iter().skip(1) {
-            let client = self
-                .preview_config(config.clone())
-                .await?
-                .join(
-                    self.client_database(federation_id, account),
-                    self.root_secret(federation_id, account),
-                )
-                .await
-                .map_err(|e| e.to_string())?;
-
-            clients.push(
-                self.create_client(Arc::new(client), federation_id, account)
-                    .await,
-            );
-        }
-
         self.save_config(&config).await;
-        self.insert_clients(clients);
+        self.insert_clients(self.views(Arc::new(client), federation_id).await);
 
         Ok(())
     }
 
-    /// Adds a mint this seed has used before: every account is recovered,
-    /// all five at once, so a restore finds funds wherever the seed left
-    /// them. Each is a full fedimint recovery of its own; running them
-    /// concurrently costs five times the network traffic of one, which is
-    /// the price of not asking the user which accounts they used.
+    /// Adds a mint this seed has used before. One recovery finds the funds
+    /// of every account: fedimint scans with one filter and only tries the
+    /// handful of outputs that pass it against each account's keys, so a
+    /// restore costs what a single-account restore did.
     ///
-    /// The recoveries themselves run on in the background: the clients come
-    /// back with `has_pending_recoveries` set, and the home screen shows
-    /// their progress.
+    /// The recovery itself runs on in the background: the clients come back
+    /// with `has_pending_recoveries` set, and the home screen shows its
+    /// progress.
     #[frb]
     pub async fn recover(&self, invite: &InviteCodeWrapper) -> Result<(), String> {
         let federation_id = invite.0.federation_id();
@@ -365,83 +311,43 @@ impl ConduitClientFactory {
 
         ensure_supported(&config)?;
 
-        // The invite's preview goes to Primary; the rest are built from the
-        // config it downloaded.
-        let mut previews = vec![(Account::Primary, preview)];
-
-        for account in Account::ALL.into_iter().skip(1) {
-            previews.push((account, self.preview_config(config.clone()).await?));
-        }
-
-        let recoveries = previews.into_iter().map(|(account, preview)| async move {
-            let client = preview
-                .recover(
-                    self.client_database(federation_id, account),
-                    self.root_secret(federation_id, account),
-                    None,
-                )
-                .await
-                .map_err(|e| e.to_string())?;
-
-            Ok::<_, String>(
-                self.create_client(Arc::new(client), federation_id, account)
-                    .await,
+        let client = preview
+            .recover(
+                self.client_database(federation_id),
+                self.root_secret(),
+                None,
             )
-        });
-
-        let clients = join_all(recoveries)
             .await
-            .into_iter()
-            .collect::<Result<Vec<_>, _>>()?;
+            .map_err(|e| e.to_string())?;
 
         self.save_config(&config).await;
-        self.insert_clients(clients);
+        self.insert_clients(self.views(Arc::new(client), federation_id).await);
 
         Ok(())
     }
 
-    /// Opens every account of every added mint. Called once at startup, so
-    /// the wallet starts with every balance live.
-    ///
-    /// An account without a client yet — every account but Primary of a
-    /// wallet from before accounts — is joined fresh from the stored config:
-    /// no fedimint app derives a wallet number other than zero, so nothing
-    /// can be waiting there to recover.
+    /// Opens every added mint. Called once at startup, so the wallet starts
+    /// with every balance live. A mint whose client database is missing is
+    /// left listed and skipped; its config is still there to retry from.
     #[frb]
     pub async fn load_all(&self) -> Vec<ConduitClient> {
-        let federations = self.list_federations().await;
-
-        for federation in federations {
+        for federation in self.list_federations().await {
             if self.has_federation(federation.id) {
                 continue;
             }
 
-            let mut clients = Vec::with_capacity(Account::ALL.len());
-
-            for account in Account::ALL {
-                let client = match self.open(federation.id, account).await {
-                    Some(client) => client,
-                    None => match self.join_missing(federation.id, account).await {
-                        Ok(client) => client,
-                        // The mint stays listed and is retried next launch;
-                        // its config is still there to retry from.
-                        Err(_) => continue,
-                    },
-                };
-
-                clients.push(client);
+            if let Some(clients) = self.open(federation.id).await {
+                self.insert_clients(clients);
             }
-
-            self.insert_clients(clients);
         }
 
         self.clients()
     }
 
-    /// Opens an account's client from its database, or `None` when the
-    /// account has no client on this device yet.
-    async fn open(&self, federation_id: FederationId, account: Account) -> Option<ConduitClient> {
-        if !Client::is_initialized(&self.client_database(federation_id, account)).await {
+    /// Opens a mint's client from its database, as every account's view, or
+    /// `None` when the mint has no client on this device.
+    async fn open(&self, federation_id: FederationId) -> Option<Vec<ConduitClient>> {
+        if !Client::is_initialized(&self.client_database(federation_id)).await {
             return None;
         }
 
@@ -450,73 +356,58 @@ impl ConduitClientFactory {
             .await
             .open(
                 self.connectors(),
-                self.client_database(federation_id, account),
-                self.root_secret(federation_id, account),
+                self.client_database(federation_id),
+                self.root_secret(),
             )
             .await
             .expect("Failed to open client");
 
-        Some(
-            self.create_client(Arc::new(client), federation_id, account)
-                .await,
-        )
+        Some(self.views(Arc::new(client), federation_id).await)
     }
 
-    async fn join_missing(
+    /// Every account's view onto one mint's client, in account order.
+    async fn views(
         &self,
+        client: ClientHandleArc,
         federation_id: FederationId,
-        account: Account,
-    ) -> Result<ConduitClient, String> {
-        let config = self
-            .db
-            .begin_transaction_nc()
-            .await
-            .get_value(&ClientConfigKey(federation_id))
-            .await
-            .ok_or_else(|| "This mint is not added".to_string())?;
+    ) -> Vec<ConduitClient> {
+        let mut views = Vec::with_capacity(Account::ALL.len());
 
-        let client = self
-            .preview_config(config)
-            .await?
-            .join(
-                self.client_database(federation_id, account),
-                self.root_secret(federation_id, account),
-            )
-            .await
-            .map_err(|e| e.to_string())?;
+        for account in Account::ALL {
+            views.push(
+                self.create_client(client.clone(), federation_id, account)
+                    .await,
+            );
+        }
 
-        Ok(self
-            .create_client(Arc::new(client), federation_id, account)
-            .await)
+        views
     }
 
-    /// Reopens every account of a mint once its recoveries are done — a
-    /// module that could not run mid-recovery only joins the registry on
-    /// the next open. The new clients replace the old in place, and the set
-    /// change tells the home screen to pick them up.
-    #[frb]
-    pub async fn reload(&self, federation_id: &FederationId) {
-        let old: Vec<ConduitClient> = self
-            .clients
+    /// The views of a mint's client, in account order, as the pager holds
+    /// them.
+    fn views_of(&self, federation_id: FederationId) -> Vec<ConduitClient> {
+        self.clients
             .lock()
             .unwrap()
-            .range((*federation_id, Account::Primary)..=(*federation_id, Account::Quinary))
+            .range((federation_id, Account::Primary)..=(federation_id, Account::Quinary))
             .map(|(_, client)| client.clone())
-            .collect();
+            .collect()
+    }
 
-        for client in old {
+    /// Reopens a mint once its recovery is done — a module that could not
+    /// run mid-recovery only joins the registry on the next open. The new
+    /// views replace the old in place, and the set change tells the home
+    /// screen to pick them up.
+    #[frb]
+    pub async fn reload(&self, federation_id: &FederationId) {
+        // The views share one client, so it is shut down once.
+        if let Some(client) = self.views_of(*federation_id).first() {
             client.shutdown().await;
         }
 
-        let mut clients = Vec::with_capacity(Account::ALL.len());
-
-        for account in Account::ALL {
-            if let Some(client) = self.open(*federation_id, account).await {
-                clients.push(client);
-            }
+        if let Some(clients) = self.open(*federation_id).await {
+            self.insert_clients(clients);
         }
-
-        self.insert_clients(clients);
     }
 
     /// Remembers the account in view, so the next launch opens on it.
@@ -530,20 +421,17 @@ impl ConduitClientFactory {
         dbtx.commit_tx().await;
     }
 
-    /// The client the wallet was last left on, if it is still open: the
-    /// stored account, else the Primary of the federation a pre-account
-    /// wallet had selected. `None` when neither is stored or still added.
+    /// The client the wallet was last left on, if it is still open. `None`
+    /// when nothing is stored yet or the mint is no longer added; the home
+    /// screen then opens on its first page.
     #[frb]
     pub async fn selected_client(&self) -> Option<ConduitClient> {
-        let mut dbtx = self.db.begin_transaction_nc().await;
-
-        let key = match dbtx.get_value(&SelectedAccountKey).await {
-            Some(key) => key,
-            None => (
-                dbtx.get_value(&SelectedFederationKey).await?,
-                Account::Primary,
-            ),
-        };
+        let key = self
+            .db
+            .begin_transaction_nc()
+            .await
+            .get_value(&SelectedAccountKey)
+            .await?;
 
         self.clients.lock().unwrap().get(&key).cloned()
     }
@@ -644,9 +532,9 @@ impl ConduitClientFactory {
         self.currency_code.lock().unwrap().clone()
     }
 
-    /// Removes a mint: every account goes at once, their clients shut down
-    /// before their databases are wiped so nothing reads storage out from
-    /// under itself.
+    /// Removes a mint: every account goes with it, since they live in the
+    /// one client. It is shut down before its database is wiped so nothing
+    /// reads storage out from under itself.
     #[frb]
     pub async fn leave(&self, federation_id: &FederationId) {
         let removed: Vec<ConduitClient> = {
@@ -660,7 +548,8 @@ impl ConduitClientFactory {
                 .collect()
         };
 
-        for client in removed {
+        // The views share one client, so it is shut down once.
+        if let Some(client) = removed.first() {
             client.shutdown().await;
         }
 
@@ -671,14 +560,9 @@ impl ConduitClientFactory {
         dbtx.remove_by_prefix(&EventLogEntryPrefix(*federation_id))
             .await;
 
-        dbtx.remove_by_prefix(&AccountEventLogEntryFederationPrefix(*federation_id))
-            .await;
-
-        for account in Account::ALL {
-            dbtx.raw_remove_by_prefix(&self.client_prefix(*federation_id, account))
-                .await
-                .expect("unrecoverable error when removing client db");
-        }
+        dbtx.raw_remove_by_prefix(&self.client_prefix(*federation_id))
+            .await
+            .expect("unrecoverable error when removing client db");
 
         dbtx.commit_tx().await;
 

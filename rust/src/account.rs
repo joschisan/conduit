@@ -1,18 +1,17 @@
-use fedimint_client::RootSecret;
-use fedimint_core::config::FederationId;
 use fedimint_core::encoding::{Decodable, DecodeError, Encodable};
 use fedimint_core::module::registry::ModuleDecoderRegistry;
-use fedimint_derive_secret::{ChildId, DerivableSecret};
 use flutter_rust_bridge::frb;
 
-/// One of a mint's balances. The federation cannot tell accounts apart: each
-/// is its own fedimint client, keyed by its own branch of the seed, so they
-/// exist only to keep money in separate piles. The set is fixed — there is
-/// nothing to create or delete, and removing a mint removes all of them.
+/// One of a mint's balances. The federation cannot tell accounts apart: all
+/// five live inside the mint's one fedimint client, each as its own branch of
+/// the module secrets and its own slice of the note and address tables, so
+/// they exist only to keep money in separate piles. The set is fixed — there
+/// is nothing to create or delete, and removing a mint removes all of them.
 ///
-/// Variant order is load-bearing: the position is the wallet number in the
-/// derivation path and a component of every account-scoped key, so reordering
-/// would silently re-key every wallet.
+/// Mirrors fedimint's `Account` variant for variant, so it can cross the
+/// bridge as a plain enum. Variant order is load-bearing: the position is the
+/// account's index in fedimint's derivation tree and a component of the
+/// stored selection, so reordering would silently re-key every wallet.
 #[frb]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Account {
@@ -32,38 +31,44 @@ impl Account {
         Account::Quinary,
     ];
 
-    pub(crate) fn wallet_number(self) -> u8 {
+    pub(crate) fn index(self) -> u8 {
         self as u8
     }
 
-    fn from_wallet_number(number: u8) -> Option<Account> {
-        Account::ALL.get(usize::from(number)).copied()
-    }
-
-    /// The account's client secret: fedimint's default per-federation path,
-    /// `root/0/<federation-id>/<wallet-number>/0`, with the wallet number set
-    /// to the account. Primary is wallet number zero, which is exactly what
-    /// `RootSecret::StandardDoubleDerive` derives, so wallets from before
-    /// accounts open as Primary unchanged.
-    pub(crate) fn root_secret(
-        self,
-        root: &DerivableSecret,
-        federation_id: FederationId,
-    ) -> RootSecret {
-        RootSecret::Custom(
-            root.child_key(ChildId(0))
-                .federation_key(&federation_id)
-                .child_key(ChildId(self.wallet_number().into()))
-                .child_key(ChildId(0)),
-        )
+    fn from_index(index: u8) -> Option<Account> {
+        Account::ALL.get(usize::from(index)).copied()
     }
 }
 
-/// Keyed by the wallet number itself, one byte, so what the database holds is
-/// what the derivation path says.
+impl From<Account> for fedimint_core::core::Account {
+    fn from(account: Account) -> Self {
+        match account {
+            Account::Primary => Self::Primary,
+            Account::Secondary => Self::Secondary,
+            Account::Tertiary => Self::Tertiary,
+            Account::Quaternary => Self::Quaternary,
+            Account::Quinary => Self::Quinary,
+        }
+    }
+}
+
+impl From<fedimint_core::core::Account> for Account {
+    fn from(account: fedimint_core::core::Account) -> Self {
+        match account {
+            fedimint_core::core::Account::Primary => Self::Primary,
+            fedimint_core::core::Account::Secondary => Self::Secondary,
+            fedimint_core::core::Account::Tertiary => Self::Tertiary,
+            fedimint_core::core::Account::Quaternary => Self::Quaternary,
+            fedimint_core::core::Account::Quinary => Self::Quinary,
+        }
+    }
+}
+
+/// Keyed by the index itself, one byte, so what the database holds is what
+/// fedimint's derivation tree says.
 impl Encodable for Account {
     fn consensus_encode<W: std::io::Write>(&self, writer: &mut W) -> Result<(), std::io::Error> {
-        self.wallet_number().consensus_encode(writer)
+        self.index().consensus_encode(writer)
     }
 }
 
@@ -72,39 +77,27 @@ impl Decodable for Account {
         reader: &mut R,
         modules: &ModuleDecoderRegistry,
     ) -> Result<Self, DecodeError> {
-        Account::from_wallet_number(u8::consensus_decode_partial(reader, modules)?)
+        Account::from_index(u8::consensus_decode_partial(reader, modules)?)
             .ok_or_else(|| DecodeError::from_str("Unknown account"))
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use fedimint_client_module::secret::get_default_client_secret;
-    use fedimint_core::BitcoinHash;
-
     use super::*;
 
-    fn inner(secret: RootSecret) -> [u8; 32] {
-        match secret {
-            RootSecret::Custom(secret) => secret.to_random_bytes(),
-            RootSecret::StandardDoubleDerive(_) => unreachable!(),
-        }
-    }
-
+    /// The stored selection and fedimint's derivation hop are the same byte.
     #[test]
-    fn primary_is_the_default_client_secret() {
-        let root = DerivableSecret::new_root(b"root", b"salt");
-        let federation_id = FederationId(BitcoinHash::hash(b"federation"));
-
-        let default = get_default_client_secret(&root, &federation_id).to_random_bytes::<32>();
-
-        assert_eq!(
-            inner(Account::Primary.root_secret(&root, federation_id)),
-            default
-        );
-
-        for account in &Account::ALL[1..] {
-            assert_ne!(inner(account.root_secret(&root, federation_id)), default);
+    fn index_matches_fedimint() {
+        for account in Account::ALL {
+            assert_eq!(
+                account.index(),
+                fedimint_core::core::Account::from(account).index()
+            );
+            assert_eq!(
+                Account::from(fedimint_core::core::Account::from(account)),
+                account
+            );
         }
     }
 }

@@ -16,13 +16,11 @@ pub(crate) enum DbKeyPrefix {
     EventLogStartPosition = 0x03, // Deprecated
     SelectedCurrency = 0x04,
     #[allow(dead_code)]
-    SelectedFederation = 0x05, // Deprecated, read once as a fallback
+    SelectedFederation = 0x05, // Deprecated
     EventLogEntry = 0x06,
     Contact = 0x07,
     OperationFiat = 0x08,
-    AccountClientDatabase = 0x09,
-    AccountEventLogEntry = 0x0a,
-    SelectedAccount = 0x0b,
+    SelectedAccount = 0x09,
 }
 
 #[derive(Clone, Debug, Encodable, Decodable)]
@@ -57,17 +55,9 @@ impl_db_record!(
     db_prefix = DbKeyPrefix::SelectedCurrency,
 );
 
-/// Superseded by [`SelectedAccountKey`]; read only so a wallet from before
-/// accounts reopens on the federation it had selected.
-#[derive(Clone, Debug, Encodable, Decodable)]
-pub(crate) struct SelectedFederationKey;
-
-impl_db_record!(
-    key = SelectedFederationKey,
-    value = FederationId,
-    db_prefix = DbKeyPrefix::SelectedFederation,
-);
-
+/// The mint's event log, mirrored entry by entry from its client: one log
+/// for every account, since they share the client, with each entry naming
+/// the account it belongs to (entries from before accounts are Primary's).
 #[derive(Clone, Debug, Encodable, Decodable)]
 pub(crate) struct EventLogEntryKey(pub(crate) FederationId, pub(crate) EventLogId);
 
@@ -81,35 +71,6 @@ impl_db_record!(
 );
 
 impl_db_lookup!(key = EventLogEntryKey, query_prefix = EventLogEntryPrefix);
-
-/// The event log of every account but Primary, which keeps writing to
-/// [`EventLogEntryKey`] so its history from before accounts stays where it is.
-/// Separate from it because each account is its own client with its own log
-/// positions, which would collide under one federation-scoped key.
-#[derive(Clone, Debug, Encodable, Decodable)]
-pub(crate) struct AccountEventLogEntryKey(
-    pub(crate) FederationId,
-    pub(crate) Account,
-    pub(crate) EventLogId,
-);
-
-#[derive(Clone, Debug, Encodable, Decodable)]
-pub(crate) struct AccountEventLogEntryPrefix(pub(crate) FederationId, pub(crate) Account);
-
-#[derive(Clone, Debug, Encodable, Decodable)]
-pub(crate) struct AccountEventLogEntryFederationPrefix(pub(crate) FederationId);
-
-impl_db_record!(
-    key = AccountEventLogEntryKey,
-    value = EventLogEntry,
-    db_prefix = DbKeyPrefix::AccountEventLogEntry,
-);
-
-impl_db_lookup!(
-    key = AccountEventLogEntryKey,
-    query_prefix = AccountEventLogEntryPrefix,
-    query_prefix = AccountEventLogEntryFederationPrefix,
-);
 
 /// The account in view when the home pager last settled, so the wallet
 /// reopens where it was left.
