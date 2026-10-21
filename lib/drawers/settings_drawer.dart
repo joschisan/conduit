@@ -109,9 +109,9 @@ class _SettingsDrawerState extends State<SettingsDrawer> {
             // away from the rows that only navigate.
             if (onSelectRemove != null)
               SettingsCard(
-                icon: PhosphorIconsRegular.signOut,
-                title: 'Remove ${widget.client.federationName()}',
-                subtitle: 'Delete eCash and history',
+                icon: PhosphorIconsRegular.trash,
+                title: 'Remove Mint',
+                subtitle: widget.client.federationName(),
                 onTap: () => _select(onSelectRemove),
               ),
           ],

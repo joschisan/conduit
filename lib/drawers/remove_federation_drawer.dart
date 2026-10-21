@@ -10,8 +10,9 @@ import 'package:conduit/utils/auth_utils.dart';
 import 'package:conduit/utils/drawer_utils.dart';
 
 /// Confirmation sheet for removing the mint in view — every account of it at
-/// once. The factory shuts the live clients down before wiping their
-/// databases, then [onSuccess] runs for whatever the caller wants afterwards.
+/// once. The row names the mint under what is about to happen to it, as in
+/// pico. The factory shuts the live client down before wiping its database,
+/// then [onSuccess] runs for whatever the caller wants afterwards.
 class RemoveFederationDrawer extends StatefulWidget {
   final ConduitClient client;
   final ConduitClientFactory clientFactory;
@@ -71,19 +72,14 @@ class _RemoveFederationDrawerState extends State<RemoveFederationDrawer> {
         BorderedList.column(
           children: [
             SettingsCard(
-              icon: PhosphorIconsRegular.signOut,
-              iconColor: Theme.of(context).colorScheme.error,
-              title: 'Remove $_federationName',
-              subtitle: 'Delete eCash and history',
+              icon: PhosphorIconsRegular.trash,
+              title: 'Remove Mint',
+              subtitle: _federationName,
             ),
           ],
         ),
         const SizedBox(height: 16),
-        AsyncButton(
-          text: 'Confirm',
-          color: Theme.of(context).colorScheme.error,
-          onPressed: _handleRemoveFederation,
-        ),
+        AsyncButton(text: 'Confirm', onPressed: _handleRemoveFederation),
       ],
     );
   }
