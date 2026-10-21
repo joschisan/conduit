@@ -10,7 +10,7 @@ import 'package:conduit/bridge_generated.dart/lib.dart';
 import 'package:conduit/bridge_generated.dart/factory.dart';
 import 'package:conduit/screens/landing_screen.dart';
 import 'package:conduit/screens/base_screen.dart';
-import 'package:conduit/screens/federation_screen.dart';
+import 'package:conduit/screens/home_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -35,26 +35,25 @@ void main() async {
     return;
   }
 
-  // Open the persisted federation before the first frame so the wallet itself
-  // is the first thing shown (the OS splash stays up until it's ready). Only
-  // onboarding (no federations) and a still-recovering federation fall back to
-  // BaseScreen, which hosts the scanner and the recovery hand-off.
-  final client = await clientFactory.loadCurrent();
+  // Open every account of every mint before the first frame so the wallet
+  // itself is the first thing shown (the OS splash stays up until it's ready).
+  // Only an empty wallet falls back to BaseScreen, which hosts onboarding; a
+  // mint still recovering opens with the rest and shows its progress itself.
+  final clients = await clientFactory.loadAll();
+  final selected = await clientFactory.selectedClient();
 
-  // Open the wallet directly unless a recovery is running that holds a module
-  // back — when every module stays usable mid-recovery, the wallet opens now
-  // and surfaces progress on its own, rather than blocking on BaseScreen.
-  if (client != null &&
-      (!client.hasPendingRecoveries() || client.allModulesUsable())) {
-    runApp(
-      ConduitApp(
-        home: FederationScreen(client: client, clientFactory: clientFactory),
-      ),
-    );
-  } else {
-    await client?.shutdown();
-    runApp(ConduitApp(home: BaseScreen(clientFactory: clientFactory)));
-  }
+  runApp(
+    ConduitApp(
+      home:
+          clients.isEmpty
+              ? BaseScreen(clientFactory: clientFactory)
+              : HomeScreen(
+                clientFactory: clientFactory,
+                initialClients: clients,
+                initialSelected: selected,
+              ),
+    ),
+  );
 }
 
 class ConduitApp extends StatelessWidget {
@@ -68,7 +67,6 @@ class ConduitApp extends StatelessWidget {
       child: MaterialApp(
         title: 'Conduit',
         debugShowCheckedModeBanner: false,
-        navigatorObservers: [routeObserver],
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
           useMaterial3: true,

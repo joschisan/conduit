@@ -4,6 +4,7 @@ use fedimint_core::{impl_db_lookup, impl_db_record};
 use fedimint_eventlog::{EventLogEntry, EventLogId};
 
 use crate::OperationId;
+use crate::account::Account;
 
 #[repr(u8)]
 #[derive(Clone, Debug)]
@@ -14,10 +15,12 @@ pub(crate) enum DbKeyPrefix {
     #[allow(dead_code)]
     EventLogStartPosition = 0x03, // Deprecated
     SelectedCurrency = 0x04,
-    SelectedFederation = 0x05,
+    #[allow(dead_code)]
+    SelectedFederation = 0x05, // Deprecated
     EventLogEntry = 0x06,
     Contact = 0x07,
     OperationFiat = 0x08,
+    SelectedAccount = 0x09,
 }
 
 #[derive(Clone, Debug, Encodable, Decodable)]
@@ -52,15 +55,9 @@ impl_db_record!(
     db_prefix = DbKeyPrefix::SelectedCurrency,
 );
 
-#[derive(Clone, Debug, Encodable, Decodable)]
-pub(crate) struct SelectedFederationKey;
-
-impl_db_record!(
-    key = SelectedFederationKey,
-    value = FederationId,
-    db_prefix = DbKeyPrefix::SelectedFederation,
-);
-
+/// The mint's event log, mirrored entry by entry from its client: one log
+/// for every account, since they share the client, with each entry naming
+/// the account it belongs to (entries from before accounts are Primary's).
 #[derive(Clone, Debug, Encodable, Decodable)]
 pub(crate) struct EventLogEntryKey(pub(crate) FederationId, pub(crate) EventLogId);
 
@@ -74,6 +71,17 @@ impl_db_record!(
 );
 
 impl_db_lookup!(key = EventLogEntryKey, query_prefix = EventLogEntryPrefix);
+
+/// The account in view when the home pager last settled, so the wallet
+/// reopens where it was left.
+#[derive(Clone, Debug, Encodable, Decodable)]
+pub(crate) struct SelectedAccountKey;
+
+impl_db_record!(
+    key = SelectedAccountKey,
+    value = (FederationId, Account),
+    db_prefix = DbKeyPrefix::SelectedAccount,
+);
 
 /// Exchange rate snapshotted against an operation when its payment is first
 /// observed live, so history can show the fiat value as of the time of the

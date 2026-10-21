@@ -2,6 +2,29 @@ import 'package:intl/intl.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/bridge_generated.dart/currency.dart';
 import 'package:conduit/bridge_generated.dart/events.dart';
+import 'package:conduit/widgets/amount_visibility.dart';
+
+/// [sats] in the unit the home screen is showing amounts in: fiat at the
+/// cached rate (sats until one is cached), otherwise sats. For compact rows
+/// that list balances so they can be picked between. A hidden balance reads
+/// as sats here rather than masked: opening a picker is asking to see what
+/// the balances are, and a list of dots would answer nothing.
+String formatDisplayedSats(
+  BalanceDisplay display,
+  ConduitClient client,
+  int sats,
+) {
+  if (display == BalanceDisplay.fiat) {
+    final fiat = client.satsToFiat(amountSats: sats);
+    final currency = findFiatCurrency(code: client.currencyCode());
+
+    if (fiat != null && currency != null) {
+      return formatFiat(currency, fiat, symbolLast: true);
+    }
+  }
+
+  return '${NumberFormat('#,###').format(sats)} sat';
+}
 
 /// Formats a fiat [amount] for the given [currency]. The symbol leads (e.g.
 /// `$ 12.50`) for large displays and detail rows; pass [symbolLast] for the

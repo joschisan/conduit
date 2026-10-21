@@ -3,22 +3,27 @@ import 'package:flutter/material.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/bridge_generated.dart/currency.dart';
 import 'package:conduit/bridge_generated.dart/factory.dart';
+import 'package:conduit/utils/account_utils.dart';
 import 'package:conduit/widgets/drawer_shell_widget.dart';
 import 'package:conduit/widgets/bordered_list_widget.dart';
 import 'package:conduit/widgets/settings_card_widget.dart';
 import 'package:conduit/utils/drawer_utils.dart';
 
 /// Bottom-sheet settings: app-wide rows (recovery phrase, currency) above the
-/// current federation's rows (connectivity, remove). Each row pops the drawer
-/// and hands off to a caller callback (the federation screen), whose stable
-/// context owns the navigation.
+/// selected account's own (which account, connectivity, and removing the
+/// mint). Each row pops the drawer and hands off to a caller callback (the
+/// home screen), whose stable context owns the navigation — this drawer's
+/// own context dies with the pop.
 class SettingsDrawer extends StatefulWidget {
   final ConduitClient client;
   final ConduitClientFactory clientFactory;
   final VoidCallback onSelectRecovery;
   final VoidCallback onSelectCurrency;
+  final VoidCallback onSelectAccount;
   final VoidCallback onSelectConnection;
-  final VoidCallback onSelectRemove;
+  // Null with only one mint added: removing the last one would strand the
+  // wallet on onboarding, so the row is left out entirely.
+  final VoidCallback? onSelectRemove;
 
   const SettingsDrawer({
     super.key,
@@ -26,6 +31,7 @@ class SettingsDrawer extends StatefulWidget {
     required this.clientFactory,
     required this.onSelectRecovery,
     required this.onSelectCurrency,
+    required this.onSelectAccount,
     required this.onSelectConnection,
     required this.onSelectRemove,
   });
@@ -36,8 +42,9 @@ class SettingsDrawer extends StatefulWidget {
     required ConduitClientFactory clientFactory,
     required VoidCallback onSelectRecovery,
     required VoidCallback onSelectCurrency,
+    required VoidCallback onSelectAccount,
     required VoidCallback onSelectConnection,
-    required VoidCallback onSelectRemove,
+    required VoidCallback? onSelectRemove,
   }) {
     return DrawerUtils.show(
       context: context,
@@ -46,6 +53,7 @@ class SettingsDrawer extends StatefulWidget {
         clientFactory: clientFactory,
         onSelectRecovery: onSelectRecovery,
         onSelectCurrency: onSelectCurrency,
+        onSelectAccount: onSelectAccount,
         onSelectConnection: onSelectConnection,
         onSelectRemove: onSelectRemove,
       ),
@@ -57,27 +65,12 @@ class SettingsDrawer extends StatefulWidget {
 }
 
 class _SettingsDrawerState extends State<SettingsDrawer> {
-  late final Stream<List<(String, bool)>> _connectionStream;
-  String? _currencyName;
-  String _federationName = 'Mint';
+  // Cached so rebuilds don't re-subscribe.
+  late final Stream<List<(String, bool)>> _connectionStream =
+      widget.client.subscribeConnectionStatus();
 
-  @override
-  void initState() {
-    super.initState();
-    _connectionStream = widget.client.subscribeConnectionStatus();
-    _loadCurrency();
-    widget.client.federationName().then((name) {
-      if (mounted && name != null) setState(() => _federationName = name);
-    });
-  }
-
-  Future<void> _loadCurrency() async {
-    final code = await widget.clientFactory.getCurrency();
-
-    if (!mounted) return;
-
-    setState(() => _currencyName = findFiatCurrency(code: code)?.name);
-  }
+  late final String? _currencyName =
+      findFiatCurrency(code: widget.clientFactory.getCurrency())?.name;
 
   /// Pops the drawer, then runs the caller's action against its own context.
   void _select(VoidCallback action) {
@@ -87,38 +80,48 @@ class _SettingsDrawerState extends State<SettingsDrawer> {
 
   @override
   Widget build(BuildContext context) {
+    final onSelectRemove = widget.onSelectRemove;
+
     return DrawerShell(
       children: [
         BorderedList.column(
           children: [
-            _buildSeedPhraseCard(),
-            _buildCurrencyCard(),
+            SettingsCard(
+              icon: PhosphorIconsRegular.key,
+              title: 'Recovery Phrase',
+              subtitle: 'Backup your wallet',
+              onTap: () => _select(widget.onSelectRecovery),
+            ),
+            SettingsCard(
+              icon: PhosphorIconsRegular.currencyDollar,
+              title: 'Select Currency',
+              subtitle: _currencyName,
+              onTap: () => _select(widget.onSelectCurrency),
+            ),
+            SettingsCard(
+              icon: PhosphorIconsRegular.wallet,
+              title: 'Select Account',
+              subtitle: widget.client.account().displayName,
+              onTap: () => _select(widget.onSelectAccount),
+            ),
             _buildConnectionCard(),
-            _buildRemoveCard(),
+            // Destroys what the mint still holds, so it sits at the bottom
+            // away from the rows that only navigate.
+            if (onSelectRemove != null)
+              SettingsCard(
+                icon: PhosphorIconsRegular.trash,
+                title: 'Remove Mint',
+                subtitle: widget.client.federationName(),
+                onTap: () => _select(onSelectRemove),
+              ),
           ],
         ),
       ],
     );
   }
 
-  Widget _buildSeedPhraseCard() {
-    return SettingsCard(
-      icon: PhosphorIconsRegular.key,
-      title: 'Recovery Phrase',
-      subtitle: 'Backup your wallet',
-      onTap: () => _select(widget.onSelectRecovery),
-    );
-  }
-
-  Widget _buildCurrencyCard() {
-    return SettingsCard(
-      icon: PhosphorIconsRegular.currencyDollar,
-      title: 'Select Currency',
-      subtitle: _currencyName,
-      onTap: () => _select(widget.onSelectCurrency),
-    );
-  }
-
+  /// Carries the same amber/plain split as the home row, so opening settings
+  /// on a degraded mint says so before the screen behind it is gone.
   Widget _buildConnectionCard() {
     return StreamBuilder<List<(String, bool)>>(
       stream: _connectionStream,
@@ -145,15 +148,6 @@ class _SettingsDrawerState extends State<SettingsDrawer> {
           onTap: () => _select(widget.onSelectConnection),
         );
       },
-    );
-  }
-
-  Widget _buildRemoveCard() {
-    return SettingsCard(
-      icon: PhosphorIconsRegular.signOut,
-      title: 'Remove $_federationName',
-      subtitle: 'Delete eCash and history',
-      onTap: () => _select(widget.onSelectRemove),
     );
   }
 }
