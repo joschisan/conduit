@@ -407,30 +407,70 @@ class _HomeScreenState extends State<HomeScreen> {
   /// the move is the point: a mint just added, a page just opened, a balance
   /// that just moved, where sliding over to the page shows where it landed
   /// among the others instead of teleporting onto it.
-  void _pageTo(int index, {bool animate = false}) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || !_pageController.hasClients) return;
+  ///
+  /// Completes once the pager has landed, so a caller can hold something back
+  /// until the page is in view.
+  Future<void> _pageTo(int index, {bool animate = false}) {
+    final landed = Completer<void>();
 
-      if (animate) {
-        _pageController.animateToPage(
-          index,
-          duration: _pageSlideDuration,
-          curve: _pageSlideCurve,
-        );
-      } else {
-        _pageController.jumpToPage(index);
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (mounted && _pageController.hasClients) {
+        if (animate) {
+          await _pageController.animateToPage(
+            index,
+            duration: _pageSlideDuration,
+            curve: _pageSlideCurve,
+          );
+        } else {
+          _pageController.jumpToPage(index);
+        }
       }
+
+      landed.complete();
     });
+    // A post-frame callback runs after the next frame, and nothing else may
+    // be asking for one: an arrival holds the page's balance and list back
+    // precisely so that nothing rebuilds before the slide.
+    WidgetsBinding.instance.ensureVisualUpdate();
+
+    return landed.future;
   }
 
   /// [_pageTo] by account rather than by position, for the callers that know
   /// which account they mean and would otherwise each look its index up. The
-  /// account may have no page — a balance can move in one the pager isn't
+  /// account may have no page — a payment can land in one the pager isn't
   /// carrying — in which case there is nowhere to slide to.
-  void _pageToAccount(String key, {bool animate = false}) {
+  Future<void> _pageToAccount(String key, {bool animate = false}) {
     final index = _visible.indexWhere((c) => _clientKey(c) == key);
 
-    if (index >= 0) _pageTo(index, animate: animate);
+    return index >= 0 ? _pageTo(index, animate: animate) : Future.value();
+  }
+
+  /// A payment just appeared on [key]'s account: the first time its event is
+  /// seen, not a later update to it, and not a balance move. Balance moves
+  /// are the wrong trigger — a send drops the balance when its notes are
+  /// spent and lifts it again when the change is issued, and a refund lifts
+  /// it later still — so they would pull the pager back to an account the
+  /// user has already left.
+  ///
+  /// The account earns its page and the pager slides to it. While the slide
+  /// runs, the balance shown on that page is held where it was, so the
+  /// count-up to the new balance plays once the page is in view rather than
+  /// off-screen or halfway through the slide. The page already in view has
+  /// nothing to slide to and its balance counts up as it lands.
+  void _handleArrival(String key, _AccountSession session) {
+    if (!mounted) return;
+
+    _opened.add(key);
+    _refreshVisible();
+
+    if (_clientKey(_selectedClient()) == key) return;
+
+    session.hold();
+    // Registered after the jump [_refreshVisible] may have queued, so an
+    // account that just earned its page slides over from where the user was
+    // rather than being landed on.
+    _pageToAccount(key, animate: true).whenComplete(session.release);
   }
 
   /// Brings [_sessions] and [_mints] into step with the client set: a client
@@ -463,15 +503,12 @@ class _HomeScreenState extends State<HomeScreen> {
         existing.dispose();
       }
 
-      final session = _AccountSession(
+      late final _AccountSession session;
+      session = _AccountSession(
         client,
         onNotification: _handleNotification,
+        onArrival: () => _handleArrival(key, session),
       );
-      // The balance as it stood the last time the listener below ran, so the
-      // first value can be told from the ones after it: the first is the
-      // account being read, and only a move past it is money arriving or
-      // leaving.
-      int? previous;
       // Money earns the account its page: the balance going positive adds it
       // to [_opened] rather than being read live by [_isVisible], so a max
       // send that empties the account leaves the page standing at zero
@@ -481,16 +518,8 @@ class _HomeScreenState extends State<HomeScreen> {
       session.balance.addListener(() {
         final sats = session.balance.value;
         if (sats == null) return;
-        final moved = previous != null && sats != previous;
-        previous = sats;
         if (sats > 0) _opened.add(key);
         _refreshVisible();
-        // A balance that moved is the one worth looking at, so its page comes
-        // into view on the same slide the picker gives it. Registered after
-        // the jump [_refreshVisible] may have queued, so an account that just
-        // earned its page slides over from where the user was rather than
-        // being landed on.
-        if (moved) _pageToAccount(key, animate: true);
       });
       _sessions[key] = session;
     }
@@ -1041,7 +1070,20 @@ class _AccountSession {
   // Null until the first value lands: an unresolved balance is not a zero
   // one.
   final ValueNotifier<int?> balance = ValueNotifier(null);
+  // The balance the page shows. Follows [balance] except while held, which is
+  // for the slide onto this page after a payment arrived: the page lands,
+  // then the shown balance catches up, so the count-up plays in view.
+  final ValueNotifier<int?> shown = ValueNotifier(null);
+  bool _held = false;
+  // The payments the page lists. Held back together with [shown].
   final ValueNotifier<List<ConduitPayment>> payments = ValueNotifier([]);
+  // The payments as the log has them, newest first. What [payments] catches
+  // up to on release, and what an incoming update is compared against to
+  // tell a payment seen for the first time from an update to a known one.
+  List<ConduitPayment> _livePayments = [];
+  // Whether the first snapshot of the payments has landed. Payments in that
+  // one are history, not arrivals.
+  bool _primed = false;
   // Set while a background recovery runs on a client that is already usable
   // (its modules stay in the registry mid-recovery). Drives the spinner and
   // "Recovering · X%" progress on the mint row. The percentage is the
@@ -1052,20 +1094,46 @@ class _AccountSession {
   late final StreamSubscription<RecentPaymentsUpdate> _eventSubscription;
   StreamSubscription<int>? _recoverySubscription;
 
+  /// [onArrival] fires once per payment, when its event is first seen, and
+  /// not for the updates that follow it or for the payments already in the
+  /// log when the session opened.
   _AccountSession(
     this.client, {
     required void Function(PaymentNotification) onNotification,
+    required void Function() onArrival,
   }) {
-    _balanceSubscription = client.subscribeBalance().listen(
-      (sats) => balance.value = sats,
-    );
+    _balanceSubscription = client.subscribeBalance().listen((sats) {
+      balance.value = sats;
+      if (!_held) shown.value = sats;
+    });
     _eventSubscription = client.subscribeEventLog().listen((update) {
-      payments.value = update.payments;
+      final known = _livePayments.map((p) => p.operationId).toSet();
+      final arrived = update.payments.any(
+        (p) => !known.contains(p.operationId),
+      );
+      _livePayments = update.payments;
       if (update.notification case final notification?) {
         onNotification(notification);
       }
+      // Before the list is published: an arrival that starts a slide holds
+      // the list back, so its row grows in once the page is in view.
+      if (_primed && arrived) onArrival();
+      _primed = true;
+      if (!_held) payments.value = _livePayments;
     });
     _trackRecovery();
+  }
+
+  /// Keeps [shown] and [payments] where they are until [release], while the
+  /// pager slides here.
+  void hold() => _held = true;
+
+  /// Lets [shown] and [payments] catch up: the new row grows in and the
+  /// balance counts up, both in view.
+  void release() {
+    _held = false;
+    payments.value = _livePayments;
+    shown.value = balance.value;
   }
 
   void _trackRecovery() {
@@ -1089,6 +1157,7 @@ class _AccountSession {
     _eventSubscription.cancel();
     _recoverySubscription?.cancel();
     balance.dispose();
+    shown.dispose();
     payments.dispose();
     recovering.dispose();
     recoveryPercent.dispose();
@@ -1357,7 +1426,7 @@ class _MintPage extends StatelessWidget {
             behavior: HitTestBehavior.opaque,
             onTap: onBalanceTap,
             child: ValueListenableBuilder<int?>(
-              valueListenable: session.balance,
+              valueListenable: session.shown,
               builder:
                   (context, sats, _) => _BalanceHero(
                     sats: sats,
