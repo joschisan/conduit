@@ -201,9 +201,7 @@ impl ConduitClientFactory {
         let meta_source: MetaModuleMetaSourceWithFallback<LegacyMetaSource> = Default::default();
         let meta_service = MetaService::new(meta_source);
 
-        let mut client_builder = Client::builder()
-            .await
-            .expect("Failed to create client builder");
+        let mut client_builder = Client::builder().await;
 
         client_builder.with_module_inits(modules);
         client_builder.with_meta_service(meta_service);
@@ -234,10 +232,7 @@ impl ConduitClientFactory {
     /// Builds and binds the connector registry. Called once per factory; the
     /// resulting registry is then shared across all clients.
     async fn build_connectors() -> ConnectorRegistry {
-        ConnectorRegistry::build_from_client_defaults()
-            .bind()
-            .await
-            .expect("Failed to bind connector registry")
+        ConnectorRegistry::build_from_client_defaults().bind().await
     }
 
     fn connectors(&self) -> ConnectorRegistry {
