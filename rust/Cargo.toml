@@ -14,7 +14,6 @@ fedimint-client = { git = "https://github.com/fedimint/fedimint", rev = "0580b9a
 fedimint-client-module = { git = "https://github.com/fedimint/fedimint", rev = "0580b9a63ec" }
 fedimint-connectors = { git = "https://github.com/fedimint/fedimint", rev = "0580b9a63ec" }
 fedimint-core = { git = "https://github.com/fedimint/fedimint", rev = "0580b9a63ec" }
-fedimint-derive-secret = { git = "https://github.com/fedimint/fedimint", rev = "0580b9a63ec" }
 fedimint-eventlog = { git = "https://github.com/fedimint/fedimint", rev = "0580b9a63ec" }
 fedimint-fountain = { git = "https://github.com/fedimint/fedimint", rev = "0580b9a63ec" }
 fedimint-lnurl = { git = "https://github.com/fedimint/fedimint", rev = "0580b9a63ec" }

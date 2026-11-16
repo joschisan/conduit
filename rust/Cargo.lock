@@ -928,7 +928,6 @@ dependencies = [
  "fedimint-client-module",
  "fedimint-connectors",
  "fedimint-core",
- "fedimint-derive-secret",
  "fedimint-eventlog",
  "fedimint-fountain",
  "fedimint-lnurl",
