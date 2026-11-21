@@ -1,9 +1,15 @@
+import 'dart:io';
+
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:share_plus/share_plus.dart';
 import 'package:conduit/bridge_generated.dart/client.dart';
 import 'package:conduit/bridge_generated.dart/events.dart';
+import 'package:conduit/utils/account_utils.dart';
+import 'package:conduit/utils/history_csv.dart';
 import 'package:conduit/utils/styles.dart';
 import 'package:conduit/utils/payment_utils.dart';
 import 'package:conduit/widgets/grouped_list_widget.dart';
@@ -84,12 +90,39 @@ class _PaymentHistoryScreenState extends State<PaymentHistoryScreen> {
     }).toList();
   }
 
+  /// Hands the list as filtered to the share sheet as a CSV. The file goes
+  /// through the temp directory because the sheet wants a path, not bytes.
+  Future<void> _export() async {
+    final payments = _filteredPayments;
+    if (payments.isEmpty) return;
+
+    final account = widget.client.account().displayName.toLowerCase();
+    final csv = buildHistoryCsv(
+      mint: widget.client.federationName(),
+      account: account,
+      payments: payments,
+    );
+    final date = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    final directory = await getTemporaryDirectory();
+    final file = File('${directory.path}/conduit-history-$account-$date.csv');
+
+    await file.writeAsString(csv);
+
+    await SharePlus.instance.share(
+      ShareParams(files: [XFile(file.path, mimeType: 'text/csv')]),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Payment History'),
         actions: [
+          IconButton(
+            icon: const Icon(PhosphorIconsRegular.export, size: smallIconSize),
+            onPressed: _filteredPayments.isEmpty ? null : _export,
+          ),
           IconButton(
             icon: Icon(
               _display == BalanceDisplay.fiat
