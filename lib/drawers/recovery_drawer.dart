@@ -7,26 +7,30 @@ import 'package:conduit/widgets/drawer_shell_widget.dart';
 import 'package:conduit/widgets/bordered_list_widget.dart';
 import 'package:conduit/widgets/icon_chip_widget.dart';
 import 'package:conduit/utils/drawer_utils.dart';
-import 'package:conduit/screens/federation_screen.dart';
 
+/// Blocks on a mint's recovery when a module can't run until it is done:
+/// waits for every account of the mint, then has the factory reopen them so
+/// the module joins the registry. The home screen picks the reopened clients
+/// up from the client stream; there is nothing to navigate to.
 class RecoveryDrawer extends StatefulWidget {
-  final ConduitClient client;
+  /// Every account of the recovering mint.
+  final List<ConduitClient> clients;
   final ConduitClientFactory clientFactory;
 
   const RecoveryDrawer({
     super.key,
-    required this.client,
+    required this.clients,
     required this.clientFactory,
   });
 
   static Future<void> show(
     BuildContext context, {
-    required ConduitClient client,
+    required List<ConduitClient> clients,
     required ConduitClientFactory clientFactory,
   }) {
     return DrawerUtils.show(
       context: context,
-      child: RecoveryDrawer(client: client, clientFactory: clientFactory),
+      child: RecoveryDrawer(clients: clients, clientFactory: clientFactory),
     );
   }
 
@@ -44,38 +48,16 @@ class _RecoveryDrawerState extends State<RecoveryDrawer> {
   }
 
   Future<void> _performRecovery() async {
-    await widget.client.waitForAllRecoveries();
-    await widget.client.shutdown();
+    await Future.wait(widget.clients.map((c) => c.waitForAllRecoveries()));
 
-    final newClient = await widget.clientFactory.load(
-      federationId: widget.client.federationId(),
+    await widget.clientFactory.reload(
+      federationId: widget.clients.first.federationId(),
     );
 
     // Defer navigation until after the current frame completes
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-
-      Navigator.of(context).pop(); // Close drawer
-
-      // Replace the host the drawer was shown over (the federation recovered
-      // from, or the home router) so the recovered wallet takes its place
-      // instead of stacking on top of it.
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(
-          builder:
-              (_) => FederationScreen(
-                client: newClient!,
-                clientFactory: widget.clientFactory,
-              ),
-        ),
-      );
+      if (mounted) Navigator.of(context).pop();
     });
-  }
-
-  @override
-  void dispose() {
-    widget.client.shutdown();
-    super.dispose();
   }
 
   @override

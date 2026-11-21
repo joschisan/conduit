@@ -105,3 +105,5 @@ jobs:
       working-directory: rust
 
     - run: flutter analyze
+
+    - run: flutter test

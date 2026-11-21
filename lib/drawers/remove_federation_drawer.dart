@@ -9,9 +9,10 @@ import 'package:conduit/widgets/async_button_widget.dart';
 import 'package:conduit/utils/auth_utils.dart';
 import 'package:conduit/utils/drawer_utils.dart';
 
-/// Confirmation sheet for removing the federation currently open. Shuts the live
-/// client down before wiping its database, then hands control back to
-/// [onSuccess] to route away from the now-defunct federation.
+/// Confirmation sheet for removing the mint in view — every account of it at
+/// once. The row names the mint under what is about to happen to it, as in
+/// pico. The factory shuts the live client down before wiping its database,
+/// then [onSuccess] runs for whatever the caller wants afterwards.
 class RemoveFederationDrawer extends StatefulWidget {
   final ConduitClient client;
   final ConduitClientFactory clientFactory;
@@ -45,15 +46,7 @@ class RemoveFederationDrawer extends StatefulWidget {
 }
 
 class _RemoveFederationDrawerState extends State<RemoveFederationDrawer> {
-  String _federationName = 'Mint';
-
-  @override
-  void initState() {
-    super.initState();
-    widget.client.federationName().then((name) {
-      if (mounted && name != null) setState(() => _federationName = name);
-    });
-  }
+  late final String _federationName = widget.client.federationName();
 
   Future<void> _handleRemoveFederation() async {
     // Gate the destructive wipe behind the same biometric check as the seed
@@ -61,10 +54,6 @@ class _RemoveFederationDrawerState extends State<RemoveFederationDrawer> {
     await requireBiometricAuth(context);
 
     if (!mounted) return;
-
-    // Stop the client's streams before removing its database, so nothing reads
-    // the storage out from under itself.
-    await widget.client.shutdown();
 
     await widget.clientFactory.leave(
       federationId: widget.client.federationId(),
@@ -83,19 +72,14 @@ class _RemoveFederationDrawerState extends State<RemoveFederationDrawer> {
         BorderedList.column(
           children: [
             SettingsCard(
-              icon: PhosphorIconsRegular.signOut,
-              iconColor: Theme.of(context).colorScheme.error,
-              title: 'Remove $_federationName',
-              subtitle: 'Delete eCash and history',
+              icon: PhosphorIconsRegular.trash,
+              title: 'Remove Mint',
+              subtitle: _federationName,
             ),
           ],
         ),
         const SizedBox(height: 16),
-        AsyncButton(
-          text: 'Confirm',
-          color: Theme.of(context).colorScheme.error,
-          onPressed: _handleRemoveFederation,
-        ),
+        AsyncButton(text: 'Confirm', onPressed: _handleRemoveFederation),
       ],
     );
   }

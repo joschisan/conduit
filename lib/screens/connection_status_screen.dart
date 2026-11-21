@@ -18,17 +18,7 @@ class ConnectionStatusScreen extends StatefulWidget {
 }
 
 class _ConnectionStatusScreenState extends State<ConnectionStatusScreen> {
-  // Resolved once, above the status stream, so status updates don't re-trigger
-  // the lookup.
-  String _name = 'Mint';
-
-  @override
-  void initState() {
-    super.initState();
-    widget.client.federationName().then((name) {
-      if (mounted && name != null) setState(() => _name = name);
-    });
-  }
+  late final String _name = widget.client.federationName();
 
   @override
   Widget build(BuildContext context) {

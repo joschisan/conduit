@@ -19,6 +19,7 @@ use futures_util::StreamExt;
 use std::str::FromStr;
 use std::sync::{Arc, Mutex};
 
+use crate::account::Account;
 use crate::db::{EventLogEntryKey, EventLogEntryPrefix, OperationFiatKey};
 use crate::events::{
     ConduitPayment, ParsedEvent, PaymentNotification, RecentPaymentsUpdate, apply_update,
@@ -29,6 +30,7 @@ use crate::frb_generated::StreamSink;
 use crate::{
     BitcoinAddressWrapper, Bolt11InvoiceWrapper, ECashWrapper, EcashToken, InviteCodeWrapper,
 };
+use fedimint_eventlog::EventLogEntry;
 
 #[frb]
 pub struct FederationStats {
@@ -54,25 +56,26 @@ pub struct LnReceiveInvoice {
     pub fee_sats: i64,
 }
 
+/// One account's view onto a mint: the five views of a mint share its one
+/// fedimint client and differ only in the account they hand to it.
 #[frb]
 #[derive(Clone)]
 pub struct ConduitClient {
     pub(crate) client: ClientHandleArc,
     pub(crate) db: Database,
     pub(crate) federation_id: FederationId,
+    pub(crate) account: Account,
+    /// The mint's name from its config, or its id prefix when it has none.
+    pub(crate) name: String,
+    pub(crate) instance_id: u64,
     pub(crate) currency_code: Arc<Mutex<String>>,
     pub(crate) exchange_rate_cache: ExchangeRateCache,
 }
 
 impl ConduitClient {
-    #[frb]
-    pub async fn federation_name(&self) -> Option<String> {
-        self.client
-            .config()
-            .await
-            .global
-            .federation_name()
-            .map(|name| name.to_string())
+    #[frb(sync)]
+    pub fn federation_name(&self) -> String {
+        self.name.clone()
     }
 
     #[frb(sync)]
@@ -81,17 +84,29 @@ impl ConduitClient {
     }
 
     #[frb(sync)]
-    pub fn currency_code(&self) -> String {
-        self.currency_code.lock().unwrap().clone()
+    pub fn account(&self) -> Account {
+        self.account
     }
 
-    /// Switches the currency used for live fiat conversion and clears the cached
-    /// rate so the next fetch is for the new currency. The persisted setting is
-    /// written separately via the factory.
-    #[frb]
-    pub async fn set_currency(&self, currency_code: String) {
-        *self.currency_code.lock().unwrap() = currency_code;
-        *self.exchange_rate_cache.lock().await = None;
+    /// The federation id as hex, for keying by federation on the Dart side,
+    /// where the id itself is opaque.
+    #[frb(sync)]
+    pub fn federation_id_hex(&self) -> String {
+        self.federation_id.to_string()
+    }
+
+    /// Tells one open of an account from the next. Every `clients()`
+    /// snapshot hands Dart fresh handles, so this is how the home screen
+    /// knows a client was reopened (after a recovery) rather than re-listed,
+    /// and that its streams need re-subscribing.
+    #[frb(sync)]
+    pub fn instance_id(&self) -> u64 {
+        self.instance_id
+    }
+
+    #[frb(sync)]
+    pub fn currency_code(&self) -> String {
+        self.currency_code.lock().unwrap().clone()
     }
 
     #[frb]
@@ -160,7 +175,11 @@ impl ConduitClient {
 
         let mut dbtx = self.db.begin_transaction().await;
 
-        if dbtx.get_value(&OperationFiatKey(operation_id)).await.is_none() {
+        if dbtx
+            .get_value(&OperationFiatKey(operation_id))
+            .await
+            .is_none()
+        {
             dbtx.insert_entry(
                 &OperationFiatKey(operation_id),
                 &(currency_code, rate.to_be_bytes()),
@@ -195,13 +214,55 @@ impl ConduitClient {
     pub async fn subscribe_balance(&self, sink: StreamSink<i64>) {
         let mut stream = self
             .client
-            .subscribe_balance_changes(AmountUnit::bitcoin())
+            .subscribe_balance_changes(AmountUnit::bitcoin(), self.account.into())
             .await;
 
         while let Some(amount) = stream.next().await {
             if sink.add((amount.msats / 1000) as i64).is_err() {
                 break;
             }
+        }
+    }
+
+    /// Every event log entry stored for this mint, in log order: one log for
+    /// all five accounts, since they share the client. Each entry names its
+    /// account; the caller keeps the ones it is a view of.
+    async fn stored_event_log(&self) -> Vec<(EventLogId, EventLogEntry)> {
+        self.db
+            .begin_transaction_nc()
+            .await
+            .find_by_prefix(&EventLogEntryPrefix(self.federation_id))
+            .await
+            .map(|(key, entry)| (key.1, entry))
+            .collect()
+            .await
+    }
+
+    /// Stores an event log entry under the mint's key. Only Primary's view
+    /// writes: every view walks the same log, and one writer means no two
+    /// transactions ever race on the same entry. The others still read the
+    /// client's own log past whatever is stored, so they lag nothing. Fails
+    /// only when the database is shutting down.
+    async fn store_event_log_entry(&self, id: EventLogId, entry: &EventLogEntry) -> bool {
+        if self.account != Account::Primary {
+            return true;
+        }
+
+        let mut dbtx = self.db.begin_transaction().await;
+
+        dbtx.insert_entry(&EventLogEntryKey(self.federation_id, id), entry)
+            .await;
+
+        dbtx.commit_tx_result().await.is_ok()
+    }
+
+    /// A module from before accounts keeps one balance, Primary's. Refused
+    /// up front for any other view, before anything is handed out or spent
+    /// on its behalf.
+    fn ensure_primary(&self) -> Result<(), String> {
+        match self.account {
+            Account::Primary => Ok(()),
+            _ => Err("This mint keeps a single account".to_string()),
         }
     }
 
@@ -319,11 +380,13 @@ impl ConduitClient {
 
         if let Ok(module) = self.client.get_first_module::<MintV2ClientModule>() {
             return module
-                .send(amount, serde_json::Value::Null, false)
+                .send(self.account.into(), amount, serde_json::Value::Null, false)
                 .await
                 .map(|(_, ecash)| ECashWrapper(EcashToken::V2(ecash)))
                 .map_err(|e| e.to_string());
         }
+
+        self.ensure_primary()?;
 
         self.client
             .get_first_module::<MintClientModule>()
@@ -334,6 +397,21 @@ impl ConduitClient {
             .map_err(|e| e.to_string())
     }
 
+    /// Everything the account holds, as one bundle of the notes themselves:
+    /// no transaction and no fee, which `ecash_send` with the balance as its
+    /// amount could not promise. Mint v2 only: a legacy mint cannot offer it
+    /// and says so.
+    #[frb]
+    pub async fn ecash_send_max(&self) -> Result<ECashWrapper, String> {
+        self.client
+            .get_first_module::<MintV2ClientModule>()
+            .map_err(|_| "This mint does not support sending the full balance".to_string())?
+            .send_max(self.account.into(), serde_json::Value::Null, false)
+            .await
+            .map(|(_, ecash)| ECashWrapper(EcashToken::V2(ecash)))
+            .ok_or_else(|| "This account is empty".to_string())
+    }
+
     #[frb]
     pub async fn ecash_receive(&self, notes: &ECashWrapper) -> Result<(), String> {
         match &notes.0 {
@@ -341,18 +419,21 @@ impl ConduitClient {
                 .client
                 .get_first_module::<MintV2ClientModule>()
                 .map_err(|e| e.to_string())?
-                .receive(ecash.clone(), serde_json::Value::Null)
+                .receive(self.account.into(), ecash.clone(), serde_json::Value::Null)
                 .await
                 .map(|_| ())
                 .map_err(|e| e.to_string()),
-            EcashToken::V1(oob) => self
-                .client
-                .get_first_module::<MintClientModule>()
-                .map_err(|e| e.to_string())?
-                .reissue_external_notes(oob.clone(), ())
-                .await
-                .map(|_| ())
-                .map_err(|e| e.to_string()),
+            EcashToken::V1(oob) => {
+                self.ensure_primary()?;
+
+                self.client
+                    .get_first_module::<MintClientModule>()
+                    .map_err(|e| e.to_string())?
+                    .reissue_external_notes(oob.clone(), ())
+                    .await
+                    .map(|_| ())
+                    .map_err(|e| e.to_string())
+            }
         }
     }
 
@@ -367,8 +448,10 @@ impl ConduitClient {
             .get_first_module::<LightningClientModule>()
             .unwrap();
 
-        let (gateway, routing_info) =
-            module.select_gateway(None).await.map_err(|e| e.to_string())?;
+        let (gateway, routing_info) = module
+            .select_gateway(None)
+            .await
+            .map_err(|e| e.to_string())?;
 
         let amount = Amount::from_sats(amount_sat as u64);
 
@@ -380,6 +463,7 @@ impl ConduitClient {
 
         let invoice = module
             .receive(
+                self.account.into(),
                 amount,
                 60 * 60 * 24,
                 Bolt11InvoiceDescription::Direct(String::new()),
@@ -427,8 +511,7 @@ impl ConduitClient {
 
         // A direct swap settles between fedimints when the invoice's payee is
         // the gateway's own lightning node; otherwise it routes over lightning.
-        let is_direct =
-            invoice.0.recover_payee_pub_key() == routing_info.lightning_public_key;
+        let is_direct = invoice.0.recover_payee_pub_key() == routing_info.lightning_public_key;
 
         Ok(LnSendFees {
             gateway_url: gateway.to_string(),
@@ -455,7 +538,7 @@ impl ConduitClient {
         self.client
             .get_first_module::<LightningClientModule>()
             .unwrap()
-            .send(invoice.0.clone(), gateway, ().into())
+            .send(self.account.into(), invoice.0.clone(), gateway, ().into())
             .await
             .map_err(|e| e.to_string())
     }
@@ -467,7 +550,7 @@ impl ConduitClient {
         self.client
             .get_first_module::<LightningClientModule>()
             .unwrap()
-            .generate_lnurl(recurringd, None)
+            .generate_lnurl(self.account.into(), recurringd, None)
             .await
             .map_err(|e| e.to_string())
     }
@@ -517,11 +600,19 @@ impl ConduitClient {
 
         if let Ok(module) = self.client.get_first_module::<WalletV2ClientModule>() {
             return module
-                .send(address.0.clone(), amount, None, serde_json::Value::Null)
+                .send(
+                    self.account.into(),
+                    address.0.clone(),
+                    amount,
+                    None,
+                    serde_json::Value::Null,
+                )
                 .await
                 .map(|_| ())
                 .map_err(|e| e.to_string());
         }
+
+        self.ensure_primary()?;
 
         let wallet_module = self
             .client
@@ -548,6 +639,8 @@ impl ConduitClient {
 
     #[frb]
     pub async fn onchain_receive_address(&self) -> Result<String, String> {
+        self.ensure_primary()?;
+
         let wallet_module = self
             .client
             .get_first_module::<WalletClientModule>()
@@ -622,8 +715,9 @@ impl ConduitClient {
             .client
             .get_first_module::<WalletV2ClientModule>()
             .ok()?
-            .receive()
-            .await;
+            .receive(self.account.into())
+            .await
+            .ok()?;
 
         Some(address.to_string())
     }
@@ -646,22 +740,21 @@ impl ConduitClient {
     pub async fn get_payment_history(&self) -> Vec<ConduitPayment> {
         let mut payments = Vec::new();
 
-        let entries = self
-            .db
-            .begin_transaction_nc()
-            .await
-            .find_by_prefix(&EventLogEntryPrefix(self.federation_id))
-            .await
-            .collect::<Vec<_>>()
-            .await;
-
-        for entry in entries {
-            if let Some(parsed) = parse_event_log_entry(&entry.1) {
+        // The log is the mint's; this view keeps its own account's payments.
+        // An update for another account's payment finds nothing here and
+        // folds into nothing.
+        for (_, entry) in self.stored_event_log().await {
+            if let Some(parsed) = parse_event_log_entry(&entry) {
                 match parsed {
                     ParsedEvent::Payment {
                         mut payment,
                         operation_id,
+                        account,
                     } => {
+                        if account != self.account {
+                            continue;
+                        }
+
                         self.attach_fiat(&mut payment, operation_id).await;
                         payments.push(payment);
                     }
@@ -671,13 +764,7 @@ impl ConduitClient {
                         txid,
                         preimage,
                     } => {
-                        apply_update(
-                            &mut payments,
-                            &operation_id,
-                            success,
-                            txid,
-                            preimage,
-                        );
+                        apply_update(&mut payments, &operation_id, success, txid, preimage);
                     }
                 }
             }
@@ -713,25 +800,24 @@ impl ConduitClient {
         let mut position = EventLogId::LOG_START;
         let mut payments = Vec::new();
 
-        // Load historical events from our database
-        let entries = self
-            .db
-            .begin_transaction_nc()
-            .await
-            .find_by_prefix(&EventLogEntryPrefix(self.federation_id))
-            .await
-            .collect::<Vec<_>>()
-            .await;
-
-        for (key, entry) in entries {
-            position = key.1.saturating_add(1);
+        // Load historical events from our database. The log is the mint's;
+        // this view keeps its own account's payments, and an update for
+        // another account's payment finds nothing here and folds into
+        // nothing.
+        for (id, entry) in self.stored_event_log().await {
+            position = id.saturating_add(1);
 
             if let Some(parsed) = parse_event_log_entry(&entry) {
                 match parsed {
                     ParsedEvent::Payment {
                         mut payment,
                         operation_id,
+                        account,
                     } => {
+                        if account != self.account {
+                            continue;
+                        }
+
                         self.attach_fiat(&mut payment, operation_id).await;
                         payments.push(payment);
                     }
@@ -741,13 +827,7 @@ impl ConduitClient {
                         txid,
                         preimage,
                     } => {
-                        apply_update(
-                            &mut payments,
-                            &operation_id,
-                            success,
-                            txid,
-                            preimage,
-                        );
+                        apply_update(&mut payments, &operation_id, success, txid, preimage);
                     }
                 }
             }
@@ -784,7 +864,24 @@ impl ConduitClient {
                     ParsedEvent::Payment {
                         mut payment,
                         operation_id,
+                        account,
                     } => {
+                        // Another account's payment: not this view's to show
+                        // or announce, though its entry is still mirrored.
+                        if account != self.account {
+                            if !self
+                                .store_event_log_entry(
+                                    persisted_entry.id(),
+                                    persisted_entry.as_raw(),
+                                )
+                                .await
+                            {
+                                return;
+                            }
+
+                            continue;
+                        }
+
                         n_display += 1;
 
                         // First live sighting of this payment: freeze the fiat
@@ -806,13 +903,7 @@ impl ConduitClient {
                         success,
                         txid,
                         preimage,
-                    } => apply_update(
-                        &mut payments,
-                        &operation_id,
-                        success,
-                        txid,
-                        preimage,
-                    ),
+                    } => apply_update(&mut payments, &operation_id, success, txid, preimage),
                 };
 
                 if sink
@@ -825,15 +916,10 @@ impl ConduitClient {
                     return;
                 }
 
-                let mut dbtx = self.db.begin_transaction().await;
-
-                dbtx.insert_entry(
-                    &EventLogEntryKey(self.federation_id, persisted_entry.id()),
-                    persisted_entry.as_raw(),
-                )
-                .await;
-
-                if dbtx.commit_tx_result().await.is_err() {
+                if !self
+                    .store_event_log_entry(persisted_entry.id(), persisted_entry.as_raw())
+                    .await
+                {
                     return;
                 }
             }
